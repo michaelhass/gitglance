@@ -7,13 +7,18 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-type StatusProvider struct {
-	repo *git.Repository
-}
-
 type Status struct {
 	Unstaged []FileStatus
 	Staged   []FileStatus
+}
+
+func (s Status) contains(src []FileStatus, path string, code StatusCode) bool {
+	for _, fs := range src {
+		if fs.Path == path && fs.Code == code {
+			return true
+		}
+	}
+	return false
 }
 
 type FileStatus struct {
@@ -33,50 +38,6 @@ const (
 	Copied             StatusCode = StatusCode(git.Copied)
 	UpdatedButUnmerged StatusCode = StatusCode(git.UpdatedButUnmerged)
 )
-
-func NewStatusProvider(path string) (*StatusProvider, error) {
-	repo, err := git.PlainOpen(path)
-	if err != nil {
-		return nil, err
-	}
-	return &StatusProvider{repo: repo}, nil
-}
-
-func (sp *StatusProvider) CurrentStatus() (Status, error) {
-	var status Status
-
-	wt, err := sp.repo.Worktree()
-	if err != nil {
-		return status, err
-	}
-
-	ws, err := wt.Status()
-	if err != nil {
-		return status, err
-	}
-
-	for path, fileStatus := range ws {
-		if code := StatusCode(fileStatus.Worktree); code != Unmodified {
-			status.Unstaged = append(
-				status.Unstaged,
-				FileStatus{
-					Path: path,
-					Code: code,
-				},
-			)
-		}
-		if code := StatusCode(fileStatus.Staging); code != Unmodified && code != Untracked {
-			status.Staged = append(
-				status.Staged,
-				FileStatus{
-					Path: path,
-					Code: code,
-				},
-			)
-		}
-	}
-	return status, nil
-}
 
 func (s Status) String() string {
 	writeFileStatus := func(sb *strings.Builder, fsList []FileStatus) {
