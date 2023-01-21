@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+
 	args := os.Args[1:]
 
 	var path string
@@ -17,19 +18,17 @@ func main() {
 		path = "."
 	}
 
-	sp, err := git.NewStatusProvider(path)
-
+	fmt.Printf("Open repository at path:'%s'\n", path)
+	repo, err := git.OpenRepository(path)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
-	status, err := sp.CurrentStatus()
-
+	status, err := repo.Worktree.Status()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
-
 	fmt.Printf("%v", status)
 }

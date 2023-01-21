@@ -12,6 +12,10 @@ type Worktree struct {
 	wtb worktreeBridge
 }
 
+func newWorkTree(wtb worktreeBridge) *Worktree {
+	return &Worktree{wtb: wtb}
+}
+
 func (wt *Worktree) Status() (Status, error) {
 	var status Status
 	bridgeStatus, err := wt.wtb.Status()

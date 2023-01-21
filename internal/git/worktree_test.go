@@ -31,9 +31,7 @@ func TestStatus(t *testing.T) {
 	sourceStatus[onlyUnstagedPath] = &git.FileStatus{Staging: git.Unmodified, Worktree: git.Modified}
 	sourceStatus[bothPath] = &git.FileStatus{Staging: git.Modified, Worktree: git.Modified}
 
-	wt := Worktree{
-		wtb: mockWorktree{status: sourceStatus},
-	}
+	wt := newWorkTree(mockWorktree{status: sourceStatus})
 
 	status, err := wt.Status()
 	if err != nil {
