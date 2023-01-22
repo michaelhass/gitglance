@@ -32,28 +32,28 @@ func TestStatus(t *testing.T) {
 		t.Errorf("Failed reading status. Error: %v", err)
 	}
 
-	if status.contains(status.Staged, unmodifiedPath, Unmodified) ||
-		status.contains(status.Unstaged, unmodifiedPath, Unmodified) {
+	if status.Staged.Contains(unmodifiedPath, Unmodified) ||
+		status.Unstaged.Contains(unmodifiedPath, Unmodified) {
 		t.Errorf("Failed to remove unmodified status.")
 	}
 
-	if status.contains(status.Staged, untrackedPath, Untracked) ||
-		!status.contains(status.Unstaged, untrackedPath, Untracked) {
+	if status.Staged.Contains(untrackedPath, Untracked) ||
+		!status.Unstaged.Contains(untrackedPath, Untracked) {
 		t.Errorf("Failed to remove unmodified status.")
 	}
 
-	if !status.contains(status.Staged, onlyStagedPath, Modified) ||
-		status.contains(status.Unstaged, onlyStagedPath, Modified) {
+	if !status.Staged.Contains(onlyStagedPath, Modified) ||
+		status.Unstaged.Contains(onlyStagedPath, Modified) {
 		t.Errorf("File should be included in staged but not in unstaged.")
 	}
 
-	if status.contains(status.Staged, onlyUnstagedPath, Modified) ||
-		!status.contains(status.Unstaged, onlyUnstagedPath, Modified) {
+	if status.Staged.Contains(onlyUnstagedPath, Modified) ||
+		!status.Unstaged.Contains(onlyUnstagedPath, Modified) {
 		t.Errorf("File should be included in unstaged but not in staged.")
 	}
 
-	if !status.contains(status.Staged, bothPath, Modified) ||
-		!status.contains(status.Unstaged, bothPath, Modified) {
+	if !status.Staged.Contains(bothPath, Modified) ||
+		!status.Unstaged.Contains(bothPath, Modified) {
 		t.Errorf("File should be included in both staged and unstaged.")
 	}
 }

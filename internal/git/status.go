@@ -6,12 +6,12 @@ import (
 )
 
 type Status struct {
-	Unstaged []FileStatus
-	Staged   []FileStatus
+	Unstaged FileStatusList
+	Staged   FileStatusList
 }
 
-func (s Status) contains(src []FileStatus, path string, code StatusCode) bool {
-	for _, fs := range src {
+func (l FileStatusList) Contains(path string, code StatusCode) bool {
+	for _, fs := range l {
 		if fs.Path == path && fs.Code == code {
 			return true
 		}
@@ -23,6 +23,8 @@ type FileStatus struct {
 	Path string
 	Code StatusCode
 }
+
+type FileStatusList []FileStatus
 
 type StatusCode byte
 
