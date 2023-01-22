@@ -4,27 +4,33 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-type worktreeBridge interface {
-	Status() (git.Status, error)
+type Worktree interface {
+	Status() (Status, error)
 }
 
-type Worktree struct {
-	wtb worktreeBridge
+type goGitWorktree struct {
+	wt *git.Worktree
 }
 
-func newWorkTree(wtb worktreeBridge) *Worktree {
-	return &Worktree{wtb: wtb}
+func newGoGitWorkTree(wt *git.Worktree) *goGitWorktree {
+	return &goGitWorktree{wt: wt}
 }
 
-func (wt *Worktree) Status() (Status, error) {
+func (wt *goGitWorktree) Status() (Status, error) {
+	return wt.readStatus(func() (git.Status, error) {
+		return wt.wt.Status()
+	})
+}
+
+func (wt *goGitWorktree) readStatus(readStatus func() (git.Status, error)) (Status, error) {
 	var status Status
-	bridgeStatus, err := wt.wtb.Status()
+	srcStatus, err := readStatus()
 
 	if err != nil {
 		return status, err
 	}
 
-	for path, fileStatus := range bridgeStatus {
+	for path, fileStatus := range srcStatus {
 		if code := StatusCode(fileStatus.Worktree); code != Unmodified {
 			status.Unstaged = append(
 				status.Unstaged,

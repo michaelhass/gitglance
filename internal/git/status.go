@@ -47,7 +47,6 @@ func (s Status) String() string {
 	}
 
 	var sb strings.Builder
-
 	sb.WriteString("Unstaged:\n")
 	writeFileStatus(&sb, s.Unstaged)
 	sb.WriteString("\n")

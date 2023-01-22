@@ -19,16 +19,23 @@ func main() {
 	}
 
 	fmt.Printf("Open repository at path:'%s'\n", path)
-	repo, err := git.OpenRepository(path)
+	repo, err := git.OpenRepository(path, git.RepositoryOpt{ImplType: git.GoGit})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
-	status, err := repo.Worktree.Status()
+	wt, err := repo.Worktree()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
-	fmt.Printf("%v", status)
+
+	s, err := wt.Status()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
+	fmt.Printf("%v", s)
 }
