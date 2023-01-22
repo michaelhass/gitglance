@@ -24,8 +24,8 @@ func (wt *goGitWorktree) Status() (Status, error) {
 
 func (wt *goGitWorktree) readStatus(readStatus func() (git.Status, error)) (Status, error) {
 	var status Status
-	srcStatus, err := readStatus()
 
+	srcStatus, err := readStatus()
 	if err != nil {
 		return status, err
 	}

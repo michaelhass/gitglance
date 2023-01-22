@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/ui"
 )
 
 func main() {
-
 	args := os.Args[1:]
 
 	var path string
@@ -18,24 +17,10 @@ func main() {
 		path = "."
 	}
 
-	fmt.Printf("Open repository at path:'%s'\n", path)
-	repo, err := git.OpenRepository(path, git.RepositoryOpt{ImplType: git.GoGit})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	wt, err := repo.Worktree()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	s, err := wt.Status()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	fmt.Printf("%v", s)
+	ui.LaunchApp(
+		ui.LaunchOptions{
+			Path:    path,
+			RepoOpt: git.RepositoryOpt{ImplType: git.GoGit},
+		},
+	)
 }
