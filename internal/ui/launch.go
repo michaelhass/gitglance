@@ -1,10 +1,9 @@
 package ui
 
 import (
-	"fmt"
-	"os"
-
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/ui/app"
 )
 
 type LaunchOptions struct {
@@ -12,26 +11,15 @@ type LaunchOptions struct {
 	RepoOpt git.RepositoryOpt
 }
 
-func LaunchApp(opt LaunchOptions) {
-	fmt.Printf("Open repository at path:'%s'\n", opt.Path)
-
+func LaunchApp(opt LaunchOptions) error {
 	repo, err := git.OpenRepository(opt.Path, git.RepositoryOpt{ImplType: git.GoGit})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+		return err
 	}
 
-	wt, err := repo.Worktree()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	model := app.New(repo)
+	if _, err := tea.NewProgram(model, tea.WithAltScreen()).Run(); err != nil {
+		return err
 	}
-
-	s, err := wt.Status()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	fmt.Printf("%v", s)
+	return nil
 }

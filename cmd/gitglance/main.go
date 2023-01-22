@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/michaelhass/gitglance/internal/git"
@@ -17,10 +18,15 @@ func main() {
 		path = "."
 	}
 
-	ui.LaunchApp(
+	err := ui.LaunchApp(
 		ui.LaunchOptions{
 			Path:    path,
 			RepoOpt: git.RepositoryOpt{ImplType: git.GoGit},
 		},
 	)
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
 }
