@@ -3,8 +3,6 @@ package git
 import (
 	"fmt"
 	"strings"
-
-	"github.com/go-git/go-git/v5"
 )
 
 type Status struct {
@@ -26,17 +24,17 @@ type FileStatus struct {
 	Code StatusCode
 }
 
-type StatusCode git.StatusCode
+type StatusCode byte
 
 const (
-	Unmodified         StatusCode = StatusCode(git.Unmodified)
-	Untracked          StatusCode = StatusCode(git.Untracked)
-	Modified           StatusCode = StatusCode(git.Modified)
-	Added              StatusCode = StatusCode(git.Added)
-	Deleted            StatusCode = StatusCode(git.Deleted)
-	Renamed            StatusCode = StatusCode(git.Renamed)
-	Copied             StatusCode = StatusCode(git.Copied)
-	UpdatedButUnmerged StatusCode = StatusCode(git.UpdatedButUnmerged)
+	Unmodified         StatusCode = ' '
+	Untracked          StatusCode = '?'
+	Modified           StatusCode = 'M'
+	Added              StatusCode = 'A'
+	Deleted            StatusCode = 'D'
+	Renamed            StatusCode = 'R'
+	Copied             StatusCode = 'C'
+	UpdatedButUnmerged StatusCode = 'U'
 )
 
 func (s Status) String() string {
