@@ -29,7 +29,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
-		m.status.SetSize(msg.Width, msg.Height)
+		m.status = m.status.SetSize(msg.Width, msg.Height)
 	}
 
 	var (

@@ -6,17 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/files"
-)
-
-var (
-	sectionStyle = lipgloss.NewStyle().
-			BorderStyle(lipgloss.RoundedBorder())
-	focusedSectionStyle = lipgloss.NewStyle().
-				BorderStyle(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("69"))
-	sectionTitleStyle = lipgloss.NewStyle().
-				Background(lipgloss.Color("#874BFD"))
 )
 
 type section byte
@@ -24,7 +15,8 @@ type section byte
 const (
 	unstagedSection section = iota
 	stagedSection
-	lastSection section = stagedSection
+	diffSection
+	lastSection section = diffSection
 )
 
 type Model struct {
@@ -33,8 +25,33 @@ type Model struct {
 	statusErr      error
 	stagedFiles    files.List
 	unstagedFiles  files.List
+	sections       [lastSection + 1]container.Model
 	focusedSection section
-	width, height  int
+}
+
+func (m Mock) Title() string {
+	return m.title
+}
+
+func (m Mock) SetSize(width int, height int) container.Content {
+	// TODO: Implement
+	return m
+}
+
+func (m Mock) Init() tea.Cmd {
+	return nil
+}
+
+func (m Mock) Update(msg tea.Msg) (container.Content, tea.Cmd) {
+	return m, nil // TODO: Implement
+}
+
+func (m Mock) View() string {
+	return ""
+}
+
+type Mock struct {
+	title string
 }
 
 func New(repo git.Repository) Model {
@@ -42,6 +59,17 @@ func New(repo git.Repository) Model {
 		repo:          repo,
 		unstagedFiles: files.NewList("Unstaged"),
 		stagedFiles:   files.NewList("Staged"),
+		sections: [3]container.Model{
+			container.NewModel(Mock{
+				title: "Title 1",
+			}),
+			container.NewModel(Mock{
+				title: "Title 2",
+			}),
+			container.NewModel(Mock{
+				title: "Title 3",
+			}),
+		},
 	}
 }
 
@@ -67,24 +95,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	switch m.focusedSection {
-	case unstagedSection:
-		m.unstagedFiles.SetIsEnabled(true)
-		m.stagedFiles.SetIsEnabled(false)
-	case stagedSection:
-		m.unstagedFiles.SetIsEnabled(false)
-		m.stagedFiles.SetIsEnabled(true)
-	}
-
 	var cmds []tea.Cmd
 
-	unstagedFiles, unstagedCmd := m.unstagedFiles.Update(msg)
-	m.unstagedFiles = unstagedFiles
-	cmds = append(cmds, unstagedCmd)
-
-	stagedFiles, stagedCmd := m.stagedFiles.Update(msg)
-	m.stagedFiles = stagedFiles
-	cmds = append(cmds, stagedCmd)
+	for i, section := range m.sections {
+		section = section.SetIsFocused(i == int(m.focusedSection))
+		updatedSection, cmd := section.Update(msg)
+		m.sections[i] = updatedSection
+		cmds = append(cmds, cmd)
+	}
 
 	return m, tea.Batch(cmds...)
 }
@@ -94,43 +112,24 @@ func (m Model) View() string {
 		return fmt.Sprint(m.statusErr)
 	}
 
-	// var (
-	// 	unstagedTitle string = "Unstaged"
-	// 	stagedTitle   string = "Staged"
-	// 	itemIdx       int    = m.itemIdx[m.focusedSection]
-	// 	unstaged      string
-	// 	staged        string
-	// )
-
-	// // fileSectionWidth := (m.width / 2) - 2
-	// switch m.focusedSection {
-	// case unstagedSection:
-	// 	unstaged = focusedSectionStyle.Render(fileStatusListView(m.status.Unstaged, unstagedTitle, itemIdx))
-	// 	staged = sectionStyle.Render(fileStatusListView(m.status.Staged, stagedTitle, -1))
-	// case stagedSection:
-	// 	unstaged = sectionStyle.Render(fileStatusListView(m.status.Unstaged, unstagedTitle, -1))
-	// 	staged = focusedSectionStyle.Render(fileStatusListView(m.status.Staged, stagedTitle, itemIdx))
-	// }
-
-	// // filesSectionHeight := m.height / 3
-	// // filesSection := lipgloss.NewStyle().
-	// // 	//	Width(m.width).
-	// // 	Height(filesSectionHeight).
-	// // 	Render()
-
-	files := lipgloss.JoinHorizontal(lipgloss.Left, m.unstagedFiles.View(), m.stagedFiles.View())
-	diff := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Width(m.width - 4).Height(m.height/2 - 4).Render("")
-	return lipgloss.JoinVertical(lipgloss.Top, files, diff)
-	// // diffSection := sectionStyle.Width(m.width).Height(m.height - filesSectionHeight).Render("Diff")
-
-	// // return lipgloss.JoinVertical(lipgloss.Top, filesSection, verticalSpacer, diffSection)
+	files := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		m.sections[unstagedSection].View(),
+		m.sections[stagedSection].View(),
+	)
+	return lipgloss.JoinVertical(lipgloss.Top, files, m.sections[diffSection].View())
 }
 
-func (m *Model) SetSize(width, height int) {
-	m.width = width
-	m.height = height
-	m.unstagedFiles.SetSize(width/2-1, height/2-2)
-	m.stagedFiles.SetSize(width/2-1, height/2-2)
+func (m Model) SetSize(width, height int) Model {
+	filesWidth := (width / 2)
+	filesHeight := (height / 2)
+	diffWidth := width
+	diffHeight := filesHeight
+
+	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
+	m.sections[stagedSection] = m.sections[stagedSection].SetSize(filesWidth, filesHeight)
+	m.sections[diffSection] = m.sections[diffSection].SetSize(diffWidth, diffHeight)
+	return m
 }
 
 func createListItems(fileStatusList git.FileStatusList) []files.ListItem {
