@@ -33,9 +33,11 @@ func NewFileListItem(path, accessory string) FileListItem {
 	}
 }
 
+type ItemHandler func(msg tea.Msg) tea.Cmd
 type FileList struct {
 	items        []FileListItem
 	visibleItems []FileListItem
+	itemHandler  ItemHandler
 	title        string
 	width        int
 	height       int
@@ -44,34 +46,41 @@ type FileList struct {
 	isFocused    bool
 }
 
-func NewFileList(title string) FileList {
-	return FileList{title: title}
+func NewFileList(title string, itemHandler ItemHandler) FileList {
+	return FileList{title: title, itemHandler: itemHandler}
 }
 func (l FileList) Init() tea.Cmd {
 	return nil
 }
 
 func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
+	if !l.isFocused {
+		return l, nil
+	}
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "up":
+		switch msg.Type {
+		case tea.KeyUp:
 			if l.cursor > 0 {
 				l.cursor -= 1
 				break
 			}
 			l.pageStartIdx = l.nextPageStartIdx(-1)
 			l.visibleItems = l.updateVisibleItems()
-		case "down":
+		case tea.KeyDown:
 			if l.cursor < len(l.visibleItems)-1 {
 				l.cursor += 1
 				break
 			}
 			l.pageStartIdx = l.nextPageStartIdx(1)
 			l.visibleItems = l.updateVisibleItems()
+		case tea.KeyEnter:
+			item := l.visibleItems[l.cursor]
+			cmd = l.itemHandler(selectItemMsg{item: item})
 		}
 	}
-	return l, nil
+	return l, cmd
 }
 
 func (l FileList) View() string {
@@ -146,4 +155,10 @@ func min(i, j int) int {
 		return i
 	}
 	return j
+}
+
+// msg
+
+type selectItemMsg struct {
+	item FileListItem
 }

@@ -12,6 +12,7 @@ type Model struct {
 }
 
 func New(repo *git.Repository) Model {
+
 	return Model{
 		repo:   repo,
 		status: status.New(repo),

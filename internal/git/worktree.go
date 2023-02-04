@@ -48,3 +48,8 @@ func (wt *Worktree) readStatus(readStatus func() (git.Status, error)) (Status, e
 	}
 	return status, nil
 }
+
+func (wt *Worktree) StageFile(path string) error {
+	_, err := wt.wt.Add(path)
+	return err
+}

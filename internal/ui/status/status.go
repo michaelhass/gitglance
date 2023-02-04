@@ -56,11 +56,24 @@ type Mock struct {
 }
 
 func New(repo *git.Repository) Model {
+	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
+		switch msg := msg.(type) {
+		case selectItemMsg:
+			return stageFile(repo, msg.item.path)
+		default:
+			return nil
+		}
+	}
+
+	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
+		return nil
+	}
+
 	return Model{
 		repo: repo,
 		sections: [3]container.Model{
-			container.NewModel(NewFileList("Unstaged")),
-			container.NewModel(NewFileList("Staged")),
+			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
+			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
 			container.NewModel(Mock{title: "Diff"}),
 		},
 	}
@@ -145,15 +158,51 @@ func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 
 func load(repo *git.Repository) func() tea.Msg {
 	return func() tea.Msg {
-		var msg statusUpdateMsg
+		var (
+			wt     *git.Worktree
+			status git.Status
+			msg    statusUpdateMsg
+			err    error
+		)
 
-		wt, err := repo.Worktree()
+		wt, err = repo.Worktree()
 		if err != nil {
 			msg.err = err
 			return msg
 		}
 
-		status, err := wt.Status()
+		status, err = wt.Status()
+		if err != nil {
+			msg.err = err
+			return msg
+		}
+		msg.status = status
+		return msg
+	}
+}
+
+func stageFile(repo *git.Repository, path string) func() tea.Msg {
+	return func() tea.Msg {
+		var (
+			wt     *git.Worktree
+			status git.Status
+			msg    statusUpdateMsg
+			err    error
+		)
+
+		wt, err = repo.Worktree()
+		if err != nil {
+			msg.err = err
+			return msg
+		}
+
+		err = wt.StageFile(path)
+		if err != nil {
+			msg.err = err
+			return msg
+		}
+
+		status, err = wt.Status()
 		if err != nil {
 			msg.err = err
 			return msg

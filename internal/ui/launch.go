@@ -11,6 +11,7 @@ type LaunchOptions struct {
 }
 
 func LaunchApp(opt LaunchOptions) error {
+
 	repo, err := git.OpenRepository(opt.Path)
 	if err != nil {
 		return err
