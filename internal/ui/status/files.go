@@ -2,7 +2,6 @@ package status
 
 import (
 	"fmt"
-	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -35,12 +34,14 @@ func NewFileListItem(path, accessory string) FileListItem {
 }
 
 type FileList struct {
-	items     []FileListItem
-	title     string
-	width     int
-	height    int
-	cursor    int
-	isFocused bool
+	items        []FileListItem
+	visibleItems []FileListItem
+	title        string
+	width        int
+	height       int
+	cursor       int
+	pageStartIdx int
+	isFocused    bool
 }
 
 func NewFileList(title string) FileList {
@@ -55,9 +56,19 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up":
-			l.cursor = max(l.cursor-1, 0)
+			if l.cursor > 0 {
+				l.cursor -= 1
+				break
+			}
+			l.pageStartIdx = l.nextPageStartIdx(-1)
+			l.visibleItems = l.updateVisibleItems()
 		case "down":
-			l.cursor = min(l.cursor+1, len(l.items)-1)
+			if l.cursor < len(l.visibleItems)-1 {
+				l.cursor += 1
+				break
+			}
+			l.pageStartIdx = l.nextPageStartIdx(1)
+			l.visibleItems = l.updateVisibleItems()
 		}
 	}
 	return l, nil
@@ -68,9 +79,9 @@ func (l FileList) View() string {
 }
 
 func (l FileList) rendered() string {
-	var builder strings.Builder
+	var renderedItems = make([]string, len(l.visibleItems))
 
-	for i, item := range l.items {
+	for i, item := range l.visibleItems {
 		style := itemStyle
 		if !l.isFocused {
 			style = inactiveItemStyle
@@ -81,11 +92,13 @@ func (l FileList) rendered() string {
 		itemString := item.String()
 		itemString = itemString[:min(len(itemString), l.width-1)]
 
-		builder.WriteString(style.Copy().Width(l.width).Render(itemString))
-		builder.WriteString("\n")
+		renderedItems[i] = style.Width(l.width).Render(itemString)
 	}
 
-	return lipgloss.NewStyle().Height(l.height).Render(builder.String())
+	return lipgloss.
+		NewStyle().
+		Height(l.height).
+		Render(lipgloss.JoinVertical(lipgloss.Top, renderedItems...))
 }
 
 func (l FileList) Title() string {
@@ -95,6 +108,7 @@ func (l FileList) Title() string {
 func (l FileList) SetSize(width, height int) container.Content {
 	l.width = width
 	l.height = height
+	l.visibleItems = l.updateVisibleItems()
 	return l
 }
 
@@ -105,18 +119,30 @@ func (l FileList) SetIsFocused(isFocused bool) container.Content {
 
 func (l FileList) SetFileListItems(items []FileListItem) FileList {
 	l.items = items
+	l.visibleItems = l.updateVisibleItems()
 	return l
+}
+
+func (l FileList) updateVisibleItems() []FileListItem {
+	start := l.pageStartIdx
+	end := min(start+l.pageSize(), len(l.items))
+	return l.items[start:end]
+}
+
+func (l FileList) nextPageStartIdx(offset int) int {
+	start := l.pageStartIdx + offset
+	if start+l.pageSize() > len(l.items) || start < 0 {
+		return l.pageStartIdx
+	}
+	return start
+}
+
+func (l FileList) pageSize() int {
+	return l.height
 }
 
 func min(i, j int) int {
 	if i < j {
-		return i
-	}
-	return j
-}
-
-func max(i, j int) int {
-	if i > j {
 		return i
 	}
 	return j
