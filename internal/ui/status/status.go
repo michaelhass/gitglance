@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/files"
 )
 
 type section byte
@@ -23,14 +22,16 @@ type Model struct {
 	repo           git.Repository
 	status         git.Status
 	statusErr      error
-	stagedFiles    files.List
-	unstagedFiles  files.List
 	sections       [lastSection + 1]container.Model
 	focusedSection section
 }
 
 func (m Mock) Title() string {
 	return m.title
+}
+
+func (m Mock) SetIsFocused(isFocused bool) container.Content {
+	return m
 }
 
 func (m Mock) SetSize(width int, height int) container.Content {
@@ -56,19 +57,11 @@ type Mock struct {
 
 func New(repo git.Repository) Model {
 	return Model{
-		repo:          repo,
-		unstagedFiles: files.NewList("Unstaged"),
-		stagedFiles:   files.NewList("Staged"),
+		repo: repo,
 		sections: [3]container.Model{
-			container.NewModel(Mock{
-				title: "Title 1",
-			}),
-			container.NewModel(Mock{
-				title: "Title 2",
-			}),
-			container.NewModel(Mock{
-				title: "Title 3",
-			}),
+			container.NewModel(NewFileList("Unstaged")),
+			container.NewModel(NewFileList("Staged")),
+			container.NewModel(Mock{title: "Title 3"}),
 		},
 	}
 }
@@ -82,8 +75,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case statusUpdateMsg:
 		m.status = msg.status
 		m.statusErr = msg.err
-		m.unstagedFiles.SetItems(createListItems(m.status.Unstaged))
-		m.stagedFiles.SetItems(createListItems(m.status.Staged))
+		if list, ok := m.sections[unstagedSection].Content().(FileList); ok {
+			list = list.SetFileListItems(createFileListItems(m.status.Unstaged))
+			m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(list)
+		}
+		if list, ok := m.sections[stagedSection].Content().(FileList); ok {
+			list = list.SetFileListItems(createFileListItems(m.status.Staged))
+			m.sections[stagedSection] = m.sections[stagedSection].SetContent(list)
+		}
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "tab":
@@ -115,6 +114,7 @@ func (m Model) View() string {
 	files := lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		m.sections[unstagedSection].View(),
+		" ",
 		m.sections[stagedSection].View(),
 	)
 	return lipgloss.JoinVertical(lipgloss.Top, files, m.sections[diffSection].View())
@@ -132,10 +132,10 @@ func (m Model) SetSize(width, height int) Model {
 	return m
 }
 
-func createListItems(fileStatusList git.FileStatusList) []files.ListItem {
-	items := make([]files.ListItem, len(fileStatusList))
+func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
+	items := make([]FileListItem, len(fileStatusList))
 	for i, fs := range fileStatusList {
-		items[i] = files.NewListItem(fs.Path, fmt.Sprintf("[%s]", string(fs.Code)))
+		items[i] = NewFileListItem(fs.Path, fmt.Sprintf("[%s]", string(fs.Code)))
 	}
 	return items
 }
