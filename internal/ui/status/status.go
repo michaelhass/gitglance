@@ -61,7 +61,7 @@ func New(repo git.Repository) Model {
 		sections: [3]container.Model{
 			container.NewModel(NewFileList("Unstaged")),
 			container.NewModel(NewFileList("Staged")),
-			container.NewModel(Mock{title: "Title 3"}),
+			container.NewModel(Mock{title: "Diff"}),
 		},
 	}
 }
@@ -123,6 +123,7 @@ func (m Model) View() string {
 func (m Model) SetSize(width, height int) Model {
 	filesWidth := (width / 2)
 	filesHeight := (height / 2)
+
 	diffWidth := width
 	diffHeight := filesHeight
 

@@ -78,7 +78,10 @@ func (l FileList) rendered() string {
 			style = focusedItemStyle
 		}
 
-		builder.WriteString(style.Copy().Width(l.width).Render(item.String()))
+		itemString := item.String()
+		itemString = itemString[:min(len(itemString), l.width-1)]
+
+		builder.WriteString(style.Copy().Width(l.width).Render(itemString))
 		builder.WriteString("\n")
 	}
 
