@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui"
 )
 
@@ -20,8 +19,7 @@ func main() {
 
 	err := ui.LaunchApp(
 		ui.LaunchOptions{
-			Path:    path,
-			RepoOpt: git.RepositoryOpt{ImplType: git.GoGit},
+			Path: path,
 		},
 	)
 

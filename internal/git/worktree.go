@@ -4,25 +4,21 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-type Worktree interface {
-	Status() (Status, error)
-}
-
-type goGitWorktree struct {
+type Worktree struct {
 	wt *git.Worktree
 }
 
-func newGoGitWorkTree(wt *git.Worktree) *goGitWorktree {
-	return &goGitWorktree{wt: wt}
+func newWorkTree(wt *git.Worktree) *Worktree {
+	return &Worktree{wt: wt}
 }
 
-func (wt *goGitWorktree) Status() (Status, error) {
+func (wt *Worktree) Status() (Status, error) {
 	return wt.readStatus(func() (git.Status, error) {
 		return wt.wt.Status()
 	})
 }
 
-func (wt *goGitWorktree) readStatus(readStatus func() (git.Status, error)) (Status, error) {
+func (wt *Worktree) readStatus(readStatus func() (git.Status, error)) (Status, error) {
 	var status Status
 
 	srcStatus, err := readStatus()

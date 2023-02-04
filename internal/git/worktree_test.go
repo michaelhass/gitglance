@@ -16,7 +16,7 @@ func TestStatus(t *testing.T) {
 		bothPath         = "both"
 	)
 
-	wt := newGoGitWorkTree(nil)
+	wt := newWorkTree(nil)
 
 	status, err := wt.readStatus(func() (git.Status, error) {
 		status := git.Status{}

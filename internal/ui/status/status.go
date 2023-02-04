@@ -19,7 +19,7 @@ const (
 )
 
 type Model struct {
-	repo           git.Repository
+	repo           *git.Repository
 	status         git.Status
 	statusErr      error
 	sections       [lastSection + 1]container.Model
@@ -55,7 +55,7 @@ type Mock struct {
 	title string
 }
 
-func New(repo git.Repository) Model {
+func New(repo *git.Repository) Model {
 	return Model{
 		repo: repo,
 		sections: [3]container.Model{
@@ -143,7 +143,7 @@ func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 
 // Cmd
 
-func load(repo git.Repository) func() tea.Msg {
+func load(repo *git.Repository) func() tea.Msg {
 	return func() tea.Msg {
 		var msg statusUpdateMsg
 

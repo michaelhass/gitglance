@@ -7,11 +7,11 @@ import (
 )
 
 type Model struct {
-	repo   git.Repository
+	repo   *git.Repository
 	status status.Model
 }
 
-func New(repo git.Repository) Model {
+func New(repo *git.Repository) Model {
 	return Model{
 		repo:   repo,
 		status: status.New(repo),

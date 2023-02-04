@@ -7,12 +7,11 @@ import (
 )
 
 type LaunchOptions struct {
-	Path    string
-	RepoOpt git.RepositoryOpt
+	Path string
 }
 
 func LaunchApp(opt LaunchOptions) error {
-	repo, err := git.OpenRepository(opt.Path, git.RepositoryOpt{ImplType: git.GoGit})
+	repo, err := git.OpenRepository(opt.Path)
 	if err != nil {
 		return err
 	}
