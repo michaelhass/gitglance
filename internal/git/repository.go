@@ -5,7 +5,8 @@ import (
 )
 
 type Repository struct {
-	repo *git.Repository
+	repo     *git.Repository
+	worktree *Worktree
 }
 
 func OpenRepository(path string) (*Repository, error) {
@@ -13,13 +14,16 @@ func OpenRepository(path string) (*Repository, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Repository{repo: r}, nil
-}
 
-func (r *Repository) Worktree() (*Worktree, error) {
-	wt, err := r.repo.Worktree()
+	wt, err := r.Worktree()
 	if err != nil {
 		return nil, err
 	}
-	return newWorkTree(wt), nil
+
+	return &Repository{repo: r, worktree: newWorkTree(wt)}, nil
+}
+
+func (r *Repository) Worktree() *Worktree {
+	return r.worktree
+
 }

@@ -1,6 +1,8 @@
 package git
 
 import (
+	"os/exec"
+
 	"github.com/go-git/go-git/v5"
 )
 
@@ -35,7 +37,9 @@ func (wt *Worktree) readStatus(readStatus func() (git.Status, error)) (Status, e
 					Code: code,
 				},
 			)
+
 		}
+
 		if code := StatusCode(fileStatus.Staging); code != Unmodified && code != Untracked {
 			status.Staged = append(
 				status.Staged,
@@ -52,4 +56,31 @@ func (wt *Worktree) readStatus(readStatus func() (git.Status, error)) (Status, e
 func (wt *Worktree) StageFile(path string) error {
 	_, err := wt.wt.Add(path)
 	return err
+}
+
+func (wt *Worktree) UnstageFile(path string) error {
+	cmd := exec.Command("git", "restore", "--staged", path)
+	return cmd.Run()
+}
+
+type DiffOption struct {
+	FilePath string
+	IsStaged bool
+}
+
+func (wt *Worktree) Diff(opt DiffOption) (string, error) {
+	var (
+		cmd *exec.Cmd
+		err error
+		out []byte
+	)
+
+	if opt.IsStaged {
+		cmd = exec.Command("git", "diff", "--staged", opt.FilePath)
+	} else {
+		cmd = exec.Command("git", "diff", opt.FilePath)
+	}
+
+	out, err = cmd.Output()
+	return string(out), err
 }
