@@ -1,6 +1,8 @@
 package git
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestFileStatusFromLineSimple(t *testing.T) {
 	var (

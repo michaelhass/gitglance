@@ -8,19 +8,17 @@ import (
 )
 
 func main() {
-	args := os.Args[1:]
+	// args := os.Args[1:]
 
-	var path string
-	if len(args) > 0 {
-		path = args[0]
-	} else {
-		path = "."
-	}
+	// var path string
+	// if len(args) > 0 {
+	// 	path = args[0]
+	// } else {
+	// 	path = "."
+	// }
 
 	err := ui.LaunchApp(
-		ui.LaunchOptions{
-			Path: path,
-		},
+		ui.LaunchOptions{},
 	)
 
 	if err != nil {

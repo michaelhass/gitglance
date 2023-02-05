@@ -2,20 +2,45 @@ package git
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 	"unicode"
 )
 
-type Status struct {
+type WorkTreeStatus struct {
 	Unstaged FileStatusList
 	Staged   FileStatusList
 }
 
-func newStatus(unstaged, staged FileStatusList) Status {
-	return Status{Unstaged: unstaged, Staged: staged}
+func NewWorkTreeStatus(unstaged, staged FileStatusList) WorkTreeStatus {
+	return WorkTreeStatus{Unstaged: unstaged, Staged: staged}
 }
 
-func (l FileStatusList) Contains(path string, code StatusCode) bool {
+func (s WorkTreeStatus) String() string {
+	writeFile := func(sb *strings.Builder, fsList []FileStatus) {
+		for _, fs := range fsList {
+			sb.WriteString(fmt.Sprintf("[%s] %s\n", string(fs.Code), fs.Path))
+		}
+	}
+
+	var sb strings.Builder
+	sb.WriteString("Unstaged:\n")
+	writeFile(&sb, s.Unstaged)
+	sb.WriteString("\n")
+	sb.WriteString("Staged:\n")
+	writeFile(&sb, s.Staged)
+	return sb.String()
+}
+
+type FileStatus struct {
+	Path  string
+	Extra string // Contains extra information, e.g. previous name
+	Code  Code
+}
+
+type FileStatusList []FileStatus
+
+func (l FileStatusList) Contains(path string, code Code) bool {
 	for _, fs := range l {
 		if fs.Path == path && fs.Code == code {
 			return true
@@ -24,27 +49,19 @@ func (l FileStatusList) Contains(path string, code StatusCode) bool {
 	return false
 }
 
-type FileStatus struct {
-	Path  string
-	Extra string // Contains extra information, e.g. previous name
-	Code  StatusCode
-}
-
-type FileStatusList []FileStatus
-
-type StatusCode byte
+type Code byte
 
 const (
-	Untracked          StatusCode = '?'
-	Modified           StatusCode = 'M'
-	Added              StatusCode = 'A'
-	Deleted            StatusCode = 'D'
-	Renamed            StatusCode = 'R'
-	Copied             StatusCode = 'C'
-	UpdatedButUnmerged StatusCode = 'U'
+	Untracked          Code = '?'
+	Modified           Code = 'M'
+	Added              Code = 'A'
+	Deleted            Code = 'D'
+	Renamed            Code = 'R'
+	Copied             Code = 'C'
+	UpdatedButUnmerged Code = 'U'
 )
 
-func (s StatusCode) isValid() bool {
+func (s Code) IsValid() bool {
 	switch s {
 	case Untracked, Modified, Added, Deleted, Renamed, Copied, UpdatedButUnmerged:
 		return true
@@ -53,17 +70,12 @@ func (s StatusCode) isValid() bool {
 	}
 }
 
-func fileStatusListForUntrackedFiles(paths []string) FileStatusList {
-	var list FileStatusList
-	for _, path := range paths {
-		list = append(
-			list, FileStatus{
-				Path: path,
-				Code: Untracked,
-			},
-		)
+func fileStatusListFromDiff(opt DiffOption) (FileStatusList, error) {
+	diff, err := Diff(opt)
+	if err != nil {
+		return nil, err
 	}
-	return list
+	return fileStatusListFromDiffString(diff)
 }
 
 // Expect format from "git diff --name-status"
@@ -117,8 +129,8 @@ func fileStatusFromLine(line string) (FileStatus, error) {
 			fmt.Errorf("unable to read file status from: %s", line)
 	}
 
-	statusCode := StatusCode(components[0][0])
-	if !statusCode.isValid() {
+	statusCode := Code(components[0][0])
+	if !statusCode.IsValid() {
 		return fileStatus,
 			fmt.Errorf("invalid statuscode: %s", string(statusCode))
 	}
@@ -133,18 +145,33 @@ func fileStatusFromLine(line string) (FileStatus, error) {
 	return fileStatus, nil
 }
 
-func (s Status) String() string {
-	writeFileStatus := func(sb *strings.Builder, fsList []FileStatus) {
-		for _, fs := range fsList {
-			sb.WriteString(fmt.Sprintf("[%s] %s\n", string(fs.Code), fs.Path))
-		}
+func untrackedFiles() ([]string, error) {
+	cmd := exec.Command("git", "ls-files", "--others", "--exclude-standard")
+	out, err := cmd.Output()
+
+	if err != nil {
+		return nil, err
 	}
 
-	var sb strings.Builder
-	sb.WriteString("Unstaged:\n")
-	writeFileStatus(&sb, s.Unstaged)
-	sb.WriteString("\n")
-	sb.WriteString("Staged:\n")
-	writeFileStatus(&sb, s.Staged)
-	return sb.String()
+	var files []string
+	for _, line := range strings.Split(string(out), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		files = append(files, line)
+	}
+	return files, nil
+}
+
+func fileStatusListForUntrackedFiles(paths []string) FileStatusList {
+	var list FileStatusList
+	for _, path := range paths {
+		list = append(
+			list, FileStatus{
+				Path: path,
+				Code: Untracked,
+			},
+		)
+	}
+	return list
 }

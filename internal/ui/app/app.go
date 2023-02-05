@@ -2,20 +2,16 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
 type Model struct {
-	repo   *git.Repository
 	status status.Model
 }
 
-func New(repo *git.Repository) Model {
-
+func New() Model {
 	return Model{
-		repo:   repo,
-		status: status.New(repo),
+		status: status.New(),
 	}
 }
 func (m Model) Init() tea.Cmd {

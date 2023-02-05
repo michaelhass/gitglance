@@ -19,8 +19,7 @@ const (
 )
 
 type Model struct {
-	repo           *git.Repository
-	status         git.Status
+	workTreeStatus git.WorkTreeStatus
 	statusErr      error
 	sections       [lastSection + 1]container.Model
 	focusedSection section
@@ -61,13 +60,13 @@ type Mock struct {
 	width, height int
 }
 
-func New(repo *git.Repository) Model {
+func New() Model {
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case selectItemMsg:
-			return stageFile(repo, msg.item.path)
+			return stageFile(msg.item.path)
 		case focusItemMsg:
-			return diff(repo, git.DiffOption{FilePath: msg.item.path})
+			return diff(git.DiffOption{FilePath: msg.item.path})
 		default:
 			return nil
 		}
@@ -76,16 +75,15 @@ func New(repo *git.Repository) Model {
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case selectItemMsg:
-			return unstageFile(repo, msg.item.path)
+			return unstageFile(msg.item.path)
 		case focusItemMsg:
-			return diff(repo, git.DiffOption{FilePath: msg.item.path, IsStaged: true})
+			return diff(git.DiffOption{FilePath: msg.item.path, IsStaged: true})
 		default:
 			return nil
 		}
 	}
 
 	return Model{
-		repo: repo,
 		sections: [3]container.Model{
 			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
 			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
@@ -95,20 +93,20 @@ func New(repo *git.Repository) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return load(m.repo)
+	return load()
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case statusUpdateMsg:
-		m.status = msg.status
+		m.workTreeStatus = msg.workTreeStatus
 		m.statusErr = msg.err
 		if section, ok := m.sections[unstagedSection].Content().(FileList); ok {
-			section = section.SetFileListItems(createFileListItems(m.status.Unstaged))
+			section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Unstaged))
 			m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 		}
 		if section, ok := m.sections[stagedSection].Content().(FileList); ok {
-			section = section.SetFileListItems(createFileListItems(m.status.Staged))
+			section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Staged))
 			m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 		}
 	case loadedDiffMsg:
@@ -170,99 +168,95 @@ func (m Model) SetSize(width, height int) Model {
 func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 	items := make([]FileListItem, len(fileStatusList))
 	for i, fs := range fileStatusList {
-		items[i] = NewFileListItem(fs.Path, fmt.Sprintf("[%s]", string(fs.Code)))
+		path := fs.Path
+		if len(fs.Extra) > 0 {
+			path = fmt.Sprintf("%s → %s", path, fs.Extra)
+		}
+		items[i] = NewFileListItem(path, fmt.Sprintf("[%s]", string(fs.Code)))
 	}
 	return items
 }
 
 // Cmd
 
-func load(repo *git.Repository) func() tea.Msg {
+func load() func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			wt     *git.Worktree
-			status git.Status
-			msg    statusUpdateMsg
-			err    error
+			msg            statusUpdateMsg
+			workTreeStatus git.WorkTreeStatus
+			err            error
 		)
 
-		wt = repo.Worktree()
-		status, err = wt.Status()
+		workTreeStatus, err = git.Status()
 		if err != nil {
 			msg.err = err
 			return msg
 		}
-		msg.status = status
+		msg.workTreeStatus = workTreeStatus
 
 		return msg
 	}
 }
 
-func stageFile(repo *git.Repository, path string) func() tea.Msg {
+func stageFile(path string) func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			wt     *git.Worktree
-			status git.Status
-			msg    statusUpdateMsg
-			err    error
+			workTreeStatus git.WorkTreeStatus
+			msg            statusUpdateMsg
+			err            error
 		)
 
-		wt = repo.Worktree()
-		err = wt.StageFile(path)
+		err = git.StageFile(path)
 		if err != nil {
 			msg.err = err
 			return msg
 		}
 
-		status, err = wt.Status()
+		workTreeStatus, err = git.Status()
 		if err != nil {
 			msg.err = err
 			return msg
 		}
-		msg.status = status
+		msg.workTreeStatus = workTreeStatus
 
 		return msg
 	}
 }
 
-func unstageFile(repo *git.Repository, path string) func() tea.Msg {
+func unstageFile(path string) func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			wt     *git.Worktree
-			status git.Status
-			msg    statusUpdateMsg
-			err    error
+			workTreeStatus git.WorkTreeStatus
+			msg            statusUpdateMsg
+			err            error
 		)
 
-		wt = repo.Worktree()
-		err = wt.UnstageFile(path)
+		err = git.UnstageFile(path)
 		if err != nil {
 			msg.err = err
 			return msg
 		}
 
-		status, err = wt.Status()
+		workTreeStatus, err = git.Status()
 		if err != nil {
 			msg.err = err
 			return msg
 		}
-		msg.status = status
+		msg.workTreeStatus = workTreeStatus
 
 		return msg
 	}
 }
 
-func diff(repo *git.Repository, opt git.DiffOption) func() tea.Msg {
+func diff(opt git.DiffOption) func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			wt   *git.Worktree
 			msg  loadedDiffMsg
 			err  error
 			diff string
 		)
 
-		wt = repo.Worktree()
-		diff, err = wt.Diff(opt)
+		diff, err = git.Diff(opt)
 		if err != nil {
 			msg.err = err
 			return msg
@@ -276,8 +270,8 @@ func diff(repo *git.Repository, opt git.DiffOption) func() tea.Msg {
 // Msg
 
 type statusUpdateMsg struct {
-	err    error
-	status git.Status
+	err            error
+	workTreeStatus git.WorkTreeStatus
 }
 
 type loadedDiffMsg struct {

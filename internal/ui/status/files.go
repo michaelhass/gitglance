@@ -103,9 +103,9 @@ func (l FileList) rendered() string {
 			style = focusedItemStyle
 		}
 
-		itemString := item.String()
-		itemString = itemString[:min(len(itemString), l.width-1)]
-
+		runes := []rune(item.String())
+		runes = runes[:min(len(runes), l.width-1)]
+		itemString := string(runes)
 		renderedItems[i] = style.Width(l.width).Render(itemString)
 	}
 
