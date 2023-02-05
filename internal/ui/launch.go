@@ -23,3 +23,7 @@ func LaunchApp(opt LaunchOptions) error {
 	}
 	return nil
 }
+
+func OpenRepository(opt LaunchOptions) (*git.Repository, error) {
+	return git.OpenRepository(opt.Path)
+}

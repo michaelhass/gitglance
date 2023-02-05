@@ -3,7 +3,7 @@ package container
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	styles "github.com/michaelhass/gitglance/internal/ui/Styles"
+	styles "github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
 var (

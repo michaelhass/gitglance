@@ -5,8 +5,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	styles "github.com/michaelhass/gitglance/internal/ui/Styles"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
 var (

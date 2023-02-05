@@ -2,60 +2,51 @@ package git
 
 import (
 	"os/exec"
-
-	"github.com/go-git/go-git/v5"
+	"strings"
 )
 
-type Worktree struct {
-	wt *git.Worktree
-}
+type Worktree struct{}
 
-func newWorkTree(wt *git.Worktree) *Worktree {
-	return &Worktree{wt: wt}
+func newWorkTree() *Worktree {
+	return &Worktree{}
 }
 
 func (wt *Worktree) Status() (Status, error) {
-	return wt.readStatus(func() (git.Status, error) {
-		return wt.wt.Status()
-	})
-}
-
-func (wt *Worktree) readStatus(readStatus func() (git.Status, error)) (Status, error) {
 	var status Status
 
-	srcStatus, err := readStatus()
+	unstagedFiles, err := wt.fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true})
 	if err != nil {
 		return status, err
 	}
 
-	for path, fileStatus := range srcStatus {
-		if code := StatusCode(fileStatus.Worktree); code != Unmodified {
-			status.Unstaged = append(
-				status.Unstaged,
-				FileStatus{
-					Path: path,
-					Code: code,
-				},
-			)
-
-		}
-
-		if code := StatusCode(fileStatus.Staging); code != Unmodified && code != Untracked {
-			status.Staged = append(
-				status.Staged,
-				FileStatus{
-					Path: path,
-					Code: code,
-				},
-			)
-		}
+	untrackedFilesPaths, err := wt.untrackedFiles()
+	if err != nil {
+		return status, nil
 	}
+
+	untrackedFiles := fileStatusListForUntrackedFiles(untrackedFilesPaths)
+	unstagedFiles = append(unstagedFiles, untrackedFiles...)
+
+	stagedFiles, err := wt.fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true, IsStaged: true})
+	if err != nil {
+		return status, err
+	}
+
+	status = newStatus(unstagedFiles, stagedFiles)
 	return status, nil
 }
 
+func (wt *Worktree) fileStatusListFromDiff(opt DiffOption) (FileStatusList, error) {
+	diff, err := wt.Diff(opt)
+	if err != nil {
+		return nil, err
+	}
+	return fileStatusListFromDiffString(diff)
+}
+
 func (wt *Worktree) StageFile(path string) error {
-	_, err := wt.wt.Add(path)
-	return err
+	cmd := exec.Command("git", "add", path)
+	return cmd.Run()
 }
 
 func (wt *Worktree) UnstageFile(path string) error {
@@ -63,24 +54,51 @@ func (wt *Worktree) UnstageFile(path string) error {
 	return cmd.Run()
 }
 
+func (wt *Worktree) untrackedFiles() ([]string, error) {
+	cmd := exec.Command("git", "ls-files", "--others", "--exclude-standard")
+	out, err := cmd.Output()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, line := range strings.Split(string(out), "\n") {
+		if len(line) == 0 {
+			continue
+		}
+		files = append(files, line)
+	}
+	return files, nil
+
+}
+
 type DiffOption struct {
-	FilePath string
-	IsStaged bool
+	FilePath         string
+	IsStaged         bool
+	IsNameStatusOnly bool
 }
 
 func (wt *Worktree) Diff(opt DiffOption) (string, error) {
-	var (
-		cmd *exec.Cmd
-		err error
-		out []byte
-	)
+	cmd := newDiffCmd(opt)
+	out, err := cmd.Output()
+	return string(out), err
+}
+
+func newDiffCmd(opt DiffOption) exec.Cmd {
+	args := []string{"diff"}
 
 	if opt.IsStaged {
-		cmd = exec.Command("git", "diff", "--staged", opt.FilePath)
-	} else {
-		cmd = exec.Command("git", "diff", opt.FilePath)
+		args = append(args, "--cached")
 	}
 
-	out, err = cmd.Output()
-	return string(out), err
+	if opt.IsNameStatusOnly {
+		args = append(args, "--name-status")
+	}
+
+	if len(opt.FilePath) > 0 {
+		args = append(args, opt.FilePath)
+	}
+
+	return *exec.Command("git", args...)
 }

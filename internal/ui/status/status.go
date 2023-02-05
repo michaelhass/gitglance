@@ -117,7 +117,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			section.diffErr = msg.err
 			m.sections[diffSection] = m.sections[diffSection].SetContent(section)
 		}
-
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "tab":
