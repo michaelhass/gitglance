@@ -70,6 +70,31 @@ func (s Code) IsValid() bool {
 	}
 }
 
+func workTreeStatus() (WorkTreeStatus, error) {
+	var workTreeStatus WorkTreeStatus
+
+	unstagedFiles, err := fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true})
+	if err != nil {
+		return workTreeStatus, err
+	}
+
+	untrackedFilesPaths, err := untrackedFiles()
+	if err != nil {
+		return workTreeStatus, nil
+	}
+
+	untrackedFiles := fileStatusListForUntrackedFiles(untrackedFilesPaths)
+	unstagedFiles = append(unstagedFiles, untrackedFiles...)
+
+	stagedFiles, err := fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true, IsStaged: true})
+	if err != nil {
+		return workTreeStatus, err
+	}
+
+	workTreeStatus = NewWorkTreeStatus(unstagedFiles, stagedFiles)
+	return workTreeStatus, nil
+}
+
 func fileStatusListFromDiff(opt DiffOption) (FileStatusList, error) {
 	diff, err := Diff(opt)
 	if err != nil {

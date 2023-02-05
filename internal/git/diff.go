@@ -25,9 +25,3 @@ func newDiffCmd(opt DiffOption) exec.Cmd {
 
 	return *exec.Command("git", args...)
 }
-
-func Diff(opt DiffOption) (string, error) {
-	cmd := newDiffCmd(opt)
-	out, err := cmd.Output()
-	return string(out), err
-}
