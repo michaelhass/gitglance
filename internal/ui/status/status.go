@@ -1,6 +1,7 @@
 package status
 
 import (
+	"errors"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,21 @@ const (
 	diffSection
 	lastSection section = diffSection
 )
+
+type initializedMsg struct {
+	statusMsg statusUpdateMsg
+	diffMsg   loadedDiffMsg
+}
+
+type statusUpdateMsg struct {
+	err            error
+	workTreeStatus git.WorkTreeStatus
+}
+
+type loadedDiffMsg struct {
+	err  error
+	diff string
+}
 
 type Model struct {
 	workTreeStatus git.WorkTreeStatus
@@ -93,40 +109,48 @@ func New() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return load()
+	return initialize()
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
+	case initializedMsg:
+		var model = m
+		model, scmd := model.handleStatusUpdateMsg(msg.statusMsg)
+		model, dcmd := model.handleLoadedDiffMsg(msg.diffMsg)
+		m = model
+		cmds = append(cmds, scmd, dcmd)
 	case statusUpdateMsg:
-		m.workTreeStatus = msg.workTreeStatus
-		m.statusErr = msg.err
-		if section, ok := m.sections[unstagedSection].Content().(FileList); ok {
-			section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Unstaged))
-			m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
-		}
-		if section, ok := m.sections[stagedSection].Content().(FileList); ok {
-			section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Staged))
-			m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
-		}
+		model, cmd := m.handleStatusUpdateMsg(msg)
+		m = model
+		cmds = append(cmds, cmd)
 	case loadedDiffMsg:
-		if section, ok := m.sections[diffSection].Content().(Mock); ok {
-			section.diff = msg.diff
-			section.diffErr = msg.err
-			m.sections[diffSection] = m.sections[diffSection].SetContent(section)
-		}
+		model, cmd := m.handleLoadedDiffMsg(msg)
+		m = model
+		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "tab":
+		switch msg.Type {
+		case tea.KeyTab:
 			if m.focusedSection == lastSection {
 				m.focusedSection = 0
 			} else {
 				m.focusedSection += 1
 			}
+
+			fileList, ok := m.sections[m.focusedSection].Content().(FileList)
+			if !ok {
+				break
+			}
+
+			item, err := fileList.FocusedItem()
+			if err != nil {
+				break
+			}
+			cmds = append(cmds, diff(git.DiffOption{FilePath: item.path}))
 		}
 	}
-
-	var cmds []tea.Cmd
 
 	for i, section := range m.sections {
 		section = section.SetIsFocused(i == int(m.focusedSection))
@@ -136,6 +160,31 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
+	m.workTreeStatus = msg.workTreeStatus
+	m.statusErr = msg.err
+	if section, ok := m.sections[unstagedSection].Content().(FileList); ok {
+		section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Unstaged))
+		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
+	}
+	if section, ok := m.sections[stagedSection].Content().(FileList); ok {
+		section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Staged))
+		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
+	}
+	return m, nil
+}
+
+func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
+	section, ok := m.sections[diffSection].Content().(Mock)
+	if !ok {
+		return m, nil
+	}
+	section.diff = msg.diff
+	section.diffErr = msg.err
+	m.sections[diffSection] = m.sections[diffSection].SetContent(section)
+	return m, nil
 }
 
 func (m Model) View() string {
@@ -155,7 +204,7 @@ func (m Model) View() string {
 func (m Model) SetSize(width, height int) Model {
 	filesWidth := width / 2
 	filesHeight := height / 2
-	// Multiply instead of using 'width'.
+	// Multiply instead of using 'width'.q
 	// Avoids different sizes when width is unenven.
 	diffWidth := filesWidth * 2
 	diffHeight := filesHeight
@@ -180,21 +229,34 @@ func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 
 // Cmd
 
-func load() func() tea.Msg {
+func initialize() func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			msg            statusUpdateMsg
+			msg            initializedMsg
 			workTreeStatus git.WorkTreeStatus
+			unstagedFiles  git.FileStatusList
 			err            error
 		)
 
 		workTreeStatus, err = git.Status()
 		if err != nil {
-			msg.err = err
+			msg.statusMsg.err = err
 			return msg
 		}
-		msg.workTreeStatus = workTreeStatus
+		msg.statusMsg.workTreeStatus = workTreeStatus
 
+		unstagedFiles = msg.statusMsg.workTreeStatus.Unstaged
+		if len(unstagedFiles) == 0 {
+			return msg
+		}
+
+		diffMsg, ok := diff(git.DiffOption{FilePath: unstagedFiles[0].Path})().(loadedDiffMsg)
+		if !ok {
+			diffMsg.err = errors.New("unable to load diff")
+			return msg
+		}
+
+		msg.diffMsg = diffMsg
 		return msg
 	}
 }
@@ -266,16 +328,4 @@ func diff(opt git.DiffOption) func() tea.Msg {
 
 		return msg
 	}
-}
-
-// Msg
-
-type statusUpdateMsg struct {
-	err            error
-	workTreeStatus git.WorkTreeStatus
-}
-
-type loadedDiffMsg struct {
-	err  error
-	diff string
 }

@@ -1,6 +1,7 @@
 package status
 
 import (
+	"errors"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -54,37 +55,47 @@ func (l FileList) Init() tea.Cmd {
 }
 
 func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
-	if !l.isFocused {
+	if !l.isFocused || len(l.items) == 0 {
 		return l, nil
 	}
+
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyUp:
-			if l.cursor > 0 {
-				l.cursor -= 1
-				cmd := l.itemHandler(focusItemMsg{item: l.items[l.cursor]})
-				cmds = append(cmds, cmd)
+			if l.cursor == 0 {
+				l.pageStartIdx = l.nextPageStartIdx(-1)
+				l.visibleItems = l.updateVisibleItems()
 				break
 			}
-			l.pageStartIdx = l.nextPageStartIdx(-1)
-			l.visibleItems = l.updateVisibleItems()
+			l.cursor -= 1
+			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+			cmds = append(cmds, cmd)
+
 		case tea.KeyDown:
-			if l.cursor < len(l.visibleItems)-1 {
-				l.cursor += 1
-				cmd := l.itemHandler(focusItemMsg{item: l.items[l.cursor]})
-				cmds = append(cmds, cmd)
+			if l.cursor >= len(l.visibleItems)-1 {
+				l.pageStartIdx = l.nextPageStartIdx(1)
+				l.visibleItems = l.updateVisibleItems()
 				break
 			}
-			l.pageStartIdx = l.nextPageStartIdx(1)
-			l.visibleItems = l.updateVisibleItems()
+			l.cursor += 1
+			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+			cmds = append(cmds, cmd)
+
 		case tea.KeyEnter:
 			item := l.visibleItems[l.cursor]
 			cmd := l.itemHandler(selectItemMsg{item: item})
 			cmds = append(cmds, cmd)
 		}
+
+	default:
+		if len(l.visibleItems) == 0 || l.cursor < len(l.visibleItems) {
+			break
+		}
+		l.cursor = len(l.visibleItems) - 1
 	}
+
 	return l, tea.Batch(cmds...)
 }
 
@@ -135,6 +146,14 @@ func (l FileList) SetFileListItems(items []FileListItem) FileList {
 	l.items = items
 	l.visibleItems = l.updateVisibleItems()
 	return l
+}
+
+func (l FileList) FocusedItem() (FileListItem, error) {
+	var item FileListItem
+	if len(l.visibleItems) == 0 {
+		return item, errors.New("no items")
+	}
+	return l.visibleItems[l.cursor], nil
 }
 
 func (l FileList) updateVisibleItems() []FileListItem {
