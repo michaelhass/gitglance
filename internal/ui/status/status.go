@@ -153,10 +153,11 @@ func (m Model) View() string {
 }
 
 func (m Model) SetSize(width, height int) Model {
-	filesWidth := (width / 2)
-	filesHeight := (height / 2)
-
-	diffWidth := width
+	filesWidth := width / 2
+	filesHeight := height / 2
+	// Multiply instead of using 'width'.
+	// Avoids different sizes when width is unenven.
+	diffWidth := filesWidth * 2
 	diffHeight := filesHeight
 
 	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
