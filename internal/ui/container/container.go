@@ -6,12 +6,19 @@ import (
 	styles "github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
-var (
-	inactiveTitleStyle = styles.InactiveTitleStyle.Copy().Height(1)
-	focusTitleStyle    = styles.TitleStyle.Copy().Height(1)
+const (
+	titleHeight                  = 1
+	titleToContentVerticalMargin = 1
+	paddingLeft                  = 1
+	borderWidth                  = 1
+)
 
-	inactiveBorderStyle = styles.InactiveBorderStyle.Copy().PaddingLeft(1)
-	focusBorderStyle    = styles.FocusBorderStyle.Copy().PaddingLeft(1)
+var (
+	inactiveTitleStyle = styles.InactiveTitleStyle.Copy().Height(titleHeight)
+	focusTitleStyle    = styles.TitleStyle.Copy().Height(titleHeight)
+
+	inactiveBorderStyle = styles.InactiveBorderStyle.Copy().PaddingLeft(paddingLeft)
+	focusBorderStyle    = styles.FocusBorderStyle.Copy().PaddingLeft(paddingLeft)
 )
 
 type Content interface {
@@ -79,10 +86,12 @@ func (m Model) SetIsFocused(isFocused bool) Model {
 }
 
 func (m Model) SetSize(width, height int) Model {
-	// Substract borders + padding
-	m.width, m.height = width-3, height-2
-	// Substract title + spacing
-	m.content = m.content.SetSize(m.width, m.height-2)
+	combinedBorderWidth := borderWidth * 2
+	m.width = width - (combinedBorderWidth + paddingLeft)
+	m.height = height - combinedBorderWidth
+
+	contentHeight := m.height - (titleHeight + titleToContentVerticalMargin)
+	m.content = m.content.SetSize(m.width, contentHeight)
 	return m
 }
 
