@@ -204,8 +204,8 @@ func (m Model) View() string {
 func (m Model) SetSize(width, height int) Model {
 	filesWidth := width / 2
 	filesHeight := height / 2
-	// Multiply instead of using 'width'.q
-	// Avoids different sizes when width is unenven.
+	// Multiply instead of using 'width'
+	// Avoids different sizes when width is uneven.
 	diffWidth := filesWidth * 2
 	diffHeight := filesHeight
 

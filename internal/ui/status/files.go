@@ -16,6 +16,14 @@ var (
 	inactiveItemStyle = styles.InactiveTextStyle.Copy()
 )
 
+type focusItemMsg struct {
+	item FileListItem
+}
+
+type selectItemMsg struct {
+	item FileListItem
+}
+
 type FileListItem struct {
 	path, accessory string
 }
@@ -35,6 +43,7 @@ func NewFileListItem(path, accessory string) FileListItem {
 }
 
 type ItemHandler func(msg tea.Msg) tea.Cmd
+
 type FileList struct {
 	items        []FileListItem
 	visibleItems []FileListItem
@@ -179,14 +188,4 @@ func min(i, j int) int {
 		return i
 	}
 	return j
-}
-
-// msg
-
-type focusItemMsg struct {
-	item FileListItem
-}
-
-type selectItemMsg struct {
-	item FileListItem
 }
