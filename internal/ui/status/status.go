@@ -103,7 +103,7 @@ func New() Model {
 		sections: [3]container.Model{
 			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
 			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
-			container.NewModel(Mock{title: "Diff"}),
+			container.NewModel(NewDiff()),
 		},
 	}
 }
@@ -127,9 +127,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = model
 		cmds = append(cmds, cmd)
 	case loadedDiffMsg:
+<<<<<<< Updated upstream
 		model, cmd := m.handleLoadedDiffMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
+=======
+		if section, ok := m.sections[diffSection].Content().(Diff); ok {
+			section = section.SetContent(msg.diff, msg.err)
+			m.sections[diffSection] = m.sections[diffSection].SetContent(section)
+		}
+>>>>>>> Stashed changes
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyTab:
