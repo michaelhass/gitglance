@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/container"
@@ -10,8 +11,10 @@ import (
 
 type Diff struct {
 	viewport  viewport.Model
+	spinner   spinner.Model
 	rawDiff   string
 	err       error
+	isReady   bool
 	isFocused bool
 }
 
@@ -25,14 +28,18 @@ func (d Diff) Init() tea.Cmd {
 
 func (d Diff) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	if !d.isFocused {
-		return d, nil
+		return d, d.spinner.Tick
 	}
+
 	var cmd tea.Cmd
 	d.viewport, cmd = d.viewport.Update(msg)
 	return d, cmd
 }
 
 func (d Diff) View() string {
+	if !d.isReady {
+		return d.spinner.View()
+	}
 	return d.viewport.View()
 }
 
@@ -43,6 +50,7 @@ func (d Diff) Title() string {
 func (d Diff) SetSize(width, height int) container.Content {
 	d.viewport = viewport.New(width, height)
 	d.viewport.SetContent(d.rawDiff)
+	//d.isReady = true
 	return d
 }
 

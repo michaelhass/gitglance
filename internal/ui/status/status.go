@@ -41,41 +41,6 @@ type Model struct {
 	lastFocusedFileSection section
 }
 
-func (m Mock) Title() string {
-	return m.title
-}
-
-func (m Mock) SetIsFocused(isFocused bool) container.Content {
-	return m
-}
-
-func (m Mock) SetSize(width int, height int) container.Content {
-	m.width, m.height = width, height
-	return m
-}
-
-func (m Mock) Init() tea.Cmd {
-	return nil
-}
-
-func (m Mock) Update(msg tea.Msg) (container.Content, tea.Cmd) {
-	return m, nil // TODO: Implement
-}
-
-func (m Mock) View() string {
-	if m.diffErr != nil {
-		return fmt.Sprint(m.diffErr)
-	}
-	return lipgloss.NewStyle().MaxWidth(m.width).MaxHeight(m.height).Render(m.diff)
-}
-
-type Mock struct {
-	title         string
-	diffErr       error
-	diff          string
-	width, height int
-}
-
 func New() Model {
 	isUntracked := func(item FileListItem) bool {
 		return item.fileStatus.Code == git.Untracked
