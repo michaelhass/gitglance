@@ -6,6 +6,13 @@ type DiffOption struct {
 	FilePath         string
 	IsStaged         bool
 	IsNameStatusOnly bool
+	IsUntracked      bool
+}
+
+var untrackedFileDiffArgs = [3]string{
+	"--no-index",
+	"--",
+	"/dev/null",
 }
 
 func newDiffCmd(opt DiffOption) exec.Cmd {
@@ -17,6 +24,10 @@ func newDiffCmd(opt DiffOption) exec.Cmd {
 
 	if opt.IsNameStatusOnly {
 		args = append(args, "--name-status")
+	}
+
+	if opt.IsUntracked {
+		args = append(args, untrackedFileDiffArgs[:3]...)
 	}
 
 	if len(opt.FilePath) > 0 {

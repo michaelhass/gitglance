@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
@@ -25,7 +26,9 @@ type selectItemMsg struct {
 }
 
 type FileListItem struct {
-	path, accessory string
+	fileStatus git.FileStatus
+	path       string
+	accessory  string
 }
 
 func (item FileListItem) String() string {
@@ -35,10 +38,21 @@ func (item FileListItem) String() string {
 	return fmt.Sprintf("%s %s", item.accessory, item.path)
 }
 
-func NewFileListItem(path, accessory string) FileListItem {
+func NewFileListItem(fileStatus git.FileStatus) FileListItem {
+	var (
+		path, accessory string
+	)
+	path = fileStatus.Path
+	if len(fileStatus.Extra) > 0 {
+		path = fmt.Sprintf("%s → %s", path, fileStatus.Extra)
+	}
+
+	accessory = fmt.Sprintf("[%s]", string(fileStatus.Code))
+
 	return FileListItem{
-		path:      path,
-		accessory: accessory,
+		fileStatus: fileStatus,
+		path:       path,
+		accessory:  accessory,
 	}
 }
 

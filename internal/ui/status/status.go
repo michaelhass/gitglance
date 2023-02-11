@@ -16,7 +16,6 @@ const (
 	unstagedSection section = iota
 	stagedSection
 	diffSection
-	lastSection section = diffSection
 )
 
 type initializedMsg struct {
@@ -35,10 +34,11 @@ type loadedDiffMsg struct {
 }
 
 type Model struct {
-	workTreeStatus git.WorkTreeStatus
-	statusErr      error
-	sections       [lastSection + 1]container.Model
-	focusedSection section
+	workTreeStatus         git.WorkTreeStatus
+	statusErr              error
+	sections               [3]container.Model
+	focusedSection         section
+	lastFocusedFileSection section
 }
 
 func (m Mock) Title() string {
@@ -77,12 +77,21 @@ type Mock struct {
 }
 
 func New() Model {
+	isUntracked := func(item FileListItem) bool {
+		return item.fileStatus.Code == git.Untracked
+	}
+
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case selectItemMsg:
 			return stageFile(msg.item.path)
 		case focusItemMsg:
-			return diff(git.DiffOption{FilePath: msg.item.path})
+			return diff(
+				git.DiffOption{
+					FilePath:    msg.item.path,
+					IsUntracked: isUntracked(msg.item),
+				},
+			)
 		default:
 			return nil
 		}
@@ -93,7 +102,12 @@ func New() Model {
 		case selectItemMsg:
 			return unstageFile(msg.item.path)
 		case focusItemMsg:
-			return diff(git.DiffOption{FilePath: msg.item.path, IsStaged: true})
+			return diff(
+				git.DiffOption{
+					FilePath:    msg.item.path,
+					IsStaged:    true,
+					IsUntracked: isUntracked(msg.item),
+				})
 		default:
 			return nil
 		}
@@ -127,35 +141,32 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = model
 		cmds = append(cmds, cmd)
 	case loadedDiffMsg:
-<<<<<<< Updated upstream
 		model, cmd := m.handleLoadedDiffMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
-=======
-		if section, ok := m.sections[diffSection].Content().(Diff); ok {
-			section = section.SetContent(msg.diff, msg.err)
-			m.sections[diffSection] = m.sections[diffSection].SetContent(section)
-		}
->>>>>>> Stashed changes
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyTab:
-			if m.focusedSection == lastSection {
-				m.focusedSection = 0
+			if m.focusedSection == diffSection {
+				m.focusedSection = m.lastFocusedFileSection
+			} else if m.focusedSection == unstagedSection {
+				m.focusedSection = stagedSection
 			} else {
-				m.focusedSection += 1
+				m.focusedSection = unstagedSection
 			}
 
-			fileList, ok := m.sections[m.focusedSection].Content().(FileList)
-			if !ok {
-				break
-			}
+			m.lastFocusedFileSection = m.focusedSection
+			model, cmd := m.focusFileSection(m.focusedSection)
+			m = model
+			cmds = append(cmds, cmd)
 
-			item, err := fileList.FocusedItem()
-			if err != nil {
-				break
-			}
-			cmds = append(cmds, diff(git.DiffOption{FilePath: item.path}))
+		case tea.KeyCtrlDown:
+			m.focusedSection = diffSection
+		case tea.KeyCtrlUp:
+			m.focusedSection = m.lastFocusedFileSection
+			model, cmd := m.focusFileSection(m.focusedSection)
+			m = model
+			cmds = append(cmds, cmd)
 		}
 	}
 
@@ -184,14 +195,30 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
-	section, ok := m.sections[diffSection].Content().(Mock)
+	section, ok := m.sections[diffSection].Content().(Diff)
 	if !ok {
 		return m, nil
 	}
-	section.diff = msg.diff
-	section.diffErr = msg.err
+	section = section.SetContent(msg.diff, msg.err)
 	m.sections[diffSection] = m.sections[diffSection].SetContent(section)
 	return m, nil
+}
+
+func (m Model) focusFileSection(section section) (Model, tea.Cmd) {
+	fileList, ok := m.sections[m.focusedSection].Content().(FileList)
+	if !ok {
+		return m, nil
+	}
+
+	item, err := fileList.FocusedItem()
+	if err != nil {
+		return m, nil
+	}
+
+	isStaged := m.focusedSection == stagedSection
+	isUntracked := item.fileStatus.Code == git.Untracked
+	cmd := diff(git.DiffOption{FilePath: item.path, IsStaged: isStaged, IsUntracked: isUntracked})
+	return m, cmd
 }
 
 func (m Model) View() string {
@@ -225,11 +252,7 @@ func (m Model) SetSize(width, height int) Model {
 func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 	items := make([]FileListItem, len(fileStatusList))
 	for i, fs := range fileStatusList {
-		path := fs.Path
-		if len(fs.Extra) > 0 {
-			path = fmt.Sprintf("%s → %s", path, fs.Extra)
-		}
-		items[i] = NewFileListItem(path, fmt.Sprintf("[%s]", string(fs.Code)))
+		items[i] = NewFileListItem(fs)
 	}
 	return items
 }
@@ -242,6 +265,7 @@ func initialize() func() tea.Msg {
 			msg            initializedMsg
 			workTreeStatus git.WorkTreeStatus
 			unstagedFiles  git.FileStatusList
+			isUntracked    bool
 			err            error
 		)
 
@@ -257,7 +281,13 @@ func initialize() func() tea.Msg {
 			return msg
 		}
 
-		diffMsg, ok := diff(git.DiffOption{FilePath: unstagedFiles[0].Path})().(loadedDiffMsg)
+		isUntracked = unstagedFiles[0].Code == git.Untracked
+		diffMsg, ok := diff(
+			git.DiffOption{
+				FilePath:    unstagedFiles[0].Path,
+				IsUntracked: isUntracked,
+			},
+		)().(loadedDiffMsg)
 		if !ok {
 			diffMsg.err = errors.New("unable to load diff")
 			return msg
