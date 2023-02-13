@@ -24,10 +24,10 @@ var (
 type Content interface {
 	Init() tea.Cmd
 	Update(msg tea.Msg) (Content, tea.Cmd)
+	UpdateFocus(isFocused bool) (Content, tea.Cmd)
 	View() string
 	Title() string
 	SetSize(width, height int) Content
-	SetIsFocused(isFocused bool) Content
 }
 
 type Model struct {
@@ -79,10 +79,15 @@ func (m Model) View() string {
 		Render(lipgloss.JoinVertical(lipgloss.Top, title, "", content))
 }
 
-func (m Model) SetIsFocused(isFocused bool) Model {
+func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
+	var (
+		content Content
+		cmd     tea.Cmd
+	)
 	m.isFocused = isFocused
-	m.content = m.content.SetIsFocused(isFocused)
-	return m
+	content, cmd = m.content.UpdateFocus(isFocused)
+	m.content = content
+	return m, cmd
 }
 
 func (m Model) SetSize(width, height int) Model {

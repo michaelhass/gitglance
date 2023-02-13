@@ -1,6 +1,7 @@
 package status
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
@@ -92,6 +93,11 @@ func (d Diff) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	return d, cmd
 }
 
+func (d Diff) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
+	d.isFocused = isFocused
+	return d, nil
+}
+
 func (d Diff) View() string {
 	if !d.isReady {
 		return ""
@@ -120,11 +126,6 @@ func (d Diff) SetSize(width, height int) container.Content {
 	return d
 }
 
-func (d Diff) SetIsFocused(isFocused bool) container.Content {
-	d.isFocused = isFocused
-	return d
-}
-
 func (d Diff) SetContent(rawDiff string, err error) Diff {
 	d.rawDiff = rawDiff
 	d.err = err
@@ -132,11 +133,11 @@ func (d Diff) SetContent(rawDiff string, err error) Diff {
 	cappedText := CappedText{Limit: d.width}
 	cappedText.SetString(rawDiff)
 
-	// if d.err != nil {
-	// 	d.viewport.SetContent(fmt.Sprint("An error occured:", d.err))
-	// } else {
-	d.viewport.SetContent(cappedText.String())
-	// }
+	if d.err != nil {
+		d.viewport.SetContent(fmt.Sprint("An error occured:", d.err))
+	} else {
+		d.viewport.SetContent(cappedText.String())
+	}
 
 	return d
 }

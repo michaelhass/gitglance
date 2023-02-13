@@ -122,6 +122,15 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	return l, tea.Batch(cmds...)
 }
 
+func (l FileList) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
+	var cmd tea.Cmd
+	if isFocused && !l.isFocused && len(l.items) > 0 {
+		cmd = l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+	}
+	l.isFocused = isFocused
+	return l, cmd
+}
+
 func (l FileList) View() string {
 	return l.rendered()
 }
@@ -160,11 +169,6 @@ func (l FileList) SetSize(width, height int) container.Content {
 	return l
 }
 
-func (l FileList) SetIsFocused(isFocused bool) container.Content {
-	l.isFocused = isFocused
-	return l
-}
-
 func (l FileList) SetFileListItems(items []FileListItem) FileList {
 	l.items = items
 	l.visibleItems = l.updateVisibleItems()
@@ -177,6 +181,10 @@ func (l FileList) FocusedItem() (FileListItem, error) {
 		return item, errors.New("no items")
 	}
 	return l.visibleItems[l.cursor], nil
+}
+
+func (l FileList) IsLastIndexFocused() bool {
+	return l.pageStartIdx+l.cursor == len(l.items)-1
 }
 
 func (l FileList) updateVisibleItems() []FileListItem {

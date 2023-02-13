@@ -80,7 +80,7 @@ func New() Model {
 
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(NewFileList("Unstaged long title", unstagedFilesItemHandler)),
+			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
 			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
 			container.NewModel(NewDiff()),
 		},
@@ -114,36 +114,34 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = model
 		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyTab:
-			if m.focusedSection == diffSection {
-				m.focusedSection = m.lastFocusedFileSection
-			} else if m.focusedSection == unstagedSection {
-				m.focusedSection = stagedSection
-			} else {
-				m.focusedSection = unstagedSection
-			}
-
-			m.lastFocusedFileSection = m.focusedSection
-			model, cmd := m.focusFileSection(m.focusedSection)
-			m = model
-			cmds = append(cmds, cmd)
-
-		case tea.KeyCtrlDown:
+		switch msg.String() {
+		case "right":
 			m.focusedSection = diffSection
-		case tea.KeyCtrlUp:
+		case "left":
 			m.focusedSection = m.lastFocusedFileSection
-			model, cmd := m.focusFileSection(m.focusedSection)
-			m = model
-			cmds = append(cmds, cmd)
+		case "u":
+			if m.focusedSection == unstagedSection {
+				break
+			}
+			m.focusedSection = unstagedSection
+			m.lastFocusedFileSection = m.focusedSection
+		case "s":
+			if m.focusedSection == stagedSection {
+				break
+			}
+			m.focusedSection = stagedSection
+			m.lastFocusedFileSection = m.focusedSection
 		}
 	}
 
 	for i, section := range m.sections {
-		section = section.SetIsFocused(i == int(m.focusedSection))
-		updatedSection, cmd := section.Update(msg)
-		m.sections[i] = updatedSection
+		updatedSection, cmd := section.UpdateFocus(i == int(m.focusedSection))
 		cmds = append(cmds, cmd)
+
+		updatedSection, cmd = updatedSection.Update(msg)
+		cmds = append(cmds, cmd)
+
+		m.sections[i] = updatedSection
 	}
 
 	return m, tea.Batch(cmds...)
@@ -173,44 +171,30 @@ func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) focusFileSection(section section) (Model, tea.Cmd) {
-	fileList, ok := m.sections[m.focusedSection].Content().(FileList)
-	if !ok {
-		return m, nil
-	}
-
-	item, err := fileList.FocusedItem()
-	if err != nil {
-		return m, nil
-	}
-
-	isStaged := m.focusedSection == stagedSection
-	isUntracked := item.fileStatus.Code == git.Untracked
-	cmd := diff(git.DiffOption{FilePath: item.path, IsStaged: isStaged, IsUntracked: isUntracked})
-	return m, cmd
-}
-
 func (m Model) View() string {
 	if m.statusErr != nil {
 		return fmt.Sprint(m.statusErr)
 	}
 
-	files := lipgloss.JoinHorizontal(
-		lipgloss.Left,
+	files := lipgloss.JoinVertical(
+		lipgloss.Top,
 		m.sections[unstagedSection].View(),
-		" ",
 		m.sections[stagedSection].View(),
 	)
-	return lipgloss.JoinVertical(lipgloss.Top, files, m.sections[diffSection].View())
+	return lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		files,
+		" ",
+		m.sections[diffSection].View(),
+	)
 }
 
 func (m Model) SetSize(width, height int) Model {
-	filesWidth := width / 2
+	filesWidth := int(float32(width) * 0.4)
 	filesHeight := height / 2
-	// Multiply instead of using 'width'
-	// Avoids different sizes when width is uneven.
-	diffWidth := filesWidth * 2
-	diffHeight := filesHeight
+
+	diffWidth := width - filesWidth - 1
+	diffHeight := filesHeight * 2
 
 	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
 	m.sections[stagedSection] = m.sections[stagedSection].SetSize(filesWidth, filesHeight)
