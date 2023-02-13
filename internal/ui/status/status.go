@@ -80,7 +80,7 @@ func New() Model {
 
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
+			container.NewModel(NewFileList("Unstaged long title", unstagedFilesItemHandler)),
 			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
 			container.NewModel(NewDiff()),
 		},
@@ -88,7 +88,11 @@ func New() Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return initialize()
+	cmds := []tea.Cmd{initializeStatus()}
+	for _, section := range m.sections {
+		cmds = append(cmds, section.Init())
+	}
+	return tea.Batch(cmds...)
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -224,7 +228,7 @@ func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
 
 // Cmd
 
-func initialize() func() tea.Msg {
+func initializeStatus() func() tea.Msg {
 	return func() tea.Msg {
 		var (
 			msg            initializedMsg

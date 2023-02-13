@@ -6,7 +6,8 @@ import (
 )
 
 type Model struct {
-	status status.Model
+	status  status.Model
+	isReady bool
 }
 
 func New() Model {
@@ -27,6 +28,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.WindowSizeMsg:
 		m.status = m.status.SetSize(msg.Width, msg.Height)
+		m.isReady = true
 	}
 
 	var (
@@ -43,5 +45,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+	if !m.isReady {
+		return "loading"
+	}
 	return m.status.View()
 }
