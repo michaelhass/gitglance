@@ -6,77 +6,29 @@ import (
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/text"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
-type CappedText struct {
-	lines []CappedLine
-	Limit int
-}
-
-func (ct *CappedText) SetString(value string) {
-	var lines = strings.Split(value, "\n")
-	var cappedLines []CappedLine
-	for _, line := range lines {
-		cappedLine := newCappedLine(ct.Limit)
-		cappedLine.setString(line)
-		cappedLines = append(cappedLines, *cappedLine)
-	}
-	ct.lines = cappedLines
-}
-
-func (ct *CappedText) String() string {
-	var builder strings.Builder
-	for _, line := range ct.lines {
-		builder.WriteString(line.String())
-		builder.WriteString("\n")
-	}
-	return builder.String()
-}
-
-type CappedLine struct {
-	value string
-	Limit int
-}
-
-func newCappedLine(limit int) *CappedLine {
-	return &CappedLine{Limit: limit}
-}
-
-func (cl *CappedLine) setString(line string) {
-	// var builder strings.Builder
-	// for i, r := range line {
-	// 	//builder.WriteString(fmt.Sprint(i))
-	// 	if i == 0 || i%cl.Limit != 0 {
-	// 		builder.WriteRune(r)
-	// 		// continue
-	// 	}
-	// 	builder.WriteString(fmt.Sprintf("%d :: %d \n", i, cl.Limit))
-	// }
-	runes := []rune(line)
-	if cl.Limit < len(runes)-1 {
-		runes = runes[:cl.Limit-1]
-	}
-
-	cl.value = string(runes)
-}
-
-func (cl *CappedLine) String() string {
-	return cl.value
-}
+var (
+	textStyle        = styles.TextSyle.Copy()
+	addedTextStyle   = styles.AddedTextStyle.Copy()
+	removedTextStyle = styles.RemovedTextStyle.Copy()
+)
 
 type Diff struct {
-	viewport   viewport.Model
-	cappedText CappedText
-	rawDiff    string
-	err        error
-	width      int
-	isReady    bool
-	isFocused  bool
+	viewport    viewport.Model
+	textBuilder *text.Builder
+	rawDiff     string
+	err         error
+	width       int
+	isReady     bool
+	isFocused   bool
 }
 
 func NewDiff() Diff {
-	return Diff{}
+	return Diff{textBuilder: text.NewBuilder()}
 }
 
 func (d Diff) Init() tea.Cmd {
@@ -112,31 +64,59 @@ func (d Diff) Title() string {
 
 func (d Diff) SetSize(width, height int) container.Content {
 	d.width = width
+
 	if !d.isReady {
 		d.isReady = true
 		d.viewport = viewport.New(width, height)
-		//	d.writer = wordwrap.NewWriter(width)
-		d = d.SetContent(d.rawDiff, d.err)
-		//d.viewport.HighPerformanceRendering = true
 	} else {
 		d.viewport.Width = width
 		d.viewport.Height = height
-		d = d.SetContent(d.rawDiff, d.err)
 	}
+
+	d.textBuilder.SetLineLength(width - 5)
+	d = d.SetContent(d.rawDiff, d.err)
 	return d
 }
 
 func (d Diff) SetContent(rawDiff string, err error) Diff {
-	d.rawDiff = rawDiff
-	d.err = err
 
-	cappedText := CappedText{Limit: d.width}
-	cappedText.SetString(rawDiff)
+	rawDiff = strings.ReplaceAll(rawDiff, "\r", "\n")
+	rawDiff = strings.ReplaceAll(rawDiff, "\t", "    ")
+
+	d.err = err
+	d.rawDiff = rawDiff
+
+	if !d.isReady {
+		return d
+	}
+
+	var (
+		rawLines = strings.Split(rawDiff, "\n")
+		lines    = make([]text.Wrapper, len(rawLines))
+	)
+
+	for i, rawLine := range rawLines {
+		var wordWrapper = &text.WordWrapper{}
+		wordWrapper.WriteString(rawLine)
+
+		if strings.HasPrefix(rawLine, "+") {
+			wordWrapper.SetRenderer(addedTextStyle)
+		} else if strings.HasPrefix(rawLine, "-") {
+			wordWrapper.SetRenderer(removedTextStyle)
+		} else {
+			wordWrapper.SetRenderer(textStyle)
+		}
+
+		lines[i] = wordWrapper
+	}
+
+	d.textBuilder.WriteLines(lines)
 
 	if d.err != nil {
 		d.viewport.SetContent(fmt.Sprint("An error occured:", d.err))
 	} else {
-		d.viewport.SetContent(cappedText.String())
+
+		d.viewport.SetContent(d.textBuilder.String())
 	}
 
 	return d

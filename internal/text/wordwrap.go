@@ -5,10 +5,15 @@ import "strings"
 type WordWrapper struct {
 	lineLength int
 	words      []string
+	renderer   Renderer
 }
 
 func NewWordWrapper(lineLength int) *WordWrapper {
 	return &WordWrapper{lineLength: lineLength}
+}
+
+func (ww *WordWrapper) SetRenderer(renderer Renderer) {
+	ww.renderer = renderer
 }
 
 func (ww *WordWrapper) SetLineLength(lineLength int) {
@@ -42,7 +47,12 @@ func (ww *WordWrapper) String() string {
 			lineLength = ww.writeWord(&builder, runes, lineLength)
 		}
 	}
-	return builder.String()
+
+	if ww.renderer == nil {
+		return builder.String()
+	}
+
+	return ww.renderer.Render(builder.String())
 }
 
 func (ww *WordWrapper) writeWord(builder *strings.Builder, word []rune, lineLength int) int {

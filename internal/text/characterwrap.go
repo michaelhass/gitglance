@@ -5,10 +5,15 @@ import "strings"
 type CharacterWrapper struct {
 	lineLength int
 	rawValue   string
+	renderer   Renderer
 }
 
 func NewCharacterWrapper(lineLength int) *CharacterWrapper {
 	return &CharacterWrapper{lineLength: lineLength}
+}
+
+func (cw *CharacterWrapper) SetRenderer(renderer Renderer) {
+	cw.renderer = renderer
 }
 
 func (cw *CharacterWrapper) SetLineLength(lineLength int) {
@@ -44,7 +49,11 @@ func (cw *CharacterWrapper) String() string {
 		}
 		builder.WriteRune(r)
 	}
-	return builder.String()
+
+	if cw.renderer == nil {
+		return builder.String()
+	}
+	return cw.renderer.Render(builder.String())
 }
 
 func (cw *CharacterWrapper) Reset() {
