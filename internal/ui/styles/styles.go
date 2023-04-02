@@ -25,4 +25,6 @@ var (
 	InactiveBorderStyle = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).BorderForeground(inactiveBorderColor)
 	FocusBorderColor    = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
 	FocusBorderStyle    = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).BorderForeground(FocusBorderColor)
+
+	ShortHelpStyle = lipgloss.NewStyle().Padding(0, 1, 0, 1)
 )

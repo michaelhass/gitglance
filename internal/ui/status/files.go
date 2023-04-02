@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
@@ -16,14 +18,6 @@ var (
 	focusedItemStyle  = styles.FocusTextStyle.Copy()
 	inactiveItemStyle = styles.InactiveTextStyle.Copy()
 )
-
-type focusItemMsg struct {
-	item FileListItem
-}
-
-type selectItemMsg struct {
-	item FileListItem
-}
 
 type FileListItem struct {
 	fileStatus git.FileStatus
@@ -42,6 +36,7 @@ func NewFileListItem(fileStatus git.FileStatus) FileListItem {
 	var (
 		path, accessory string
 	)
+
 	path = fileStatus.Path
 	if len(fileStatus.Extra) > 0 {
 		path = fmt.Sprintf("%s → %s", path, fileStatus.Extra)
@@ -62,6 +57,7 @@ type FileList struct {
 	items        []FileListItem
 	visibleItems []FileListItem
 	itemHandler  ItemHandler
+	keys         filesKeyMap
 	title        string
 	width        int
 	height       int
@@ -70,8 +66,8 @@ type FileList struct {
 	isFocused    bool
 }
 
-func NewFileList(title string, itemHandler ItemHandler) FileList {
-	return FileList{title: title, itemHandler: itemHandler}
+func NewFileList(title string, itemHandler ItemHandler, keys filesKeyMap) FileList {
+	return FileList{title: title, itemHandler: itemHandler, keys: keys}
 }
 func (l FileList) Init() tea.Cmd {
 	return nil
@@ -85,8 +81,8 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyUp:
+		switch {
+		case key.Matches(msg, l.keys.up):
 			if l.cursor == 0 {
 				l.pageStartIdx = l.nextPageStartIdx(-1)
 				l.visibleItems = l.updateVisibleItems()
@@ -95,8 +91,7 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 			l.cursor -= 1
 			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
 			cmds = append(cmds, cmd)
-
-		case tea.KeyDown:
+		case key.Matches(msg, l.keys.down):
 			if l.cursor >= len(l.visibleItems)-1 {
 				l.pageStartIdx = l.nextPageStartIdx(1)
 				l.visibleItems = l.updateVisibleItems()
@@ -105,14 +100,13 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 			l.cursor += 1
 			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
 			cmds = append(cmds, cmd)
-
-		case tea.KeyEnter:
+		case key.Matches(msg, l.keys.enter):
 			item := l.visibleItems[l.cursor]
 			cmd := l.itemHandler(selectItemMsg{item: item})
 			cmds = append(cmds, cmd)
 		}
-
 	default:
+		// Check if the curser is out of bounds due to content change.
 		if len(l.visibleItems) == 0 || l.cursor < len(l.visibleItems) {
 			break
 		}
@@ -167,6 +161,10 @@ func (l FileList) SetSize(width, height int) container.Content {
 	l.height = height
 	l.visibleItems = l.updateVisibleItems()
 	return l
+}
+
+func (l FileList) KeyMap() help.KeyMap {
+	return l.keys
 }
 
 func (l FileList) SetFileListItems(items []FileListItem) FileList {

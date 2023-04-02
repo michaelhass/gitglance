@@ -1,6 +1,7 @@
 package container
 
 import (
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	styles "github.com/michaelhass/gitglance/internal/ui/styles"
@@ -28,6 +29,7 @@ type Content interface {
 	View() string
 	Title() string
 	SetSize(width, height int) Content
+	KeyMap() help.KeyMap
 }
 
 type Model struct {

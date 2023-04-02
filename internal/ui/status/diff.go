@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/text"
@@ -20,6 +21,7 @@ var (
 type Diff struct {
 	viewport    viewport.Model
 	textBuilder *text.Builder
+	keys        diffKeyMap
 	err         error
 	width       int
 	isReady     bool
@@ -40,7 +42,7 @@ func NewDiff() Diff {
 	textBuilder := text.NewBuilder()
 	textBuilder.SetLineRenderer(lineRenderer)
 
-	return Diff{textBuilder: textBuilder}
+	return Diff{textBuilder: textBuilder, keys: newDiffKeyMap()}
 }
 
 func (d Diff) Init() tea.Cmd {
@@ -90,6 +92,10 @@ func (d Diff) SetSize(width, height int) container.Content {
 	d.textBuilder.SetLineLength(width - extraPadding)
 	d = d.SetContent(d.textBuilder.RawString(), d.err)
 	return d
+}
+
+func (d Diff) KeyMap() help.KeyMap {
+	return d.keys
 }
 
 func (d Diff) SetContent(rawDiff string, err error) Diff {

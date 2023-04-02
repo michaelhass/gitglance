@@ -3,10 +3,13 @@ package status
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
 type section byte
@@ -21,12 +24,24 @@ func (s section) isFileSection() bool {
 	return s == stagedSection || s == unstagedSection
 }
 
+const (
+	filesWidthFactor         float32 = 0.4
+	sectionsHorizontalMargin int     = 1
+	helpHeight               int     = 1
+)
+
+var (
+	helpStyle = styles.ShortHelpStyle.Copy()
+)
+
 type Model struct {
-	workTreeStatus     git.WorkTreeStatus
-	statusErr          error
-	sections           [3]container.Model
-	focusedSection     section
-	lastFocusedSection section
+	workTreeStatus         git.WorkTreeStatus
+	sections               [3]container.Model
+	help                   help.Model
+	keys                   statusKeyMap
+	statusErr              error
+	focusedSection         section
+	lastFocusedFileSection section
 }
 
 func New() Model {
@@ -66,12 +81,17 @@ func New() Model {
 		}
 	}
 
+	help := help.New()
+	help.ShowAll = false
+
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler)),
-			container.NewModel(NewFileList("Staged", stagedFilesItemHandler)),
+			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler, newFilesKeyMap("stage file"))),
+			container.NewModel(NewFileList("Staged", stagedFilesItemHandler, newFilesKeyMap("unstage file"))),
 			container.NewModel(NewDiff()),
 		},
+		help: help,
+		keys: newStatusKeyMap(),
 	}
 }
 
@@ -102,28 +122,21 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = model
 		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "right":
+		switch {
+		case key.Matches(msg, m.keys.right), key.Matches(msg, m.keys.focusDiff):
 			m.focusedSection = diffSection
-		case "left":
-			if m.focusedSection != diffSection || !m.lastFocusedSection.isFileSection() {
-				break
-			}
-			m.focusedSection = m.lastFocusedSection
-		case "u":
-			if m.focusedSection == unstagedSection {
-				break
-			}
+		case key.Matches(msg, m.keys.left):
+			m.focusedSection = m.lastFocusedFileSection
+		case key.Matches(msg, m.keys.focusUnstaged):
 			m.focusedSection = unstagedSection
-			m.lastFocusedSection = m.focusedSection
-		case "s":
-			if m.focusedSection == stagedSection {
-				break
-			}
+			m.lastFocusedFileSection = m.focusedSection
+		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
-			m.lastFocusedSection = m.focusedSection
+			m.lastFocusedFileSection = m.focusedSection
 		}
 	}
+
+	m.keys = m.updateKeys()
 
 	for i, section := range m.sections {
 		updatedSection, cmd := section.UpdateFocus(i == int(m.focusedSection))
@@ -136,6 +149,48 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m Model) View() string {
+	if m.statusErr != nil {
+		return fmt.Sprint(m.statusErr)
+	}
+
+	files := lipgloss.JoinVertical(
+		lipgloss.Top,
+		m.sections[unstagedSection].View(),
+		m.sections[stagedSection].View(),
+	)
+
+	sections := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		files,
+		" ",
+		m.sections[diffSection].View(),
+	)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		sections,
+		helpStyle.Render(m.help.View(m.keys)),
+	)
+}
+
+func (m Model) SetSize(width, height int) Model {
+	var (
+		maxSectionHeight = height - helpHeight
+
+		filesWidth  = int(float32(width) * filesWidthFactor)
+		filesHeight = maxSectionHeight / 2
+
+		diffWidth  = width - filesWidth - sectionsHorizontalMargin
+		diffHeight = filesHeight * 2 // don't use maxSectionHeight. Avoids layouting issues if uneven.
+	)
+
+	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
+	m.sections[stagedSection] = m.sections[stagedSection].SetSize(filesWidth, filesHeight)
+	m.sections[diffSection] = m.sections[diffSection].SetSize(diffWidth, diffHeight)
+	return m
 }
 
 func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
@@ -162,35 +217,31 @@ func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View() string {
-	if m.statusErr != nil {
-		return fmt.Sprint(m.statusErr)
+func (m Model) updateKeys() statusKeyMap {
+	keys := m.keys
+
+	switch m.focusedSection {
+	case unstagedSection:
+		keys.left.SetEnabled(false)
+		keys.right.SetEnabled(true)
+		keys.focusUnstaged.SetEnabled(false)
+		keys.focusStaged.SetEnabled(true)
+		keys.focusDiff.SetEnabled(true)
+	case stagedSection:
+		keys.left.SetEnabled(false)
+		keys.right.SetEnabled(true)
+		keys.focusUnstaged.SetEnabled(true)
+		keys.focusStaged.SetEnabled(false)
+		keys.focusDiff.SetEnabled(true)
+	case diffSection:
+		keys.left.SetEnabled(true)
+		keys.right.SetEnabled(false)
+		keys.focusUnstaged.SetEnabled(true)
+		keys.focusStaged.SetEnabled(true)
+		keys.focusDiff.SetEnabled(false)
 	}
 
-	files := lipgloss.JoinVertical(
-		lipgloss.Top,
-		m.sections[unstagedSection].View(),
-		m.sections[stagedSection].View(),
-	)
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		files,
-		" ",
-		m.sections[diffSection].View(),
-	)
-}
-
-func (m Model) SetSize(width, height int) Model {
-	filesWidth := int(float32(width) * 0.4)
-	filesHeight := height / 2
-
-	diffWidth := width - filesWidth - 1
-	diffHeight := filesHeight * 2
-
-	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
-	m.sections[stagedSection] = m.sections[stagedSection].SetSize(filesWidth, filesHeight)
-	m.sections[diffSection] = m.sections[diffSection].SetSize(diffWidth, diffHeight)
-	return m
+	return keys
 }
 
 func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
