@@ -17,12 +17,16 @@ const (
 	diffSection
 )
 
+func (s section) isFileSection() bool {
+	return s == stagedSection || s == unstagedSection
+}
+
 type Model struct {
-	workTreeStatus         git.WorkTreeStatus
-	statusErr              error
-	sections               [3]container.Model
-	focusedSection         section
-	lastFocusedFileSection section
+	workTreeStatus     git.WorkTreeStatus
+	statusErr          error
+	sections           [3]container.Model
+	focusedSection     section
+	lastFocusedSection section
 }
 
 func New() Model {
@@ -102,19 +106,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case "right":
 			m.focusedSection = diffSection
 		case "left":
-			m.focusedSection = m.lastFocusedFileSection
+			if m.focusedSection != diffSection || !m.lastFocusedSection.isFileSection() {
+				break
+			}
+			m.focusedSection = m.lastFocusedSection
 		case "u":
 			if m.focusedSection == unstagedSection {
 				break
 			}
 			m.focusedSection = unstagedSection
-			m.lastFocusedFileSection = m.focusedSection
+			m.lastFocusedSection = m.focusedSection
 		case "s":
 			if m.focusedSection == stagedSection {
 				break
 			}
 			m.focusedSection = stagedSection
-			m.lastFocusedFileSection = m.focusedSection
+			m.lastFocusedSection = m.focusedSection
 		}
 	}
 
