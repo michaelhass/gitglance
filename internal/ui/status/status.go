@@ -20,10 +20,6 @@ const (
 	diffSection
 )
 
-func (s section) isFileSection() bool {
-	return s == stagedSection || s == unstagedSection
-}
-
 const (
 	filesWidthFactor         float32 = 0.4
 	sectionsHorizontalMargin int     = 1
@@ -104,7 +100,13 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	var cmds []tea.Cmd
+
+	var (
+		cmds []tea.Cmd
+		// In some cases we do not want to pass the key msg to the sections
+		// E.g. switching focus from via arrow keys.
+		blockSectionMsgUpdate = false
+	)
 
 	switch msg := msg.(type) {
 	case initializedMsg:
@@ -123,16 +125,35 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.right), key.Matches(msg, m.keys.focusDiff):
-			m.focusedSection = diffSection
 		case key.Matches(msg, m.keys.left):
 			m.focusedSection = m.lastFocusedFileSection
+		case key.Matches(msg, m.keys.right), key.Matches(msg, m.keys.focusDiff):
+			m.lastFocusedFileSection = m.focusedSection
+			m.focusedSection = diffSection
+		case key.Matches(msg, m.keys.up):
+			if m.focusedSection != stagedSection {
+				break
+			}
+			section, ok := m.sections[stagedSection].Content().(FileList)
+			if !ok || !section.IsFirstIndexFocused() {
+				break
+			}
+			m.focusedSection = unstagedSection
+			blockSectionMsgUpdate = true
+		case key.Matches(msg, m.keys.down):
+			if m.focusedSection != unstagedSection {
+				break
+			}
+			section, ok := m.sections[unstagedSection].Content().(FileList)
+			if !ok || !section.IsLastIndexFocused() {
+				break
+			}
+			m.focusedSection = stagedSection
+			blockSectionMsgUpdate = false
 		case key.Matches(msg, m.keys.focusUnstaged):
 			m.focusedSection = unstagedSection
-			m.lastFocusedFileSection = m.focusedSection
 		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
-			m.lastFocusedFileSection = m.focusedSection
 		}
 	}
 
@@ -142,8 +163,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		updatedSection, cmd := section.UpdateFocus(i == int(m.focusedSection))
 		cmds = append(cmds, cmd)
 
-		updatedSection, cmd = updatedSection.Update(msg)
-		cmds = append(cmds, cmd)
+		if !blockSectionMsgUpdate {
+			updatedSection, cmd = updatedSection.Update(msg)
+			cmds = append(cmds, cmd)
+		}
 
 		m.sections[i] = updatedSection
 	}

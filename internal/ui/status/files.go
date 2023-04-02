@@ -181,6 +181,10 @@ func (l FileList) FocusedItem() (FileListItem, error) {
 	return l.visibleItems[l.cursor], nil
 }
 
+func (l FileList) IsFirstIndexFocused() bool {
+	return l.pageStartIdx+l.cursor == 0
+}
+
 func (l FileList) IsLastIndexFocused() bool {
 	return l.pageStartIdx+l.cursor == len(l.items)-1
 }
