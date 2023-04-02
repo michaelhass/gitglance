@@ -150,7 +150,7 @@ func containsKey(keyBindings []key.Binding, searchKey key.Binding) bool {
 	return false
 }
 
-// Matches checks if the given KeyMsg matches the given bindings.
+// Matches checks if both use the same keys
 func matchesKey(lhs key.Binding, rhs key.Binding) bool {
 	for _, lhsKey := range lhs.Keys() {
 		for _, rhsKey := range rhs.Keys() {
