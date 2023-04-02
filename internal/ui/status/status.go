@@ -213,6 +213,9 @@ func (m Model) SetSize(width, height int) Model {
 	m.sections[unstagedSection] = m.sections[unstagedSection].SetSize(filesWidth, filesHeight)
 	m.sections[stagedSection] = m.sections[stagedSection].SetSize(filesWidth, filesHeight)
 	m.sections[diffSection] = m.sections[diffSection].SetSize(diffWidth, diffHeight)
+
+	m.help.Width = width - helpStyle.GetHorizontalMargins()
+
 	return m
 }
 
