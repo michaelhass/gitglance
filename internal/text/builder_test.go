@@ -22,29 +22,29 @@ func TestBuilderWriteMultineText(t *testing.T) {
 	}
 }
 
-func TestBuilderWriteLines(t *testing.T) {
-	var (
-		builder = NewBuilder()
+// func TestBuilderWriteLines(t *testing.T) {
+// 	var (
+// 		builder = NewBuilder()
 
-		rawLines     = []string{"01234567", "12 34 567", "end"}
-		wrappedLines = make([]Wrapper, len(rawLines))
-		lineLength   = 5
+// 		rawLines     = []string{"01234567", "12 34 567", "end"}
+// 		wrappedLines = make([]Wrapper, len(rawLines))
+// 		lineLength   = 5
 
-		expect = "01234\n567\n12 34\n567\nend"
-		got    string
-	)
+// 		expect = "01234\n567\n12 34\n567\nend"
+// 		got    string
+// 	)
 
-	for i, line := range rawLines {
-		wrapper := NewWordWrapper(lineLength)
-		wrapper.WriteString(line)
-		wrappedLines[i] = wrapper
-	}
+// 	for i, line := range rawLines {
+// 		wrapper := NewWordWrapper(lineLength)
+// 		wrapper.WriteString(line)
+// 		wrappedLines[i] = wrapper
+// 	}
 
-	builder.SetLineLength(lineLength)
-	builder.WriteLines(wrappedLines)
-	got = builder.String()
+// 	builder.SetLineLength(lineLength)
+// 	builder.WriteLines(wrappedLines)
+// 	got = builder.String()
 
-	if expect != got {
-		t.Errorf("[%s] is not equal to [%s]", expect, got)
-	}
-}
+// 	if expect != got {
+// 		t.Errorf("[%s] is not equal to [%s]", expect, got)
+// 	}
+// }

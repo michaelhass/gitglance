@@ -58,4 +58,5 @@ func (cw *CharacterWrapper) String() string {
 
 func (cw *CharacterWrapper) Reset() {
 	cw.rawValue = ""
+	cw.renderer = nil
 }

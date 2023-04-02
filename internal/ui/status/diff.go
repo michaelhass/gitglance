@@ -20,7 +20,6 @@ var (
 type Diff struct {
 	viewport    viewport.Model
 	textBuilder *text.Builder
-	rawDiff     string
 	err         error
 	width       int
 	isReady     bool
@@ -28,7 +27,20 @@ type Diff struct {
 }
 
 func NewDiff() Diff {
-	return Diff{textBuilder: text.NewBuilder()}
+	lineRenderer := func(line string) text.Renderer {
+		if strings.HasPrefix(line, "+") {
+			return addedTextStyle
+		} else if strings.HasPrefix(line, "-") {
+			return removedTextStyle
+		} else {
+			return textStyle
+		}
+	}
+
+	textBuilder := text.NewBuilder()
+	textBuilder.SetLineRenderer(lineRenderer)
+
+	return Diff{textBuilder: textBuilder}
 }
 
 func (d Diff) Init() tea.Cmd {
@@ -74,43 +86,17 @@ func (d Diff) SetSize(width, height int) container.Content {
 	}
 
 	d.textBuilder.SetLineLength(width - 5)
-	d = d.SetContent(d.rawDiff, d.err)
+	d = d.SetContent(d.textBuilder.RawString(), d.err)
 	return d
 }
 
 func (d Diff) SetContent(rawDiff string, err error) Diff {
-
-	rawDiff = strings.ReplaceAll(rawDiff, "\r", "\n")
-	rawDiff = strings.ReplaceAll(rawDiff, "\t", "    ")
-
 	d.err = err
-	d.rawDiff = rawDiff
+	d.textBuilder.WriteString(rawDiff)
 
 	if !d.isReady {
 		return d
 	}
-
-	var (
-		rawLines = strings.Split(rawDiff, "\n")
-		lines    = make([]text.Wrapper, len(rawLines))
-	)
-
-	for i, rawLine := range rawLines {
-		var wordWrapper = &text.WordWrapper{}
-		wordWrapper.WriteString(rawLine)
-
-		if strings.HasPrefix(rawLine, "+") {
-			wordWrapper.SetRenderer(addedTextStyle)
-		} else if strings.HasPrefix(rawLine, "-") {
-			wordWrapper.SetRenderer(removedTextStyle)
-		} else {
-			wordWrapper.SetRenderer(textStyle)
-		}
-
-		lines[i] = wordWrapper
-	}
-
-	d.textBuilder.WriteLines(lines)
 
 	if d.err != nil {
 		d.viewport.SetContent(fmt.Sprint("An error occured:", d.err))

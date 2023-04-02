@@ -77,4 +77,5 @@ func (ww *WordWrapper) writeWord(builder *strings.Builder, word []rune, lineLeng
 
 func (ww *WordWrapper) Reset() {
 	ww.words = nil
+	ww.renderer = nil
 }
