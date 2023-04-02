@@ -38,18 +38,6 @@ func (b *Builder) RawString() string {
 func (b *Builder) String() string {
 	var stringBuilder strings.Builder
 
-	// if wrappedLines := b.wrappedLines; wrappedLines != nil {
-	// 	for i, l := range wrappedLines {
-	// 		l.SetLineLength(b.lineLength)
-	// 		stringBuilder.WriteString(l.String())
-	// 		if i == len(wrappedLines)-1 {
-	// 			continue
-	// 		}
-	// 		stringBuilder.WriteString("\n")
-	// 	}
-	// 	return stringBuilder.String()
-	// }
-
 	var (
 		wrapper = NewWordWrapper(b.lineLength)
 	)

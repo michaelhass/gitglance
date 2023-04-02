@@ -85,7 +85,9 @@ func (d Diff) SetSize(width, height int) container.Content {
 		d.viewport.Height = height
 	}
 
-	d.textBuilder.SetLineLength(width - 5)
+	// TODO: Remove need for extra padding
+	extraPadding := 5
+	d.textBuilder.SetLineLength(width - extraPadding)
 	d = d.SetContent(d.textBuilder.RawString(), d.err)
 	return d
 }
