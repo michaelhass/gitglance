@@ -5,7 +5,6 @@ import "strings"
 type LineRenderer func(line string) Renderer
 
 type Builder struct {
-	// wrappedLines         []Wrapper
 	rawText      string
 	lines        []string
 	lineRenderer LineRenderer
@@ -36,10 +35,9 @@ func (b *Builder) RawString() string {
 }
 
 func (b *Builder) String() string {
-	var stringBuilder strings.Builder
-
 	var (
-		wrapper = NewWordWrapper(b.lineLength)
+		stringBuilder strings.Builder
+		wrapper       = NewWordWrapper(b.lineLength)
 	)
 
 	for i, l := range b.lines {
