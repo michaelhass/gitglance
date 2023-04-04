@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	textStyle        = styles.TextSyle.Copy()
-	addedTextStyle   = styles.AddedTextStyle.Copy()
-	removedTextStyle = styles.RemovedTextStyle.Copy()
+	normalDiffTextStyle  = styles.TextSyle.Copy()
+	addedDiffTextStyle   = styles.AddedTextStyle.Copy()
+	removedDiffTextStyle = styles.RemovedTextStyle.Copy()
 )
 
 type Diff struct {
@@ -31,11 +31,11 @@ type Diff struct {
 func NewDiff() Diff {
 	lineRenderer := func(line string) text.Renderer {
 		if strings.HasPrefix(line, "+") {
-			return addedTextStyle
+			return addedDiffTextStyle
 		} else if strings.HasPrefix(line, "-") {
-			return removedTextStyle
+			return removedDiffTextStyle
 		} else {
-			return textStyle
+			return normalDiffTextStyle
 		}
 	}
 
