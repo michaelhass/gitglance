@@ -8,7 +8,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
+	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/file"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
@@ -49,9 +51,9 @@ func New() Model {
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case file.SelectItemMsg:
-			return stageFile(msg.Item.Path)
+			return uicmd.StageFile(msg.Item.Path)
 		case file.FocusItemMsg:
-			return diff(
+			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsUntracked: isUntracked(msg.Item),
@@ -65,9 +67,9 @@ func New() Model {
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case file.SelectItemMsg:
-			return unstageFile(msg.Item.Path)
+			return uicmd.UnstageFile(msg.Item.Path)
 		case file.FocusItemMsg:
-			return diff(
+			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsStaged:    true,
@@ -87,12 +89,13 @@ func New() Model {
 	stagedFileList := container.NewFileListContent(
 		file.NewList("Staged", stagedFilesItemHandler, file.NewKeyMap("unstage file")),
 	)
+	diffContent := container.NewDiffContent(diff.New())
 
 	return Model{
 		sections: [3]container.Model{
 			container.NewModel(unstagedFileList),
 			container.NewModel(stagedFileList),
-			container.NewModel(NewDiff()),
+			container.NewModel(diffContent),
 		},
 		help: help,
 		keys: newStatusKeyMap(),
@@ -117,17 +120,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case initializedMsg:
+	case InitializedMsg:
 		var model = m
-		model, scmd := model.handleStatusUpdateMsg(msg.statusMsg)
-		model, dcmd := model.handleLoadedDiffMsg(msg.diffMsg)
+		model, scmd := model.handleStatusUpdateMsg(msg.StatusMsg)
+		model, dcmd := model.handleLoadedDiffMsg(msg.DiffMsg)
 		m = model
 		cmds = append(cmds, scmd, dcmd)
-	case statusUpdateMsg:
+	case uicmd.StatusUpdateMsg:
 		model, cmd := m.handleStatusUpdateMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
-	case loadedDiffMsg:
+	case uicmd.LoadedDiffMsg:
 		model, cmd := m.handleLoadedDiffMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
@@ -227,9 +230,9 @@ func (m Model) SetSize(width, height int) Model {
 	return m
 }
 
-func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
-	m.workTreeStatus = msg.workTreeStatus
-	m.statusErr = msg.err
+func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd) {
+	m.workTreeStatus = msg.WorkTreeStatus
+	m.statusErr = msg.Err
 	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
 		section.List = section.SetListItems(createListItems(m.workTreeStatus.Unstaged))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
@@ -241,12 +244,12 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
-	section, ok := m.sections[diffSection].Content().(Diff)
+func (m Model) handleLoadedDiffMsg(msg uicmd.LoadedDiffMsg) (Model, tea.Cmd) {
+	section, ok := m.sections[diffSection].Content().(container.DiffContent)
 	if !ok {
 		return m, nil
 	}
-	section = section.SetContent(msg.diff, msg.err)
+	section.Model = section.SetContent(msg.Diff, msg.Err)
 	m.sections[diffSection] = m.sections[diffSection].SetContent(section)
 	return m, nil
 }

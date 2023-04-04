@@ -3,6 +3,7 @@ package container
 import (
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/file"
 )
 
@@ -39,4 +40,29 @@ func (flc FileListContent) UpdateFocus(isFocused bool) (Content, tea.Cmd) {
 func (flc FileListContent) SetSize(width, height int) Content {
 	flc.List = flc.List.SetSize(width, height)
 	return flc
+}
+
+type DiffContent struct {
+	diff.Model
+}
+
+func NewDiffContent(model diff.Model) DiffContent {
+	return DiffContent{Model: model}
+}
+
+func (dc DiffContent) Update(msg tea.Msg) (Content, tea.Cmd) {
+	model, cmd := dc.Model.Update(msg)
+	dc.Model = model
+	return dc, cmd
+}
+
+func (dc DiffContent) UpdateFocus(isFocused bool) (Content, tea.Cmd) {
+	model, cmd := dc.Model.UpdateFocus(isFocused)
+	dc.Model = model
+	return dc, cmd
+}
+
+func (dc DiffContent) SetSize(width, height int) Content {
+	dc.Model = dc.Model.SetSize(width, height)
+	return dc
 }

@@ -83,32 +83,6 @@ func (k statusKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{}
 }
 
-type diffKeyMap struct {
-	up   key.Binding
-	down key.Binding
-}
-
-func newDiffKeyMap() diffKeyMap {
-	return diffKeyMap{
-		up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
-		),
-		down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "down"),
-		),
-	}
-}
-
-func (k diffKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.up, k.down}
-}
-
-func (k diffKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{}
-}
-
 func containsKey(keyBindings []key.Binding, searchKey key.Binding) bool {
 	for _, key := range keyBindings {
 		if matchesKey(key, searchKey) {

@@ -5,12 +5,13 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/git"
+	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 )
 
 func initializeStatus() func() tea.Msg {
 	return func() tea.Msg {
 		var (
-			msg            initializedMsg
+			msg            InitializedMsg
 			workTreeStatus git.WorkTreeStatus
 			unstagedFiles  git.FileStatusList
 			isUntracked    bool
@@ -19,98 +20,34 @@ func initializeStatus() func() tea.Msg {
 
 		workTreeStatus, err = git.Status()
 		if err != nil {
-			msg.statusMsg.err = err
+			msg.StatusMsg.Err = err
 			return msg
 		}
-		msg.statusMsg.workTreeStatus = workTreeStatus
+		msg.StatusMsg.WorkTreeStatus = workTreeStatus
 
-		unstagedFiles = msg.statusMsg.workTreeStatus.Unstaged
+		unstagedFiles = msg.StatusMsg.WorkTreeStatus.Unstaged
 		if len(unstagedFiles) == 0 {
 			return msg
 		}
 
 		isUntracked = unstagedFiles[0].Code == git.Untracked
-		diffMsg, ok := diff(
+		diffMsg, ok := uicmd.Diff(
 			git.DiffOption{
 				FilePath:    unstagedFiles[0].Path,
 				IsUntracked: isUntracked,
 			},
-		)().(loadedDiffMsg)
+		)().(uicmd.LoadedDiffMsg)
 		if !ok {
-			diffMsg.err = errors.New("unable to load diff")
+			diffMsg.Err = errors.New("unable to load diff")
 			return msg
 		}
 
-		msg.diffMsg = diffMsg
+		msg.DiffMsg = diffMsg
 		return msg
 	}
 }
 
-func stageFile(path string) func() tea.Msg {
-	return func() tea.Msg {
-		var (
-			workTreeStatus git.WorkTreeStatus
-			msg            statusUpdateMsg
-			err            error
-		)
-
-		err = git.StageFile(path)
-		if err != nil {
-			msg.err = err
-			return msg
-		}
-
-		workTreeStatus, err = git.Status()
-		if err != nil {
-			msg.err = err
-			return msg
-		}
-		msg.workTreeStatus = workTreeStatus
-
-		return msg
-	}
-}
-
-func unstageFile(path string) func() tea.Msg {
-	return func() tea.Msg {
-		var (
-			workTreeStatus git.WorkTreeStatus
-			msg            statusUpdateMsg
-			err            error
-		)
-
-		err = git.UnstageFile(path)
-		if err != nil {
-			msg.err = err
-			return msg
-		}
-
-		workTreeStatus, err = git.Status()
-		if err != nil {
-			msg.err = err
-			return msg
-		}
-		msg.workTreeStatus = workTreeStatus
-
-		return msg
-	}
-}
-
-func diff(opt git.DiffOption) func() tea.Msg {
-	return func() tea.Msg {
-		var (
-			msg  loadedDiffMsg
-			err  error
-			diff string
-		)
-
-		diff, err = git.Diff(opt)
-		if err != nil {
-			msg.err = err
-			return msg
-		}
-		msg.diff = diff
-
-		return msg
-	}
+type InitializedMsg struct {
+	StatusMsg uicmd.StatusUpdateMsg
+	DiffMsg   uicmd.LoadedDiffMsg
 }
