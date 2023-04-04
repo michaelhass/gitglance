@@ -18,13 +18,3 @@ type loadedDiffMsg struct {
 	err  error
 	diff string
 }
-
-// File handling
-
-type focusItemMsg struct {
-	item FileListItem
-}
-
-type selectItemMsg struct {
-	item FileListItem
-}

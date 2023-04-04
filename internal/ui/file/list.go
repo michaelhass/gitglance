@@ -1,15 +1,12 @@
-package status
+package file
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -19,45 +16,13 @@ var (
 	inactiveItemStyle = styles.InactiveTextStyle.Copy()
 )
 
-type FileListItem struct {
-	fileStatus git.FileStatus
-	path       string
-	accessory  string
-}
+type ListItemHandler func(msg tea.Msg) tea.Cmd
 
-func (item FileListItem) String() string {
-	if len(item.accessory) == 0 {
-		return item.path
-	}
-	return fmt.Sprintf("%s %s", item.accessory, item.path)
-}
-
-func NewFileListItem(fileStatus git.FileStatus) FileListItem {
-	var (
-		path, accessory string
-	)
-
-	path = fileStatus.Path
-	if len(fileStatus.Extra) > 0 {
-		path = fmt.Sprintf("%s → %s", path, fileStatus.Extra)
-	}
-
-	accessory = fmt.Sprintf("[%s]", string(fileStatus.Code))
-
-	return FileListItem{
-		fileStatus: fileStatus,
-		path:       path,
-		accessory:  accessory,
-	}
-}
-
-type ItemHandler func(msg tea.Msg) tea.Cmd
-
-type FileList struct {
-	items        []FileListItem
-	visibleItems []FileListItem
-	itemHandler  ItemHandler
-	keys         filesKeyMap
+type List struct {
+	items        []ListItem
+	visibleItems []ListItem
+	itemHandler  ListItemHandler
+	keys         KeyMap
 	title        string
 	width        int
 	height       int
@@ -66,14 +31,14 @@ type FileList struct {
 	isFocused    bool
 }
 
-func NewFileList(title string, itemHandler ItemHandler, keys filesKeyMap) FileList {
-	return FileList{title: title, itemHandler: itemHandler, keys: keys}
+func NewList(title string, itemHandler ListItemHandler, keys KeyMap) List {
+	return List{title: title, itemHandler: itemHandler, keys: keys}
 }
-func (l FileList) Init() tea.Cmd {
+func (l List) Init() tea.Cmd {
 	return nil
 }
 
-func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
+func (l List) Update(msg tea.Msg) (List, tea.Cmd) {
 	if !l.isFocused || len(l.items) == 0 {
 		return l, nil
 	}
@@ -89,7 +54,7 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 				break
 			}
 			l.cursor -= 1
-			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+			cmd := l.itemHandler(FocusItemMsg{Item: l.visibleItems[l.cursor]})
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, l.keys.down):
 			if l.cursor >= len(l.visibleItems)-1 {
@@ -98,11 +63,11 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 				break
 			}
 			l.cursor += 1
-			cmd := l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+			cmd := l.itemHandler(FocusItemMsg{Item: l.visibleItems[l.cursor]})
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, l.keys.enter):
 			item := l.visibleItems[l.cursor]
-			cmd := l.itemHandler(selectItemMsg{item: item})
+			cmd := l.itemHandler(SelectItemMsg{Item: item})
 			cmds = append(cmds, cmd)
 		}
 	default:
@@ -116,20 +81,16 @@ func (l FileList) Update(msg tea.Msg) (container.Content, tea.Cmd) {
 	return l, tea.Batch(cmds...)
 }
 
-func (l FileList) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
+func (l List) UpdateFocus(isFocused bool) (List, tea.Cmd) {
 	var cmd tea.Cmd
 	if isFocused && !l.isFocused && len(l.items) > 0 {
-		cmd = l.itemHandler(focusItemMsg{item: l.visibleItems[l.cursor]})
+		cmd = l.itemHandler(FocusItemMsg{Item: l.visibleItems[l.cursor]})
 	}
 	l.isFocused = isFocused
 	return l, cmd
 }
 
-func (l FileList) View() string {
-	return l.rendered()
-}
-
-func (l FileList) rendered() string {
+func (l List) View() string {
 	var renderedItems = make([]string, len(l.visibleItems))
 
 	for i, item := range l.visibleItems {
@@ -152,50 +113,50 @@ func (l FileList) rendered() string {
 		Render(lipgloss.JoinVertical(lipgloss.Top, renderedItems...))
 }
 
-func (l FileList) Title() string {
+func (l List) Title() string {
 	return l.title
 }
 
-func (l FileList) SetSize(width, height int) container.Content {
+func (l List) SetSize(width, height int) List {
 	l.width = width
 	l.height = height
 	l.visibleItems = l.updateVisibleItems()
 	return l
 }
 
-func (l FileList) KeyMap() help.KeyMap {
+func (l List) KeyMap() help.KeyMap {
 	return l.keys
 }
 
-func (l FileList) SetFileListItems(items []FileListItem) FileList {
+func (l List) SetListItems(items []ListItem) List {
 	l.items = items
 	l.visibleItems = l.updateVisibleItems()
 	return l
 }
 
-func (l FileList) FocusedItem() (FileListItem, error) {
-	var item FileListItem
+func (l List) FocusedItem() (ListItem, error) {
+	var item ListItem
 	if len(l.visibleItems) == 0 {
 		return item, errors.New("no items")
 	}
 	return l.visibleItems[l.cursor], nil
 }
 
-func (l FileList) IsFirstIndexFocused() bool {
+func (l List) IsFirstIndexFocused() bool {
 	return l.pageStartIdx+l.cursor == 0
 }
 
-func (l FileList) IsLastIndexFocused() bool {
+func (l List) IsLastIndexFocused() bool {
 	return l.pageStartIdx+l.cursor == len(l.items)-1
 }
 
-func (l FileList) updateVisibleItems() []FileListItem {
+func (l List) updateVisibleItems() []ListItem {
 	start := l.pageStartIdx
 	end := min(start+l.pageSize(), len(l.items))
 	return l.items[start:end]
 }
 
-func (l FileList) nextPageStartIdx(offset int) int {
+func (l List) nextPageStartIdx(offset int) int {
 	start := l.pageStartIdx + offset
 	if start+l.pageSize() > len(l.items) || start < 0 {
 		return l.pageStartIdx
@@ -203,7 +164,7 @@ func (l FileList) nextPageStartIdx(offset int) int {
 	return start
 }
 
-func (l FileList) pageSize() int {
+func (l List) pageSize() int {
 	return l.height
 }
 

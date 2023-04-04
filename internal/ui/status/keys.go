@@ -83,37 +83,6 @@ func (k statusKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{}
 }
 
-type filesKeyMap struct {
-	up    key.Binding
-	down  key.Binding
-	enter key.Binding
-}
-
-func newFilesKeyMap(enterHelpText string) filesKeyMap {
-	return filesKeyMap{
-		up: key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "up"),
-		),
-		down: key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "down"),
-		),
-		enter: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("⏎", enterHelpText),
-		),
-	}
-}
-
-func (k filesKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.up, k.down, k.enter}
-}
-
-func (k filesKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{}
-}
-
 type diffKeyMap struct {
 	up   key.Binding
 	down key.Binding

@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/file"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -41,19 +42,19 @@ type Model struct {
 }
 
 func New() Model {
-	isUntracked := func(item FileListItem) bool {
-		return item.fileStatus.Code == git.Untracked
+	isUntracked := func(item file.ListItem) bool {
+		return item.FileStatus.Code == git.Untracked
 	}
 
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case selectItemMsg:
-			return stageFile(msg.item.path)
-		case focusItemMsg:
+		case file.SelectItemMsg:
+			return stageFile(msg.Item.Path)
+		case file.FocusItemMsg:
 			return diff(
 				git.DiffOption{
-					FilePath:    msg.item.path,
-					IsUntracked: isUntracked(msg.item),
+					FilePath:    msg.Item.Path,
+					IsUntracked: isUntracked(msg.Item),
 				},
 			)
 		default:
@@ -63,14 +64,14 @@ func New() Model {
 
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case selectItemMsg:
-			return unstageFile(msg.item.path)
-		case focusItemMsg:
+		case file.SelectItemMsg:
+			return unstageFile(msg.Item.Path)
+		case file.FocusItemMsg:
 			return diff(
 				git.DiffOption{
-					FilePath:    msg.item.path,
+					FilePath:    msg.Item.Path,
 					IsStaged:    true,
-					IsUntracked: isUntracked(msg.item),
+					IsUntracked: isUntracked(msg.Item),
 				})
 		default:
 			return nil
@@ -80,10 +81,17 @@ func New() Model {
 	help := help.New()
 	help.ShowAll = false
 
+	unstagedFileList := container.NewFileListContent(
+		file.NewList("Unstaged", unstagedFilesItemHandler, file.NewKeyMap("stage file")),
+	)
+	stagedFileList := container.NewFileListContent(
+		file.NewList("Staged", stagedFilesItemHandler, file.NewKeyMap("unstage file")),
+	)
+
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(NewFileList("Unstaged", unstagedFilesItemHandler, newFilesKeyMap("stage file"))),
-			container.NewModel(NewFileList("Staged", stagedFilesItemHandler, newFilesKeyMap("unstage file"))),
+			container.NewModel(unstagedFileList),
+			container.NewModel(stagedFileList),
 			container.NewModel(NewDiff()),
 		},
 		help: help,
@@ -134,7 +142,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.focusedSection != stagedSection {
 				break
 			}
-			section, ok := m.sections[stagedSection].Content().(FileList)
+			section, ok := m.sections[stagedSection].Content().(container.FileListContent)
 			if !ok || !section.IsFirstIndexFocused() {
 				break
 			}
@@ -144,7 +152,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.focusedSection != unstagedSection {
 				break
 			}
-			section, ok := m.sections[unstagedSection].Content().(FileList)
+			section, ok := m.sections[unstagedSection].Content().(container.FileListContent)
 			if !ok || !section.IsLastIndexFocused() {
 				break
 			}
@@ -222,12 +230,12 @@ func (m Model) SetSize(width, height int) Model {
 func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	m.workTreeStatus = msg.workTreeStatus
 	m.statusErr = msg.err
-	if section, ok := m.sections[unstagedSection].Content().(FileList); ok {
-		section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Unstaged))
+	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
+		section.List = section.SetListItems(createListItems(m.workTreeStatus.Unstaged))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
-	if section, ok := m.sections[stagedSection].Content().(FileList); ok {
-		section = section.SetFileListItems(createFileListItems(m.workTreeStatus.Staged))
+	if section, ok := m.sections[stagedSection].Content().(container.FileListContent); ok {
+		section.List = section.SetListItems(createListItems(m.workTreeStatus.Staged))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
 	return m, nil
@@ -270,10 +278,10 @@ func (m Model) updateKeys() statusKeyMap {
 	return keys
 }
 
-func createFileListItems(fileStatusList git.FileStatusList) []FileListItem {
-	items := make([]FileListItem, len(fileStatusList))
+func createListItems(fileStatusList git.FileStatusList) []file.ListItem {
+	items := make([]file.ListItem, len(fileStatusList))
 	for i, fs := range fileStatusList {
-		items[i] = NewFileListItem(fs)
+		items[i] = file.NewListItem(fs)
 	}
 	return items
 }
