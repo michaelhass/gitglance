@@ -1,11 +1,11 @@
-package file
+package filelist
 
 // File handling
 
 type FocusItemMsg struct {
-	Item ListItem
+	Item Item
 }
 
 type SelectItemMsg struct {
-	Item ListItem
+	Item Item
 }

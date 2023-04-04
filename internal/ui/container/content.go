@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
-	"github.com/michaelhass/gitglance/internal/ui/file"
+	"github.com/michaelhass/gitglance/internal/ui/filelist"
 )
 
 type Content interface {
@@ -18,27 +18,27 @@ type Content interface {
 }
 
 type FileListContent struct {
-	file.List
+	filelist.Model
 }
 
-func NewFileListContent(list file.List) FileListContent {
-	return FileListContent{List: list}
+func NewFileListContent(model filelist.Model) FileListContent {
+	return FileListContent{Model: model}
 }
 
 func (flc FileListContent) Update(msg tea.Msg) (Content, tea.Cmd) {
-	list, cmd := flc.List.Update(msg)
-	flc.List = list
+	model, cmd := flc.Model.Update(msg)
+	flc.Model = model
 	return flc, cmd
 }
 
 func (flc FileListContent) UpdateFocus(isFocused bool) (Content, tea.Cmd) {
-	list, cmd := flc.List.UpdateFocus(isFocused)
-	flc.List = list
+	model, cmd := flc.Model.UpdateFocus(isFocused)
+	flc.Model = model
 	return flc, cmd
 }
 
 func (flc FileListContent) SetSize(width, height int) Content {
-	flc.List = flc.List.SetSize(width, height)
+	flc.Model = flc.Model.SetSize(width, height)
 	return flc
 }
 

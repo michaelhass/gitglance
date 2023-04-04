@@ -1,4 +1,4 @@
-package file
+package filelist
 
 import (
 	"fmt"
@@ -6,20 +6,20 @@ import (
 	"github.com/michaelhass/gitglance/internal/git"
 )
 
-type ListItem struct {
+type Item struct {
 	FileStatus git.FileStatus
 	Path       string
 	Accessory  string
 }
 
-func (item ListItem) String() string {
+func (item Item) String() string {
 	if len(item.Accessory) == 0 {
 		return item.Path
 	}
 	return fmt.Sprintf("%s %s", item.Accessory, item.Path)
 }
 
-func NewListItem(fileStatus git.FileStatus) ListItem {
+func NewItem(fileStatus git.FileStatus) Item {
 	var (
 		path, accessory string
 	)
@@ -31,7 +31,7 @@ func NewListItem(fileStatus git.FileStatus) ListItem {
 
 	accessory = fmt.Sprintf("[%s]", string(fileStatus.Code))
 
-	return ListItem{
+	return Item{
 		FileStatus: fileStatus,
 		Path:       path,
 		Accessory:  accessory,

@@ -11,7 +11,7 @@ import (
 	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
-	"github.com/michaelhass/gitglance/internal/ui/file"
+	"github.com/michaelhass/gitglance/internal/ui/filelist"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -37,22 +37,22 @@ type Model struct {
 	workTreeStatus         git.WorkTreeStatus
 	sections               [3]container.Model
 	help                   help.Model
-	keys                   statusKeyMap
+	keys                   KeyMap
 	statusErr              error
 	focusedSection         section
 	lastFocusedFileSection section
 }
 
 func New() Model {
-	isUntracked := func(item file.ListItem) bool {
+	isUntracked := func(item filelist.Item) bool {
 		return item.FileStatus.Code == git.Untracked
 	}
 
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case file.SelectItemMsg:
+		case filelist.SelectItemMsg:
 			return uicmd.StageFile(msg.Item.Path)
-		case file.FocusItemMsg:
+		case filelist.FocusItemMsg:
 			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
@@ -66,9 +66,9 @@ func New() Model {
 
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case file.SelectItemMsg:
+		case filelist.SelectItemMsg:
 			return uicmd.UnstageFile(msg.Item.Path)
-		case file.FocusItemMsg:
+		case filelist.FocusItemMsg:
 			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
@@ -84,10 +84,10 @@ func New() Model {
 	help.ShowAll = false
 
 	unstagedFileList := container.NewFileListContent(
-		file.NewList("Unstaged", unstagedFilesItemHandler, file.NewKeyMap("stage file")),
+		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap("stage file")),
 	)
 	stagedFileList := container.NewFileListContent(
-		file.NewList("Staged", stagedFilesItemHandler, file.NewKeyMap("unstage file")),
+		filelist.New("Staged", stagedFilesItemHandler, filelist.NewKeyMap("unstage file")),
 	)
 	diffContent := container.NewDiffContent(diff.New())
 
@@ -98,7 +98,7 @@ func New() Model {
 			container.NewModel(diffContent),
 		},
 		help: help,
-		keys: newStatusKeyMap(),
+		keys: newKeyMap(),
 	}
 }
 
@@ -115,7 +115,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var (
 		cmds []tea.Cmd
 		// In some cases we do not want to pass the key msg to the sections
-		// E.g. switching focus from via arrow keys.
+		// E.g. switching section focus via arrow keys.
 		blockSectionMsgUpdate = false
 	)
 
@@ -234,11 +234,11 @@ func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd)
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
 	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
-		section.List = section.SetListItems(createListItems(m.workTreeStatus.Unstaged))
+		section.Model = section.SetItems(createListItems(m.workTreeStatus.Unstaged))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
 	if section, ok := m.sections[stagedSection].Content().(container.FileListContent); ok {
-		section.List = section.SetListItems(createListItems(m.workTreeStatus.Staged))
+		section.Model = section.SetItems(createListItems(m.workTreeStatus.Staged))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
 	return m, nil
@@ -254,7 +254,7 @@ func (m Model) handleLoadedDiffMsg(msg uicmd.LoadedDiffMsg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) updateKeys() statusKeyMap {
+func (m Model) updateKeys() KeyMap {
 	keys := m.keys
 
 	switch m.focusedSection {
@@ -281,10 +281,10 @@ func (m Model) updateKeys() statusKeyMap {
 	return keys
 }
 
-func createListItems(fileStatusList git.FileStatusList) []file.ListItem {
-	items := make([]file.ListItem, len(fileStatusList))
+func createListItems(fileStatusList git.FileStatusList) []filelist.Item {
+	items := make([]filelist.Item, len(fileStatusList))
 	for i, fs := range fileStatusList {
-		items[i] = file.NewListItem(fs)
+		items[i] = filelist.NewItem(fs)
 	}
 	return items
 }

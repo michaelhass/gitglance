@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
-type statusKeyMap struct {
+type KeyMap struct {
 	up    key.Binding
 	down  key.Binding
 	left  key.Binding
@@ -20,8 +20,8 @@ type statusKeyMap struct {
 	additionalKeyMap help.KeyMap
 }
 
-func newStatusKeyMap() statusKeyMap {
-	return statusKeyMap{
+func newKeyMap() KeyMap {
+	return KeyMap{
 		up: key.NewBinding(
 			key.WithKeys("up", "k"),
 			key.WithHelp("↑/k", "up"),
@@ -57,7 +57,7 @@ func newStatusKeyMap() statusKeyMap {
 	}
 }
 
-func (k statusKeyMap) ShortHelp() []key.Binding {
+func (k KeyMap) ShortHelp() []key.Binding {
 	allKeys := []key.Binding{
 		k.focusUnstaged, k.focusStaged, k.focusDiff,
 		k.up, k.down, k.left, k.right,
@@ -79,7 +79,7 @@ func (k statusKeyMap) ShortHelp() []key.Binding {
 	return append(additionalKeys, allKeys...)
 }
 
-func (k statusKeyMap) FullHelp() [][]key.Binding {
+func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{}
 }
 

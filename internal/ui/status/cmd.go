@@ -8,6 +8,11 @@ import (
 	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 )
 
+type InitializedMsg struct {
+	StatusMsg uicmd.StatusUpdateMsg
+	DiffMsg   uicmd.LoadedDiffMsg
+}
+
 func initializeStatus() func() tea.Msg {
 	return func() tea.Msg {
 		var (
@@ -45,9 +50,4 @@ func initializeStatus() func() tea.Msg {
 		msg.DiffMsg = diffMsg
 		return msg
 	}
-}
-
-type InitializedMsg struct {
-	StatusMsg uicmd.StatusUpdateMsg
-	DiffMsg   uicmd.LoadedDiffMsg
 }
