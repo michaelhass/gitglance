@@ -147,6 +147,9 @@ func (l List) IsFirstIndexFocused() bool {
 }
 
 func (l List) IsLastIndexFocused() bool {
+	if len(l.items) == 0 {
+		return true
+	}
 	return l.pageStartIdx+l.cursor == len(l.items)-1
 }
 
