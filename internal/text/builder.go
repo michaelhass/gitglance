@@ -45,7 +45,7 @@ func (b *Builder) String() string {
 		defer wrapper.Reset()
 
 		if renderer := b.lineRenderer(l); renderer != nil {
-			wrapper.SetRenderer(b.lineRenderer(l))
+			wrapper.SetRenderer(renderer)
 		}
 
 		wrapper.WriteString(l)
