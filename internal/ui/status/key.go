@@ -40,15 +40,15 @@ func newKeyMap() KeyMap {
 		),
 		focusUnstaged: key.NewBinding(
 			key.WithKeys("u"),
-			key.WithHelp("u", "Focus Unstaged"),
+			key.WithHelp("u", "To Unstaged"),
 		),
 		focusStaged: key.NewBinding(
 			key.WithKeys("s"),
-			key.WithHelp("s", "Focus Staged"),
+			key.WithHelp("s", "To Staged"),
 		),
 		focusDiff: key.NewBinding(
 			key.WithKeys("d"),
-			key.WithHelp("d", "Focus Diff"),
+			key.WithHelp("d", "To Diff"),
 		),
 		quit: key.NewBinding(
 			key.WithKeys("ctrl+c"),
