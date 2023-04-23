@@ -2,12 +2,19 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/ui/popup"
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
 type Model struct {
-	status  status.Model
+	status status.Model
+
+	popUp          popup.Model
+	isShowingPopUp bool
+
 	isReady bool
+
+	width, height int
 }
 
 func New() Model {
@@ -27,8 +34,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case tea.WindowSizeMsg:
+		m.width, m.height = msg.Width, msg.Height
 		m.status = m.status.SetSize(msg.Width, msg.Height)
+		if m.isShowingPopUp {
+			m.popUp = m.popUp.SetSize(msg.Width, msg.Height)
+		}
 		m.isReady = true
+	case popup.ShowPopUpMsg:
+		popUp := msg.PopUp
+		popUp = popUp.SetSize(m.width, m.height)
+		m.popUp = popUp
+		m.isShowingPopUp = true
+	}
+
+	if m.isShowingPopUp {
+		popUp, cmd := m.popUp.Update(msg)
+		m.popUp = popUp
+		return m, cmd
 	}
 
 	var (
@@ -47,6 +69,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	if !m.isReady {
 		return "loading"
+	}
+
+	if m.isShowingPopUp {
+		return m.popUp.View()
 	}
 	return m.status.View()
 }

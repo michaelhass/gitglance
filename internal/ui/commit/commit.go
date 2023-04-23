@@ -21,7 +21,7 @@ func New(stagedFileList git.FileStatusList) Model {
 	)
 
 	return Model{
-		stagedFileList: container.NewModel(fileListContent),
+		stagedFileList: container.New(fileListContent),
 	}
 }
 
@@ -34,7 +34,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return "Commit  view"
+	return m.stagedFileList.View()
 }
 
 func (m Model) SetSize(width, height int) Model {

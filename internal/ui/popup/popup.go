@@ -2,6 +2,7 @@ package popup
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type DisplayMode int
@@ -34,7 +35,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.content.View()
+	return lipgloss.NewStyle().
+		Align(lipgloss.Center).
+		Render(m.content.View())
 }
 
 func (m Model) SetSize(width, height int) Model {

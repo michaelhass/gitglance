@@ -26,7 +26,7 @@ func (cc CommitContent) Init() tea.Cmd {
 	return cc.Model.Init()
 }
 
-func (cc CommitContent) Update(msg tea.Msg) (CommitContent, tea.Cmd) {
+func (cc CommitContent) Update(msg tea.Msg) (Content, tea.Cmd) {
 	model, cmd := cc.Model.Update(msg)
 	cc.Model = model
 	return cc, cmd
@@ -36,7 +36,7 @@ func (cc CommitContent) View() string {
 	return cc.Model.View()
 }
 
-func (cc CommitContent) SetSize(width, height int) CommitContent {
+func (cc CommitContent) SetSize(width, height int) Content {
 	cc.Model = cc.Model.SetSize(width, height)
 	return cc
 }

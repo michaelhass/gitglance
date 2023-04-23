@@ -6,11 +6,11 @@ import (
 )
 
 type KeyMap struct {
-	up    key.Binding
-	down  key.Binding
-	left  key.Binding
-	right key.Binding
-
+	up            key.Binding
+	down          key.Binding
+	left          key.Binding
+	right         key.Binding
+	commit        key.Binding
 	focusUnstaged key.Binding
 	focusStaged   key.Binding
 	focusDiff     key.Binding
@@ -37,6 +37,10 @@ func newKeyMap() KeyMap {
 		right: key.NewBinding(
 			key.WithKeys("right", "l"),
 			key.WithHelp("→/l", "right"),
+		),
+		commit: key.NewBinding(
+			key.WithKeys("c"),
+			key.WithHelp("c", "commit"),
 		),
 		focusUnstaged: key.NewBinding(
 			key.WithKeys("u"),

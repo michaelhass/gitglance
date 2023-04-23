@@ -28,7 +28,7 @@ type Model struct {
 	isFocused bool
 }
 
-func NewModel(content Content) Model {
+func New(content Content) Model {
 	return Model{
 		content: content,
 	}

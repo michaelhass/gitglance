@@ -13,6 +13,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/popup"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -38,8 +39,6 @@ type Model struct {
 	workTreeStatus git.WorkTreeStatus
 
 	sections [3]container.Model
-
-	commit commit.Model
 
 	help help.Model
 	keys KeyMap
@@ -99,9 +98,9 @@ func New() Model {
 
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(unstagedFileList),
-			container.NewModel(stagedFileList),
-			container.NewModel(diffContent),
+			container.New(unstagedFileList),
+			container.New(stagedFileList),
+			container.New(diffContent),
 		},
 		help: help,
 		keys: newKeyMap(),
@@ -171,6 +170,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.focusedSection = unstagedSection
 		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
+		case key.Matches(msg, m.keys.commit):
+			popUpContent := popup.NewCommitContent(commit.New(m.workTreeStatus.Staged))
+			cmds = append(cmds, popup.ShowPopUp(popUpContent, popup.CenterDisplayMode))
 		}
 	}
 
