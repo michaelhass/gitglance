@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
+	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
@@ -34,10 +35,15 @@ var (
 )
 
 type Model struct {
-	workTreeStatus         git.WorkTreeStatus
-	sections               [3]container.Model
-	help                   help.Model
-	keys                   KeyMap
+	workTreeStatus git.WorkTreeStatus
+
+	sections [3]container.Model
+
+	commit commit.Model
+
+	help help.Model
+	keys KeyMap
+
 	statusErr              error
 	focusedSection         section
 	lastFocusedFileSection section
