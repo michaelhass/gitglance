@@ -64,6 +64,7 @@ func newKeyMap() KeyMap {
 func (k KeyMap) ShortHelp() []key.Binding {
 	allKeys := []key.Binding{
 		k.focusUnstaged, k.focusStaged, k.focusDiff,
+		k.commit,
 		k.up, k.down, k.left, k.right,
 		k.quit,
 	}

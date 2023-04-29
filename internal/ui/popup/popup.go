@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type DisplayMode int
+type DisplayMode byte
 
 const (
 	CenterDisplayMode DisplayMode = iota
@@ -13,8 +13,9 @@ const (
 )
 
 type Model struct {
-	content     Content
-	displayMode DisplayMode
+	content       Content
+	width, height int
+	displayMode   DisplayMode
 }
 
 func New(content Content, displayMode DisplayMode) Model {
@@ -35,12 +36,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return lipgloss.NewStyle().
-		Align(lipgloss.Center).
-		Render(m.content.View())
+	return lipgloss.Place(
+		m.width, m.height,
+		lipgloss.Center, lipgloss.Center,
+		m.content.View(),
+		lipgloss.WithWhitespaceBackground(lipgloss.NoColor{}),
+	)
 }
 
 func (m Model) SetSize(width, height int) Model {
+	m.width, m.height = width, height
 	switch m.displayMode {
 	case CenterDisplayMode:
 		m.content = m.content.SetSize(width/2, height-10) // - margin
