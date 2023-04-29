@@ -11,9 +11,9 @@ import (
 	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
-	"github.com/michaelhass/gitglance/internal/ui/popup"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -171,8 +171,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
 		case key.Matches(msg, m.keys.commit):
-			popUpContent := popup.NewCommitContent(commit.New(m.workTreeStatus.Staged))
-			cmds = append(cmds, popup.ShowPopUp(popUpContent, popup.CenterDisplayMode))
+			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.Staged))
+			cmds = append(cmds, dialog.Show(content, dialog.CenterDisplayMode))
 		}
 	}
 

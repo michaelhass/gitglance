@@ -2,15 +2,15 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/popup"
+	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
 type Model struct {
 	status status.Model
 
-	popUp          popup.Model
-	isShowingPopUp bool
+	dialog          dialog.Model
+	isDialogShowing bool
 
 	isReady bool
 
@@ -36,20 +36,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.status = m.status.SetSize(msg.Width, msg.Height)
-		if m.isShowingPopUp {
-			m.popUp = m.popUp.SetSize(msg.Width, msg.Height)
+		if m.isDialogShowing {
+			m.dialog = m.dialog.SetSize(msg.Width, msg.Height)
 		}
 		m.isReady = true
-	case popup.ShowPopUpMsg:
+	case dialog.ShowMsg:
 		popUp := msg.PopUp
 		popUp = popUp.SetSize(m.width, m.height)
-		m.popUp = popUp
-		m.isShowingPopUp = true
+		m.dialog = popUp
+		m.isDialogShowing = true
 	}
 
-	if m.isShowingPopUp {
-		popUp, cmd := m.popUp.Update(msg)
-		m.popUp = popUp
+	if m.isDialogShowing {
+		dialog, cmd := m.dialog.Update(msg)
+		m.dialog = dialog
 		return m, cmd
 	}
 
@@ -71,8 +71,8 @@ func (m Model) View() string {
 		return "loading"
 	}
 
-	if m.isShowingPopUp {
-		return m.popUp.View()
+	if m.isDialogShowing {
+		return m.dialog.View()
 	}
 	return m.status.View()
 }
