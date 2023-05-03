@@ -81,6 +81,10 @@ func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m Model) IsFocused() bool {
+	return m.isFocused
+}
+
 func (m Model) SetSize(width, height int) Model {
 	combinedBorderWidth := borderWidth * 2
 	m.width = width - (combinedBorderWidth + paddingLeft)

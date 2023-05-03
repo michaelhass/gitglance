@@ -27,6 +27,9 @@ func (cc CommitContent) Init() tea.Cmd {
 }
 
 func (cc CommitContent) Update(msg tea.Msg) (Content, tea.Cmd) {
+	if _, ok := msg.(commit.ExecutedMsg); ok {
+		return cc, Close()
+	}
 	model, cmd := cc.Model.Update(msg)
 	cc.Model = model
 	return cc, cmd

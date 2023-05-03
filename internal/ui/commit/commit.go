@@ -46,7 +46,27 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	return m, nil
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyEsc:
+			break
+		case tea.KeyEnter:
+			if mc, ok := m.message.Content().(messageContent); ok {
+				return m, Execute(mc.message())
+			}
+		}
+	}
+
+	if m.stagedFileList.IsFocused() {
+		m.stagedFileList, cmd = m.stagedFileList.Update(msg)
+	} else if m.message.IsFocused() {
+		m.message, cmd = m.message.Update(msg)
+	}
+
+	return m, cmd
 }
 
 func (m Model) View() string {
@@ -58,7 +78,7 @@ func (m Model) View() string {
 }
 
 func (m Model) SetSize(width, height int) Model {
-	containerHeight := int(float32(height) * 0.4)
+	containerHeight := height / 2
 	m.stagedFileList = m.stagedFileList.SetSize(width, containerHeight)
 	m.message = m.message.SetSize(width, containerHeight)
 	return m

@@ -14,13 +14,15 @@ const (
 
 type Model struct {
 	content       Content
+	onCloseCmd    tea.Cmd
 	width, height int
 	displayMode   DisplayMode
 }
 
-func New(content Content, displayMode DisplayMode) Model {
+func New(content Content, onCloseCmd tea.Cmd, displayMode DisplayMode) Model {
 	return Model{
 		content:     content,
+		onCloseCmd:  onCloseCmd,
 		displayMode: displayMode,
 	}
 }
@@ -53,4 +55,8 @@ func (m Model) SetSize(width, height int) Model {
 		m.content = m.content.SetSize(width, height)
 	}
 	return m
+}
+
+func (m Model) OnCloseCmd() tea.Cmd {
+	return m.onCloseCmd
 }

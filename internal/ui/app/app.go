@@ -27,6 +27,8 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -41,10 +43,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.isReady = true
 	case dialog.ShowMsg:
-		popUp := msg.PopUp
-		popUp = popUp.SetSize(m.width, m.height)
-		m.dialog = popUp
+		dialog := msg.Dialog
+		dialog = dialog.SetSize(m.width, m.height)
+		m.dialog = dialog
 		m.isDialogShowing = true
+	case dialog.CloseMsg:
+		m.isDialogShowing = false
+		cmds = append(cmds, m.dialog.OnCloseCmd())
 	}
 
 	if m.isDialogShowing {
@@ -53,15 +58,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	var (
-		cmds      []tea.Cmd
-		statusCmd tea.Cmd
-	)
-
-	m.status, statusCmd = m.status.Update(msg)
-	if statusCmd != nil {
-		cmds = append(cmds, statusCmd)
-	}
+	status, statusCmd := m.status.Update(msg)
+	m.status = status
+	cmds = append(cmds, statusCmd)
 
 	return m, tea.Batch(cmds...)
 }

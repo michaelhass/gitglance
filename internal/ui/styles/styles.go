@@ -9,6 +9,8 @@ var (
 	TextSyle          = lipgloss.NewStyle().Foreground(textColor)
 	inactiveTextColor = textColor
 	InactiveTextStyle = lipgloss.NewStyle().Foreground(inactiveTextColor)
+	SubtleTextColor   = subtleColor
+	SublteTextStyle   = lipgloss.NewStyle().Foreground(subtleColor)
 	focusTextColor    = lipgloss.Color("170")
 	FocusTextStyle    = lipgloss.NewStyle().Foreground(focusTextColor)
 	addedTextColor    = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
