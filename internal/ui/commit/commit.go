@@ -46,13 +46,17 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var (
+		cmds []tea.Cmd
+		cmd  tea.Cmd
+	)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEsc:
-			break
+		case tea.KeyTab:
+			m, cmd = m.toggleFocus()
+			cmds = append(cmds, cmd)
 		case tea.KeyEnter:
 			if mc, ok := m.message.Content().(messageContent); ok {
 				return m, Execute(mc.message())
@@ -60,13 +64,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	if m.stagedFileList.IsFocused() {
-		m.stagedFileList, cmd = m.stagedFileList.Update(msg)
-	} else if m.message.IsFocused() {
-		m.message, cmd = m.message.Update(msg)
-	}
+	m, cmd = m.updateFocusedContainer(msg)
+	cmds = append(cmds, cmd)
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
@@ -82,4 +83,33 @@ func (m Model) SetSize(width, height int) Model {
 	m.stagedFileList = m.stagedFileList.SetSize(width, containerHeight)
 	m.message = m.message.SetSize(width, containerHeight)
 	return m
+}
+
+func (m Model) toggleFocus() (Model, tea.Cmd) {
+	var (
+		files    = m.stagedFileList
+		filesCmd tea.Cmd
+
+		message    = m.message
+		messageCmd tea.Cmd
+	)
+
+	files, filesCmd = files.UpdateFocus(!files.IsFocused())
+	message, messageCmd = message.UpdateFocus(!message.IsFocused())
+
+	m.stagedFileList = files
+	m.message = message
+
+	return m, tea.Batch(filesCmd, messageCmd)
+}
+
+func (m Model) updateFocusedContainer(msg tea.Msg) (Model, tea.Cmd) {
+	if m.stagedFileList.IsFocused() {
+		files, cmd := m.stagedFileList.Update(msg)
+		m.stagedFileList = files
+		return m, cmd
+	}
+	message, cmd := m.message.Update(msg)
+	m.message = message
+	return m, cmd
 }
