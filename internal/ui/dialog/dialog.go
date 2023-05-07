@@ -55,7 +55,7 @@ func (m Model) SetSize(width, height int) Model {
 	m.width, m.height = width, height
 	switch m.displayMode {
 	case CenterDisplayMode:
-		m.content = m.content.SetSize(width/2, height-10) // - margin
+		m.content = m.content.SetSize(width/2, height/2) // - margin
 	case FullScreenDisplayMode:
 		m.content = m.content.SetSize(width, height)
 	}
