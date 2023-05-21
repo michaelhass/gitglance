@@ -28,7 +28,7 @@ type Model struct {
 	isFocused bool
 }
 
-func NewModel(content Content) Model {
+func New(content Content) Model {
 	return Model{
 		content: content,
 	}
@@ -79,6 +79,10 @@ func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
 	content, cmd = m.content.UpdateFocus(isFocused)
 	m.content = content
 	return m, cmd
+}
+
+func (m Model) IsFocused() bool {
+	return m.isFocused
 }
 
 func (m Model) SetSize(width, height int) Model {

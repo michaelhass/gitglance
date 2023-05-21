@@ -9,7 +9,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
+	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
@@ -34,10 +36,13 @@ var (
 )
 
 type Model struct {
-	workTreeStatus         git.WorkTreeStatus
-	sections               [3]container.Model
-	help                   help.Model
-	keys                   KeyMap
+	workTreeStatus git.WorkTreeStatus
+
+	sections [3]container.Model
+
+	help help.Model
+	keys KeyMap
+
 	statusErr              error
 	focusedSection         section
 	lastFocusedFileSection section
@@ -93,9 +98,9 @@ func New() Model {
 
 	return Model{
 		sections: [3]container.Model{
-			container.NewModel(unstagedFileList),
-			container.NewModel(stagedFileList),
-			container.NewModel(diffContent),
+			container.New(unstagedFileList),
+			container.New(stagedFileList),
+			container.New(diffContent),
 		},
 		help: help,
 		keys: newKeyMap(),
@@ -165,6 +170,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.focusedSection = unstagedSection
 		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
+		case key.Matches(msg, m.keys.commit):
+			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.Staged))
+			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
 		}
 	}
 

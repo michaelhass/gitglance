@@ -26,6 +26,10 @@ func Diff(opt DiffOption) (string, error) {
 	return string(out), nil
 }
 
+func Commit(msg string) error {
+	return runCommand(exec.Command("git", "commit", "-m", msg))
+}
+
 func runCommand(cmd *exec.Cmd) error {
 	if err := cmd.Run(); err != nil && !isExitError(err) {
 		return err

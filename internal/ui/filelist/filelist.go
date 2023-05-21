@@ -129,6 +129,8 @@ func (m Model) KeyMap() help.KeyMap {
 }
 
 func (m Model) SetItems(items []Item) Model {
+	m.cursor = 0
+	m.pageStartIdx = 0
 	m.items = items
 	m.visibleItems = m.updateVisibleItems()
 	return m
