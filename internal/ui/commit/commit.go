@@ -1,6 +1,7 @@
 package commit
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
@@ -11,6 +12,7 @@ import (
 type Model struct {
 	stagedFileList container.Model
 	message        container.Model
+	keys           KeyMap
 }
 
 func New(stagedFileList git.FileStatusList) Model {
@@ -38,6 +40,7 @@ func New(stagedFileList git.FileStatusList) Model {
 	return Model{
 		stagedFileList: container.New(fileListContent),
 		message:        messageContainer,
+		keys:           NewKeyMap(),
 	}
 }
 
@@ -53,11 +56,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyTab:
+		switch {
+		case key.Matches(msg, m.keys.toggleFocus):
 			m, cmd = m.toggleFocus()
 			cmds = append(cmds, cmd)
-		case tea.KeyEnter:
+		case key.Matches(msg, m.keys.commit):
 			if mc, ok := m.message.Content().(messageContent); ok {
 				return m, Execute(mc.message())
 			}
@@ -83,6 +86,15 @@ func (m Model) SetSize(width, height int) Model {
 	m.stagedFileList = m.stagedFileList.SetSize(width, containerHeight)
 	m.message = m.message.SetSize(width, containerHeight)
 	return m
+}
+
+func (m Model) Help() []key.Binding {
+	return []key.Binding{
+		m.keys.up,
+		m.keys.down,
+		m.keys.toggleFocus,
+		m.keys.commit,
+	}
 }
 
 func (m Model) toggleFocus() (Model, tea.Cmd) {

@@ -1,6 +1,7 @@
 package dialog
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/commit"
 )
@@ -10,6 +11,7 @@ type Content interface {
 	Update(msg tea.Msg) (Content, tea.Cmd)
 	View() string
 	SetSize(width, height int) Content
+	Help() []key.Binding
 }
 
 type CommitContent struct {
@@ -27,7 +29,6 @@ func (cc CommitContent) Init() tea.Cmd {
 }
 
 func (cc CommitContent) Update(msg tea.Msg) (Content, tea.Cmd) {
-
 	if _, ok := msg.(commit.ExecutedMsg); ok {
 		return cc, Close()
 	}
