@@ -30,12 +30,12 @@ func initializeStatus() func() tea.Msg {
 		}
 		msg.StatusMsg.WorkTreeStatus = workTreeStatus
 
-		unstagedFiles = msg.StatusMsg.WorkTreeStatus.Unstaged
+		unstagedFiles = msg.StatusMsg.WorkTreeStatus.UnstagedFiles()
 		if len(unstagedFiles) == 0 {
 			return msg
 		}
 
-		isUntracked = unstagedFiles[0].Code == git.Untracked
+		isUntracked = unstagedFiles[0].IsUntracked()
 		diffMsg, ok := uicmd.Diff(
 			git.DiffOption{
 				FilePath:    unstagedFiles[0].Path,

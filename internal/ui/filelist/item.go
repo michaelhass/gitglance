@@ -26,10 +26,9 @@ func (item Item) String() string {
 
 	return fmt.Sprintf("%s %s", item.Accessory, item.Path)
 }
-
-func NewItem(fileStatus git.FileStatus) Item {
+func NewItem(fileStatus git.FileStatus, accessory string) Item {
 	return Item{
 		FileStatus: fileStatus,
-		Accessory:  fmt.Sprintf("[%s]", string(fileStatus.Code)),
+		Accessory:  fmt.Sprintf("[%s]", accessory),
 	}
 }

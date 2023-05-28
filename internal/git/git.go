@@ -6,7 +6,7 @@ import (
 )
 
 func Status() (WorkTreeStatus, error) {
-	return workTreeStatus()
+	return loadWorkTreeStatus()
 }
 
 func StageFile(path string) error {

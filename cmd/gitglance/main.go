@@ -8,15 +8,6 @@ import (
 )
 
 func main() {
-	// args := os.Args[1:]
-
-	// var path string
-	// if len(args) > 0 {
-	// 	path = args[0]
-	// } else {
-	// 	path = "."
-	// }
-
 	err := ui.LaunchApp(
 		ui.LaunchOptions{},
 	)

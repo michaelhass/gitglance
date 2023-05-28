@@ -27,7 +27,7 @@ func New(stagedFileList git.FileStatusList) Model {
 	createListItems := func(fileStatusList git.FileStatusList) []filelist.Item {
 		items := make([]filelist.Item, len(fileStatusList))
 		for i, fs := range fileStatusList {
-			items[i] = filelist.NewItem(fs)
+			items[i] = filelist.NewItem(fs, string(fs.StagedStatusCode))
 		}
 		return items
 	}

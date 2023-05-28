@@ -135,7 +135,7 @@ func (fl FileStatusList) UnstagedFiles() FileStatusList {
 
 func (fl FileStatusList) StagedFiles() FileStatusList {
 	return fl.Filter(func(fs FileStatus) bool {
-		return fs.HasStagedChanges()
+		return fs.HasStagedChanges() && !fs.IsUntracked()
 	})
 }
 

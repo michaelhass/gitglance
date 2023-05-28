@@ -49,10 +49,6 @@ type Model struct {
 }
 
 func New() Model {
-	isUntracked := func(item filelist.Item) bool {
-		return item.FileStatus.Code == git.Untracked
-	}
-
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case filelist.SelectItemMsg:
@@ -61,7 +57,7 @@ func New() Model {
 			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
-					IsUntracked: isUntracked(msg.Item),
+					IsUntracked: msg.Item.IsUntracked(),
 				},
 			)
 		default:
@@ -78,7 +74,7 @@ func New() Model {
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsStaged:    true,
-					IsUntracked: isUntracked(msg.Item),
+					IsUntracked: msg.Item.IsUntracked(),
 				})
 		default:
 			return nil
@@ -171,7 +167,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.focusStaged):
 			m.focusedSection = stagedSection
 		case key.Matches(msg, m.keys.commit):
-			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.Staged))
+			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.StagedFiles()))
 			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
 		}
 	}
@@ -242,11 +238,11 @@ func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd)
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
 	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
-		section.Model = section.SetItems(createListItems(m.workTreeStatus.Unstaged))
+		section.Model = section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
 	if section, ok := m.sections[stagedSection].Content().(container.FileListContent); ok {
-		section.Model = section.SetItems(createListItems(m.workTreeStatus.Staged))
+		section.Model = section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
 	return m, nil
@@ -289,10 +285,22 @@ func (m Model) updateKeys() KeyMap {
 	return keys
 }
 
-func createListItems(fileStatusList git.FileStatusList) []filelist.Item {
+func createListItems(fileStatusList git.FileStatusList, isStaged bool) []filelist.Item {
 	items := make([]filelist.Item, len(fileStatusList))
+
+	accessory := func(fileStatus git.FileStatus, isStaged bool) string {
+		if isStaged {
+			return string(fileStatus.StagedStatusCode)
+		} else {
+			return string(fileStatus.UnstagedStatusCode)
+		}
+	}
+
 	for i, fs := range fileStatusList {
-		items[i] = filelist.NewItem(fs)
+		items[i] = filelist.NewItem(
+			fs,
+			accessory(fs, isStaged),
+		)
 	}
 	return items
 }
