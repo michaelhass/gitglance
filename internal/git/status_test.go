@@ -41,12 +41,12 @@ func TestWorkTreeStatusBranch(t *testing.T) {
 func TestWorkTreeStatusRenamed(t *testing.T) {
 	var (
 		changes          = "R "
-		path             = "some/path/file.txt"
-		newPathComponent = "some/path/new_name.txt"
+		path             = "some/path/new_name.txt"
+		oldPathComponent = "some/path/old_bame.txt"
 		renamedComponent = fmt.Sprintf("%s %s", changes, path)
 		out              = statusOutputFromComponents([]string{
 			renamedComponent,
-			newPathComponent,
+			oldPathComponent,
 		})
 		workTreeStatus, err = readWorkTreeStatusFromOutput(out)
 	)
@@ -73,7 +73,7 @@ func TestWorkTreeStatusRenamed(t *testing.T) {
 		)
 	}
 
-	if file.Extra != newPathComponent {
+	if file.Extra != oldPathComponent {
 		t.Errorf(
 			"Failed to read path. Expexted '%s' got '%s'",
 			path,

@@ -59,8 +59,7 @@ func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 			continue
 		}
 
-		if file.StagedStatusCode == Renamed ||
-			file.UnstagedStatusCode == Renamed {
+		if file.IsRenamed() {
 			// If renamed, next component will be the origianl file name
 			i += 1
 			file.Extra = components[i]
@@ -88,7 +87,7 @@ func loadWorkTreeStatus() (WorkTreeStatus, error) {
 
 type FileStatus struct {
 	Path               string
-	Extra              string // Contains extra information, e.g. new name
+	Extra              string // Contains extra information, e.g. old name
 	UnstagedStatusCode StatusCode
 	StagedStatusCode   StatusCode
 }
@@ -126,6 +125,10 @@ func (fs FileStatus) HasStagedChanges() bool {
 func (fs FileStatus) IsUntracked() bool {
 	return fs.UnstagedStatusCode == Untracked ||
 		fs.StagedStatusCode == Untracked
+}
+
+func (fs FileStatus) IsRenamed() bool {
+	return fs.StagedStatusCode == Renamed || fs.UnstagedStatusCode == Renamed
 }
 
 type FileStatusList []FileStatus
