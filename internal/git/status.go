@@ -35,49 +35,26 @@ type WorkTreeStatus struct {
 	FileStatusList
 }
 
-func loadWorkTreeStatus() (WorkTreeStatus, error) {
-	var (
-		workTreeStatus WorkTreeStatus
-		out, err       = newStatusCmd(statusOption{
-			isPorcelain:     true,
-			isNULTerminated: true,
-			hasBranch:       true,
-		}).Output()
-	)
-
-	if err != nil {
-		return workTreeStatus, err
-	}
-
-	return readWorkTreeStatusFromOutput(out)
-}
-
 func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 	var (
-		workTreeStatus WorkTreeStatus
-		statusString   = string(out)
-		components     = strings.Split(statusString, "\000")
-		branch         string
-		files          FileStatusList
+		statusString = string(out)
+		components   = strings.Split(statusString, nulSeparator)
+		branch       string
+		files        FileStatusList
 	)
 
-	if len(components) == 0 {
-		return workTreeStatus, StatusError{Reason: "Unable to read git status"}
-	}
-
-	branch = components[0]
-
-	for i := 1; i < len(components); i++ {
+	for i := 0; i < len(components); i++ {
 		component := components[i]
 
-		if len(component) < 3 {
+		if strings.HasPrefix(component, branchComponentPrefix) {
+			branch = component
 			continue
 		}
 
-		file := FileStatus{
-			StagedStatusCode:   StatusCode(component[0]),
-			UnstagedStatusCode: StatusCode(component[1]),
-			Path:               component[3:],
+		file, err := readFileStatusFromOutputComponent(component)
+
+		if err != nil {
+			continue
 		}
 
 		if file.StagedStatusCode == Renamed ||
@@ -93,11 +70,41 @@ func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 	return WorkTreeStatus{Branch: branch, FileStatusList: files}, nil
 }
 
+func loadWorkTreeStatus() (WorkTreeStatus, error) {
+	out, err := newStatusCmd(statusOption{
+		isPorcelain:     true,
+		isNULTerminated: true,
+		hasBranch:       true,
+	}).Output()
+
+	if err != nil {
+		return WorkTreeStatus{}, err
+	}
+
+	return readWorkTreeStatusFromOutput(out)
+}
+
 type FileStatus struct {
 	Path               string
 	Extra              string // Contains extra information, e.g. new name
 	UnstagedStatusCode StatusCode
 	StagedStatusCode   StatusCode
+}
+
+func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
+	var fileStatus FileStatus
+
+	if len(component) < 3 {
+		return fileStatus,
+			StatusError{
+				Reason: "Can't read FileStatus. Component is too short.",
+			}
+	}
+
+	fileStatus.StagedStatusCode = StatusCode(component[0])
+	fileStatus.UnstagedStatusCode = StatusCode(component[1])
+	fileStatus.Path = component[3:]
+	return fileStatus, nil
 }
 
 func (fs FileStatus) IsUnmodified() bool {
@@ -154,7 +161,7 @@ const (
 	Copied             StatusCode = 'C'
 	UpdatedButUnmerged StatusCode = 'U'
 	Untracked          StatusCode = '?'
-	ignored            StatusCode = '!'
+	Ignored            StatusCode = '!'
 )
 
 type StatusError struct {
@@ -164,3 +171,8 @@ type StatusError struct {
 func (e StatusError) Error() string {
 	return fmt.Sprint("Git status error:", e.Reason)
 }
+
+const (
+	nulSeparator          string = "\000"
+	branchComponentPrefix string = "##"
+)
