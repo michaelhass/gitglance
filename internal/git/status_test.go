@@ -138,10 +138,10 @@ func TestUnstagedFileStatus(t *testing.T) {
 		t.Error("Failed to read status, Expected staged changes.")
 	}
 
-	if file.UnstagedStatusCode != Added {
+	if file.UnstagedStatusCode != Modified {
 		t.Errorf(
 			"Failed to read status. Expexted 'Added' got '%s'",
-			string(file.StagedStatusCode),
+			string(file.UnstagedStatusCode),
 		)
 	}
 
