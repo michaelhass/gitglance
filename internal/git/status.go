@@ -47,7 +47,9 @@ func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 		component := components[i]
 
 		if strings.HasPrefix(component, branchComponentPrefix) {
-			branch = component
+			if len(component) >= 3 {
+				branch = component[3:]
+			}
 			continue
 		}
 
@@ -104,6 +106,7 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 	fileStatus.StagedStatusCode = StatusCode(component[0])
 	fileStatus.UnstagedStatusCode = StatusCode(component[1])
 	fileStatus.Path = component[3:]
+
 	return fileStatus, nil
 }
 
