@@ -102,11 +102,7 @@ func (m Model) View() string {
 		} else if i == m.cursor {
 			style = focusedItemStyle
 		}
-
-		runes := []rune(item.String())
-		runes = runes[:min(len(runes), m.width-1)]
-		itemString := string(runes)
-		renderedItems[i] = style.Width(m.width).Render(itemString)
+		renderedItems[i] = style.MaxHeight(1).MaxWidth(m.width - 1).Render(item.String())
 	}
 
 	return lipgloss.
