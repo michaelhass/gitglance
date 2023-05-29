@@ -32,7 +32,7 @@ func New(stagedFileList git.FileStatusList) Model {
 		return items
 	}
 
-	fileListContent.Model = fileListContent.SetItems(createListItems(stagedFileList))
+	fileListContent.Model, _ = fileListContent.SetItems(createListItems(stagedFileList))
 
 	messageContainer := container.New(newMessageContent())
 	messageContainer, _ = messageContainer.UpdateFocus(true)

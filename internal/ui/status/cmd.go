@@ -13,7 +13,7 @@ type InitializedMsg struct {
 	DiffMsg   uicmd.LoadedDiffMsg
 }
 
-func initializeStatus() func() tea.Msg {
+func initializeStatus() tea.Cmd {
 	return func() tea.Msg {
 		var (
 			msg            InitializedMsg
@@ -49,5 +49,17 @@ func initializeStatus() func() tea.Msg {
 
 		msg.DiffMsg = diffMsg
 		return msg
+	}
+}
+
+type focusSectionMsg struct {
+	section section
+}
+
+func focusSection(section section) tea.Cmd {
+	return func() tea.Msg {
+		return focusSectionMsg{
+			section: section,
+		}
 	}
 }

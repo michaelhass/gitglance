@@ -49,8 +49,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.up):
 			if m.cursor == 0 {
-				m.pageStartIdx = m.nextPageStartIdx(-1)
-				m.visibleItems = m.updateVisibleItems()
+				if m.IsFirstIndexFocused() {
+					cmds = append(cmds, m.itemHandler(TopNoMoreFocusableItems{}))
+				} else {
+					m.pageStartIdx = m.nextPageStartIdx(-1)
+					m.visibleItems = m.updateVisibleItems()
+				}
 				break
 			}
 			m.cursor -= 1
@@ -58,8 +62,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.down):
 			if m.cursor >= len(m.visibleItems)-1 {
-				m.pageStartIdx = m.nextPageStartIdx(1)
-				m.visibleItems = m.updateVisibleItems()
+				if m.IsLastIndexFocused() {
+					cmds = append(cmds, m.itemHandler(BottomNoMoreFocusableItems{}))
+				} else {
+					m.pageStartIdx = m.nextPageStartIdx(1)
+					m.visibleItems = m.updateVisibleItems()
+				}
 				break
 			}
 			m.cursor += 1
@@ -70,12 +78,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmd := m.itemHandler(SelectItemMsg{Item: item})
 			cmds = append(cmds, cmd)
 		}
-	default:
-		// Check if the curser is out of bounds due to content change.
-		if len(m.visibleItems) == 0 || m.cursor < len(m.visibleItems) {
-			break
-		}
-		m.cursor = len(m.visibleItems) - 1
 	}
 
 	return m, tea.Batch(cmds...)
@@ -128,12 +130,22 @@ func (m Model) KeyMap() help.KeyMap {
 	return m.keys
 }
 
-func (m Model) SetItems(items []Item) Model {
-	m.cursor = 0
-	m.pageStartIdx = 0
+func (m Model) SetItems(items []Item) (Model, tea.Cmd) {
 	m.items = items
 	m.visibleItems = m.updateVisibleItems()
-	return m
+
+	// Check out of bounds due to content change
+	if len(m.visibleItems) > 0 && m.cursor >= len(m.visibleItems) {
+		m.cursor -= 1
+		m.pageStartIdx = m.nextPageStartIdx(-1)
+		m.visibleItems = m.updateVisibleItems()
+	}
+
+	if !m.isFocused || len(m.visibleItems) == 0 {
+		return m, nil
+	}
+
+	return m, m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 }
 
 func (m Model) FocusedItem() (Item, error) {
