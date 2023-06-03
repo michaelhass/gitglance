@@ -41,17 +41,18 @@ func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 		components   = strings.Split(statusString, nulSeparator)
 		branch       string
 		files        FileStatusList
+		startIdx     = 0
 	)
 
-	for i := 0; i < len(components); i++ {
-		component := components[i]
-
-		if strings.HasPrefix(component, branchComponentPrefix) {
-			if len(component) >= 3 {
-				branch = component[3:]
-			}
-			continue
+	if firstComponent := components[0]; strings.HasPrefix(firstComponent, branchComponentPrefix) {
+		if len(firstComponent) >= 3 {
+			branch = firstComponent[3:]
 		}
+		startIdx = 1
+	}
+
+	for i := startIdx; i < len(components); i++ {
+		component := components[i]
 
 		file, err := readFileStatusFromOutputComponent(component)
 
