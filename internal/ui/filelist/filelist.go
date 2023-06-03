@@ -39,7 +39,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	if !m.isFocused || len(m.items) == 0 {
+	if !m.isFocused {
 		return m, nil
 	}
 
@@ -85,10 +85,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
 	var cmd tea.Cmd
-	if isFocused && !m.isFocused && len(m.items) > 0 {
+
+	m.isFocused = isFocused
+	if m.isFocused && len(m.items) > 0 {
 		cmd = m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 	}
-	m.isFocused = isFocused
 	return m, cmd
 }
 
@@ -153,6 +154,9 @@ func (m Model) FocusedItem() (Item, error) {
 }
 
 func (m Model) IsFirstIndexFocused() bool {
+	if len(m.items) == 0 {
+		return true
+	}
 	return m.pageStartIdx+m.cursor == 0
 }
 
