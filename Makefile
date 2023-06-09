@@ -1,5 +1,5 @@
 run: 
-	go run cmd/gitglance/main.go
+	go run main.go
 
 test:
 	 go test -v ./...
