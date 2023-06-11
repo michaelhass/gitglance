@@ -21,3 +21,21 @@ func TestBuilderWriteMultineText(t *testing.T) {
 		t.Errorf("[%s] is not equal to [%s]", expect, got)
 	}
 }
+
+func TestBuilderWriteMultiLineWithTab(t *testing.T) {
+	var (
+		text    = "func() {\n\tfmt.Println('')"
+		builder = NewBuilder()
+
+		expect = "func() {\n    fmt.Println('')"
+		got    string
+	)
+
+	builder.SetLineLength(20)
+	builder.WriteString(text)
+	got = builder.String()
+
+	if expect != got {
+		t.Errorf("[%s] is not equal to [%s]", expect, got)
+	}
+}
