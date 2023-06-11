@@ -9,3 +9,8 @@ type FocusItemMsg struct {
 type SelectItemMsg struct {
 	Item Item
 }
+
+type TopNoMoreItems struct{}
+
+type TopNoMoreFocusableItems struct{}
+type BottomNoMoreFocusableItems struct{}

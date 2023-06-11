@@ -49,10 +49,6 @@ type Model struct {
 }
 
 func New() Model {
-	isUntracked := func(item filelist.Item) bool {
-		return item.FileStatus.Code == git.Untracked
-	}
-
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case filelist.SelectItemMsg:
@@ -61,9 +57,11 @@ func New() Model {
 			return uicmd.Diff(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
-					IsUntracked: isUntracked(msg.Item),
+					IsUntracked: msg.Item.IsUntracked(),
 				},
 			)
+		case filelist.BottomNoMoreFocusableItems:
+			return focusSection(stagedSection)
 		default:
 			return nil
 		}
@@ -78,8 +76,10 @@ func New() Model {
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsStaged:    true,
-					IsUntracked: isUntracked(msg.Item),
+					IsUntracked: msg.Item.IsUntracked(),
 				})
+		case filelist.TopNoMoreFocusableItems:
+			return focusSection(unstagedSection)
 		default:
 			return nil
 		}
@@ -119,9 +119,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	var (
 		cmds []tea.Cmd
-		// In some cases we do not want to pass the key msg to the sections
-		// E.g. switching section focus via arrow keys.
-		blockSectionMsgUpdate = false
 	)
 
 	switch msg := msg.(type) {
@@ -139,39 +136,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		model, cmd := m.handleLoadedDiffMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
+	case focusSectionMsg:
+		m = m.focusSection(msg.section)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.left):
-			m.focusedSection = m.lastFocusedFileSection
+			m = m.focusSection(m.lastFocusedFileSection)
 		case key.Matches(msg, m.keys.right), key.Matches(msg, m.keys.focusDiff):
-			m.lastFocusedFileSection = m.focusedSection
-			m.focusedSection = diffSection
-		case key.Matches(msg, m.keys.up):
-			if m.focusedSection != stagedSection {
-				break
-			}
-			section, ok := m.sections[stagedSection].Content().(container.FileListContent)
-			if !ok || !section.IsFirstIndexFocused() {
-				break
-			}
-			m.focusedSection = unstagedSection
-			blockSectionMsgUpdate = true
-		case key.Matches(msg, m.keys.down):
-			if m.focusedSection != unstagedSection {
-				break
-			}
-			section, ok := m.sections[unstagedSection].Content().(container.FileListContent)
-			if !ok || !section.IsLastIndexFocused() {
-				break
-			}
-			m.focusedSection = stagedSection
-			blockSectionMsgUpdate = false
+			m = m.focusSection(diffSection)
 		case key.Matches(msg, m.keys.focusUnstaged):
-			m.focusedSection = unstagedSection
+			m = m.focusSection(unstagedSection)
 		case key.Matches(msg, m.keys.focusStaged):
-			m.focusedSection = stagedSection
+			m = m.focusSection(stagedSection)
 		case key.Matches(msg, m.keys.commit):
-			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.Staged))
+			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.StagedFiles()))
 			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
 		}
 	}
@@ -182,10 +160,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		updatedSection, cmd := section.UpdateFocus(i == int(m.focusedSection))
 		cmds = append(cmds, cmd)
 
-		if !blockSectionMsgUpdate {
-			updatedSection, cmd = updatedSection.Update(msg)
-			cmds = append(cmds, cmd)
-		}
+		updatedSection, cmd = updatedSection.Update(msg)
+		cmds = append(cmds, cmd)
 
 		m.sections[i] = updatedSection
 	}
@@ -239,17 +215,20 @@ func (m Model) SetSize(width, height int) Model {
 }
 
 func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
+
 	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
-		section.Model = section.SetItems(createListItems(m.workTreeStatus.Unstaged))
+		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
 	if section, ok := m.sections[stagedSection].Content().(container.FileListContent); ok {
-		section.Model = section.SetItems(createListItems(m.workTreeStatus.Staged))
+		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
-	return m, nil
+	return m, cmd
 }
 
 func (m Model) handleLoadedDiffMsg(msg uicmd.LoadedDiffMsg) (Model, tea.Cmd) {
@@ -260,6 +239,12 @@ func (m Model) handleLoadedDiffMsg(msg uicmd.LoadedDiffMsg) (Model, tea.Cmd) {
 	section.Model = section.SetContent(msg.Diff, msg.Err)
 	m.sections[diffSection] = m.sections[diffSection].SetContent(section)
 	return m, nil
+}
+
+func (m Model) focusSection(section section) Model {
+	m.lastFocusedFileSection = m.focusedSection
+	m.focusedSection = section
+	return m
 }
 
 func (m Model) updateKeys() KeyMap {
@@ -289,10 +274,22 @@ func (m Model) updateKeys() KeyMap {
 	return keys
 }
 
-func createListItems(fileStatusList git.FileStatusList) []filelist.Item {
+func createListItems(fileStatusList git.FileStatusList, isStaged bool) []filelist.Item {
 	items := make([]filelist.Item, len(fileStatusList))
+
+	accessory := func(fileStatus git.FileStatus, isStaged bool) string {
+		if isStaged {
+			return string(fileStatus.StagedStatusCode)
+		} else {
+			return string(fileStatus.UnstagedStatusCode)
+		}
+	}
+
 	for i, fs := range fileStatusList {
-		items[i] = filelist.NewItem(fs)
+		items[i] = filelist.NewItem(
+			fs,
+			accessory(fs, isStaged),
+		)
 	}
 	return items
 }

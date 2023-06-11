@@ -13,7 +13,7 @@ type InitializedMsg struct {
 	DiffMsg   uicmd.LoadedDiffMsg
 }
 
-func initializeStatus() func() tea.Msg {
+func initializeStatus() tea.Cmd {
 	return func() tea.Msg {
 		var (
 			msg            InitializedMsg
@@ -30,12 +30,12 @@ func initializeStatus() func() tea.Msg {
 		}
 		msg.StatusMsg.WorkTreeStatus = workTreeStatus
 
-		unstagedFiles = msg.StatusMsg.WorkTreeStatus.Unstaged
+		unstagedFiles = msg.StatusMsg.WorkTreeStatus.UnstagedFiles()
 		if len(unstagedFiles) == 0 {
 			return msg
 		}
 
-		isUntracked = unstagedFiles[0].Code == git.Untracked
+		isUntracked = unstagedFiles[0].IsUntracked()
 		diffMsg, ok := uicmd.Diff(
 			git.DiffOption{
 				FilePath:    unstagedFiles[0].Path,
@@ -49,5 +49,17 @@ func initializeStatus() func() tea.Msg {
 
 		msg.DiffMsg = diffMsg
 		return msg
+	}
+}
+
+type focusSectionMsg struct {
+	section section
+}
+
+func focusSection(section section) tea.Cmd {
+	return func() tea.Msg {
+		return focusSectionMsg{
+			section: section,
+		}
 	}
 }

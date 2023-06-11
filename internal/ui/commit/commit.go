@@ -27,12 +27,12 @@ func New(stagedFileList git.FileStatusList) Model {
 	createListItems := func(fileStatusList git.FileStatusList) []filelist.Item {
 		items := make([]filelist.Item, len(fileStatusList))
 		for i, fs := range fileStatusList {
-			items[i] = filelist.NewItem(fs)
+			items[i] = filelist.NewItem(fs, string(fs.StagedStatusCode))
 		}
 		return items
 	}
 
-	fileListContent.Model = fileListContent.SetItems(createListItems(stagedFileList))
+	fileListContent.Model, _ = fileListContent.SetItems(createListItems(stagedFileList))
 
 	messageContainer := container.New(newMessageContent())
 	messageContainer, _ = messageContainer.UpdateFocus(true)

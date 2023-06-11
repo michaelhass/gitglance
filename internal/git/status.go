@@ -4,199 +4,182 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"unicode"
 )
 
-type WorkTreeStatus struct {
-	Unstaged FileStatusList
-	Staged   FileStatusList
+type statusOption struct {
+	isPorcelain     bool
+	isNULTerminated bool
+	hasBranch       bool
 }
 
-func NewWorkTreeStatus(unstaged, staged FileStatusList) WorkTreeStatus {
-	return WorkTreeStatus{Unstaged: unstaged, Staged: staged}
-}
+func newStatusCmd(opt statusOption) *exec.Cmd {
+	args := []string{"status"}
 
-func (s WorkTreeStatus) String() string {
-	writeFile := func(sb *strings.Builder, fsList []FileStatus) {
-		for _, fs := range fsList {
-			sb.WriteString(fmt.Sprintf("[%s] %s\n", string(fs.Code), fs.Path))
-		}
+	if opt.isPorcelain {
+		args = append(args, "--porcelain")
 	}
 
-	var sb strings.Builder
-	sb.WriteString("Unstaged:\n")
-	writeFile(&sb, s.Unstaged)
-	sb.WriteString("\n")
-	sb.WriteString("Staged:\n")
-	writeFile(&sb, s.Staged)
-	return sb.String()
+	if opt.isNULTerminated {
+		args = append(args, "-z")
+	}
+
+	if opt.hasBranch {
+		args = append(args, "-b")
+	}
+
+	return exec.Command("git", args...)
+}
+
+type WorkTreeStatus struct {
+	Branch string
+	FileStatusList
+}
+
+func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
+	var (
+		statusString = string(out)
+		components   = strings.Split(statusString, nulSeparator)
+		branch       string
+		files        FileStatusList
+		startIdx     = 0
+	)
+
+	if firstComponent := components[0]; strings.HasPrefix(firstComponent, branchComponentPrefix) {
+		if len(firstComponent) >= 3 {
+			branch = firstComponent[3:]
+		}
+		startIdx = 1
+	}
+
+	for i := startIdx; i < len(components); i++ {
+		component := components[i]
+
+		file, err := readFileStatusFromOutputComponent(component)
+
+		if err != nil {
+			continue
+		}
+
+		if file.IsRenamed() {
+			// If renamed, next component will be the origianl file name
+			i += 1
+			file.Extra = components[i]
+		}
+
+		files = append(files, file)
+	}
+
+	return WorkTreeStatus{Branch: branch, FileStatusList: files}, nil
+}
+
+func loadWorkTreeStatus() (WorkTreeStatus, error) {
+	out, err := newStatusCmd(statusOption{
+		isPorcelain:     true,
+		isNULTerminated: true,
+		hasBranch:       true,
+	}).Output()
+
+	if err != nil {
+		return WorkTreeStatus{}, err
+	}
+
+	return readWorkTreeStatusFromOutput(out)
 }
 
 type FileStatus struct {
-	Path  string
-	Extra string // Contains extra information, e.g. previous name
-	Code  Code
+	Path               string
+	Extra              string // Contains extra information, e.g. old name
+	UnstagedStatusCode StatusCode
+	StagedStatusCode   StatusCode
 }
 
-type FileStatusList []FileStatus
+func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
+	var fileStatus FileStatus
 
-func (l FileStatusList) Contains(path string, code Code) bool {
-	for _, fs := range l {
-		if fs.Path == path && fs.Code == code {
-			return true
-		}
-	}
-	return false
-}
-
-type Code byte
-
-const (
-	Untracked          Code = '?'
-	Modified           Code = 'M'
-	Added              Code = 'A'
-	Deleted            Code = 'D'
-	Renamed            Code = 'R'
-	Copied             Code = 'C'
-	UpdatedButUnmerged Code = 'U'
-)
-
-func (s Code) IsValid() bool {
-	switch s {
-	case Untracked, Modified, Added, Deleted, Renamed, Copied, UpdatedButUnmerged:
-		return true
-	default:
-		return false
-	}
-}
-
-func workTreeStatus() (WorkTreeStatus, error) {
-	var workTreeStatus WorkTreeStatus
-
-	unstagedFiles, err := fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true})
-	if err != nil {
-		return workTreeStatus, err
-	}
-
-	untrackedFilesPaths, err := untrackedFiles()
-	if err != nil {
-		return workTreeStatus, nil
-	}
-
-	untrackedFiles := fileStatusListForUntrackedFiles(untrackedFilesPaths)
-	unstagedFiles = append(unstagedFiles, untrackedFiles...)
-
-	stagedFiles, err := fileStatusListFromDiff(DiffOption{IsNameStatusOnly: true, IsStaged: true})
-	if err != nil {
-		return workTreeStatus, err
-	}
-
-	workTreeStatus = NewWorkTreeStatus(unstagedFiles, stagedFiles)
-	return workTreeStatus, nil
-}
-
-func fileStatusListFromDiff(opt DiffOption) (FileStatusList, error) {
-	diff, err := Diff(opt)
-	if err != nil {
-		return nil, err
-	}
-	return fileStatusListFromDiffString(diff)
-}
-
-// Expect format from "git diff --name-status"
-func fileStatusListFromDiffString(diff string) (FileStatusList, error) {
-	var (
-		lines = strings.Split(diff, "\n")
-		list  FileStatusList
-	)
-
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-		fs, err := fileStatusFromLine(line)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, fs)
-	}
-	return list, nil
-}
-
-func fileStatusFromLine(line string) (FileStatus, error) {
-	var (
-		fileStatus  FileStatus
-		components  []string
-		builder     strings.Builder
-		trimmedLine = strings.TrimSpace(line)
-	)
-
-	for _, r := range trimmedLine {
-		if !unicode.IsSpace(r) {
-			builder.WriteRune(r)
-			continue
-		}
-
-		if builder.Len() == 0 {
-			continue
-		}
-
-		components = append(components, builder.String())
-		builder.Reset()
-	}
-
-	if builder.Len() > 0 {
-		components = append(components, builder.String())
-	}
-
-	if len(components) < 2 {
+	if len(component) < 3 {
 		return fileStatus,
-			fmt.Errorf("unable to read file status from: %s", line)
+			StatusError{
+				Reason: "Can't read FileStatus. Component is too short.",
+			}
 	}
 
-	statusCode := Code(components[0][0])
-	if !statusCode.IsValid() {
-		return fileStatus,
-			fmt.Errorf("invalid statuscode: %s", string(statusCode))
-	}
-
-	fileStatus.Code = statusCode
-	fileStatus.Path = components[1]
-
-	if len(components) > 2 {
-		fileStatus.Extra = components[2]
-	}
+	fileStatus.StagedStatusCode = StatusCode(component[0])
+	fileStatus.UnstagedStatusCode = StatusCode(component[1])
+	fileStatus.Path = component[3:]
 
 	return fileStatus, nil
 }
 
-func untrackedFiles() ([]string, error) {
-	cmd := exec.Command("git", "ls-files", "--others", "--exclude-standard")
-	out, err := cmd.Output()
+func (fs FileStatus) IsUnmodified() bool {
+	return fs.UnstagedStatusCode == Unmodified &&
+		fs.StagedStatusCode == Unmodified
+}
 
-	if err != nil {
-		return nil, err
-	}
+func (fs FileStatus) HasUnstagedChanges() bool {
+	return fs.UnstagedStatusCode != Unmodified
+}
 
-	var files []string
-	for _, line := range strings.Split(string(out), "\n") {
-		if len(line) == 0 {
-			continue
+func (fs FileStatus) HasStagedChanges() bool {
+	return fs.StagedStatusCode != Unmodified
+}
+
+func (fs FileStatus) IsUntracked() bool {
+	return fs.UnstagedStatusCode == Untracked ||
+		fs.StagedStatusCode == Untracked
+}
+
+func (fs FileStatus) IsRenamed() bool {
+	return fs.StagedStatusCode == Renamed || fs.UnstagedStatusCode == Renamed
+}
+
+type FileStatusList []FileStatus
+
+func (fl FileStatusList) UnstagedFiles() FileStatusList {
+	return fl.Filter(func(fs FileStatus) bool {
+		return fs.HasUnstagedChanges()
+	})
+}
+
+func (fl FileStatusList) StagedFiles() FileStatusList {
+	return fl.Filter(func(fs FileStatus) bool {
+		return fs.HasStagedChanges() && !fs.IsUntracked()
+	})
+}
+
+func (fl FileStatusList) Filter(isIncluded func(FileStatus) bool) FileStatusList {
+	var result FileStatusList
+	for _, fs := range fl {
+		if isIncluded(fs) {
+			result = append(result, fs)
 		}
-		files = append(files, line)
 	}
-	return files, nil
+	return result
 }
 
-func fileStatusListForUntrackedFiles(paths []string) FileStatusList {
-	var list FileStatusList
-	for _, path := range paths {
-		list = append(
-			list, FileStatus{
-				Path: path,
-				Code: Untracked,
-			},
-		)
-	}
-	return list
+type StatusCode byte
+
+const (
+	Unmodified         StatusCode = ' '
+	Modified           StatusCode = 'M'
+	TypeChanged        StatusCode = 'T'
+	Added              StatusCode = 'A'
+	Deleted            StatusCode = 'D'
+	Renamed            StatusCode = 'R'
+	Copied             StatusCode = 'C'
+	UpdatedButUnmerged StatusCode = 'U'
+	Untracked          StatusCode = '?'
+	Ignored            StatusCode = '!'
+)
+
+type StatusError struct {
+	Reason string
 }
+
+func (e StatusError) Error() string {
+	return fmt.Sprint("Git status error:", e.Reason)
+}
+
+const (
+	nulSeparator          string = "\000"
+	branchComponentPrefix string = "##"
+)

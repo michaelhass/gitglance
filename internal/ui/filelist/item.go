@@ -14,8 +14,8 @@ type Item struct {
 func (item Item) String() string {
 	var path string
 
-	if len(item.FileStatus.Extra) > 0 {
-		path = fmt.Sprintf("%s → %s", item.Path, item.Extra)
+	if item.IsRenamed() {
+		path = fmt.Sprintf("%s → %s", item.Extra, item.Path)
 	} else {
 		path = item.Path
 	}
@@ -24,12 +24,11 @@ func (item Item) String() string {
 		return path
 	}
 
-	return fmt.Sprintf("%s %s", item.Accessory, item.Path)
+	return fmt.Sprintf("%s %s", item.Accessory, path)
 }
-
-func NewItem(fileStatus git.FileStatus) Item {
+func NewItem(fileStatus git.FileStatus, accessory string) Item {
 	return Item{
 		FileStatus: fileStatus,
-		Accessory:  fmt.Sprintf("[%s]", string(fileStatus.Code)),
+		Accessory:  fmt.Sprintf("[%s]", accessory),
 	}
 }
