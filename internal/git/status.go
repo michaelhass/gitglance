@@ -98,7 +98,7 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 
 	if len(component) < 3 {
 		return fileStatus,
-			StatusError{
+			statusError{
 				Reason: "Can't read FileStatus. Component is too short.",
 			}
 	}
@@ -171,11 +171,11 @@ const (
 	Ignored            StatusCode = '!'
 )
 
-type StatusError struct {
+type statusError struct {
 	Reason string
 }
 
-func (e StatusError) Error() string {
+func (e statusError) Error() string {
 	return fmt.Sprint("Git status error:", e.Reason)
 }
 
