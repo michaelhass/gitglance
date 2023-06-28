@@ -7,15 +7,15 @@ import (
 	"github.com/michaelhass/gitglance/internal/git"
 )
 
-type InitializedMsg struct {
-	StatusMsg statusUpdateMsg
-	DiffMsg   loadedDiffMsg
+type initializedMsg struct {
+	statusMsg statusUpdateMsg
+	diffMsg   loadedDiffMsg
 }
 
 func initializeStatus() tea.Cmd {
 	return func() tea.Msg {
 		var (
-			msg            InitializedMsg
+			msg            initializedMsg
 			workTreeStatus git.WorkTreeStatus
 			unstagedFiles  git.FileStatusList
 			isUntracked    bool
@@ -24,12 +24,12 @@ func initializeStatus() tea.Cmd {
 
 		workTreeStatus, err = git.Status()
 		if err != nil {
-			msg.StatusMsg.Err = err
+			msg.statusMsg.Err = err
 			return msg
 		}
-		msg.StatusMsg.WorkTreeStatus = workTreeStatus
+		msg.statusMsg.WorkTreeStatus = workTreeStatus
 
-		unstagedFiles = msg.StatusMsg.WorkTreeStatus.UnstagedFiles()
+		unstagedFiles = msg.statusMsg.WorkTreeStatus.UnstagedFiles()
 		if len(unstagedFiles) == 0 {
 			return msg
 		}
@@ -46,7 +46,7 @@ func initializeStatus() tea.Cmd {
 			return msg
 		}
 
-		msg.DiffMsg = diffMsg
+		msg.diffMsg = diffMsg
 		return msg
 	}
 }

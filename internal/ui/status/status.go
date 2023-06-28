@@ -121,10 +121,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case InitializedMsg:
+	case initializedMsg:
 		var model = m
-		model, scmd := model.handleStatusUpdateMsg(msg.StatusMsg)
-		model, dcmd := model.handleLoadedDiffMsg(msg.DiffMsg)
+		model, scmd := model.handleStatusUpdateMsg(msg.statusMsg)
+		model, dcmd := model.handleLoadedDiffMsg(msg.diffMsg)
 		m = model
 		cmds = append(cmds, scmd, dcmd)
 	case statusUpdateMsg:
