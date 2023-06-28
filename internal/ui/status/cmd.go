@@ -5,12 +5,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/git"
-	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 )
 
 type InitializedMsg struct {
-	StatusMsg uicmd.StatusUpdateMsg
-	DiffMsg   uicmd.LoadedDiffMsg
+	StatusMsg statusUpdateMsg
+	DiffMsg   loadedDiffMsg
 }
 
 func initializeStatus() tea.Cmd {
@@ -36,12 +35,12 @@ func initializeStatus() tea.Cmd {
 		}
 
 		isUntracked = unstagedFiles[0].IsUntracked()
-		diffMsg, ok := uicmd.Diff(
+		diffMsg, ok := diffFile(
 			git.DiffOption{
 				FilePath:    unstagedFiles[0].Path,
 				IsUntracked: isUntracked,
 			},
-		)().(uicmd.LoadedDiffMsg)
+		)().(loadedDiffMsg)
 		if !ok {
 			diffMsg.Err = errors.New("unable to load diff")
 			return msg
@@ -61,5 +60,84 @@ func focusSection(section section) tea.Cmd {
 		return focusSectionMsg{
 			section: section,
 		}
+	}
+}
+
+type statusUpdateMsg struct {
+	Err            error
+	WorkTreeStatus git.WorkTreeStatus
+}
+
+func stageFile(path string) func() tea.Msg {
+	return func() tea.Msg {
+		var (
+			workTreeStatus git.WorkTreeStatus
+			msg            statusUpdateMsg
+			err            error
+		)
+
+		err = git.StageFile(path)
+		if err != nil {
+			msg.Err = err
+			return msg
+		}
+
+		workTreeStatus, err = git.Status()
+		if err != nil {
+			msg.Err = err
+			return msg
+		}
+		msg.WorkTreeStatus = workTreeStatus
+
+		return msg
+	}
+}
+
+func unstageFile(path string) func() tea.Msg {
+	return func() tea.Msg {
+		var (
+			workTreeStatus git.WorkTreeStatus
+			msg            statusUpdateMsg
+			err            error
+		)
+
+		err = git.UnstageFile(path)
+		if err != nil {
+			msg.Err = err
+			return msg
+		}
+
+		workTreeStatus, err = git.Status()
+		if err != nil {
+			msg.Err = err
+			return msg
+		}
+		msg.WorkTreeStatus = workTreeStatus
+
+		return msg
+	}
+}
+
+type loadedDiffMsg struct {
+	Err  error
+	Diff string
+}
+
+func diffFile(opt git.DiffOption) func() tea.Msg {
+	return func() tea.Msg {
+		var (
+			msg  loadedDiffMsg
+			err  error
+			diff string
+		)
+
+		diff, err = git.Diff(opt)
+		if err != nil {
+			msg.Err = err
+			return msg
+		}
+		msg.Diff = diff
+
+		return msg
 	}
 }

@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
-	uicmd "github.com/michaelhass/gitglance/internal/ui/cmd"
 	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
@@ -52,9 +51,9 @@ func New() Model {
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case filelist.SelectItemMsg:
-			return uicmd.StageFile(msg.Item.Path)
+			return stageFile(msg.Item.Path)
 		case filelist.FocusItemMsg:
-			return uicmd.Diff(
+			return diffFile(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsUntracked: msg.Item.IsUntracked(),
@@ -70,9 +69,9 @@ func New() Model {
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case filelist.SelectItemMsg:
-			return uicmd.UnstageFile(msg.Item.Path)
+			return unstageFile(msg.Item.Path)
 		case filelist.FocusItemMsg:
-			return uicmd.Diff(
+			return diffFile(
 				git.DiffOption{
 					FilePath:    msg.Item.Path,
 					IsStaged:    true,
@@ -128,11 +127,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		model, dcmd := model.handleLoadedDiffMsg(msg.DiffMsg)
 		m = model
 		cmds = append(cmds, scmd, dcmd)
-	case uicmd.StatusUpdateMsg:
+	case statusUpdateMsg:
 		model, cmd := m.handleStatusUpdateMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
-	case uicmd.LoadedDiffMsg:
+	case loadedDiffMsg:
 		model, cmd := m.handleLoadedDiffMsg(msg)
 		m = model
 		cmds = append(cmds, cmd)
@@ -214,7 +213,7 @@ func (m Model) SetSize(width, height int) Model {
 	return m
 }
 
-func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd) {
+func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.workTreeStatus = msg.WorkTreeStatus
@@ -231,7 +230,7 @@ func (m Model) handleStatusUpdateMsg(msg uicmd.StatusUpdateMsg) (Model, tea.Cmd)
 	return m, cmd
 }
 
-func (m Model) handleLoadedDiffMsg(msg uicmd.LoadedDiffMsg) (Model, tea.Cmd) {
+func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
 	section, ok := m.sections[diffSection].Content().(container.DiffContent)
 	if !ok {
 		return m, nil
