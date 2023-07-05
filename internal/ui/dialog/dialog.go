@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/ui/styles"
+	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
 type DisplayMode byte
@@ -17,7 +17,7 @@ const (
 
 const helpHeight = 1
 
-var helpStyle = styles.ShortHelpStyle
+var helpStyle = style.ShortHelp.Copy()
 
 type Model struct {
 	content                         Content

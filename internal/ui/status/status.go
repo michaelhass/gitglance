@@ -13,7 +13,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
-	"github.com/michaelhass/gitglance/internal/ui/styles"
+	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
 type section byte
@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	helpStyle = styles.ShortHelpStyle.Copy()
+	helpStyle = style.ShortHelp.Copy()
 )
 
 type Model struct {

@@ -7,13 +7,13 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/ui/styles"
+	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
 var (
-	itemStyle         = styles.TextSyle.Copy()
-	focusedItemStyle  = styles.FocusTextStyle.Copy()
-	inactiveItemStyle = styles.InactiveTextStyle.Copy()
+	itemStyle         = style.Text.Copy()
+	focusedItemStyle  = style.FocusText.Copy()
+	inactiveItemStyle = style.InactiveText.Copy()
 )
 
 type ItemHandler func(msg tea.Msg) tea.Cmd

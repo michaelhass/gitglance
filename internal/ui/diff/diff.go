@@ -8,13 +8,13 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/textwrap"
-	"github.com/michaelhass/gitglance/internal/ui/styles"
+	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
 var (
-	normalTextStyle  = styles.TextSyle.Copy()
-	addedTextStyle   = styles.AddedTextStyle.Copy()
-	removedTextStyle = styles.RemovedTextStyle.Copy()
+	normalTextStyle  = style.Text.Copy()
+	addedTextStyle   = style.AddedText.Copy()
+	removedTextStyle = style.RemovedText.Copy()
 )
 
 type Model struct {

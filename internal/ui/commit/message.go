@@ -8,11 +8,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/styles"
+	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
 var (
-	countStyle = styles.SublteTextStyle.Copy().Height(1)
+	countStyle = style.SublteText.Copy().Height(1)
 )
 
 type messageContent struct {
@@ -35,13 +35,13 @@ func newMessageContent() messageContent {
 	textarea.Prompt = ""
 	textarea.ShowLineNumbers = false
 
-	blurredStyle.Text = styles.SublteTextStyle.Copy()
-	blurredStyle.Placeholder = styles.SublteTextStyle.Copy()
+	blurredStyle.Text = style.SublteText.Copy()
+	blurredStyle.Placeholder = style.SublteText.Copy()
 	blurredStyle.CursorLine = lipgloss.NewStyle()
 	textarea.BlurredStyle = blurredStyle
 
-	focusedStyle.Placeholder = styles.SublteTextStyle.Copy()
-	focusedStyle.Text = styles.TextSyle.Copy()
+	focusedStyle.Placeholder = style.SublteText.Copy()
+	focusedStyle.Text = style.Text.Copy()
 	focusedStyle.CursorLine = lipgloss.NewStyle()
 	textarea.FocusedStyle = focusedStyle
 
