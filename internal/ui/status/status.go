@@ -54,7 +54,7 @@ func New() Model {
 			return stageFile(msg.Item.Path)
 		case filelist.FocusItemMsg:
 			return diffFile(
-				git.DiffOption{
+				git.DiffOptions{
 					FilePath:    msg.Item.Path,
 					IsUntracked: msg.Item.IsUntracked(),
 				},
@@ -72,7 +72,7 @@ func New() Model {
 			return unstageFile(msg.Item.Path)
 		case filelist.FocusItemMsg:
 			return diffFile(
-				git.DiffOption{
+				git.DiffOptions{
 					FilePath:    msg.Item.Path,
 					IsStaged:    true,
 					IsUntracked: msg.Item.IsUntracked(),

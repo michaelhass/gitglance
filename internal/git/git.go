@@ -1,43 +1,22 @@
 package git
 
-import (
-	"errors"
-	"os/exec"
-)
-
 func Status() (WorkTreeStatus, error) {
 	return loadWorkTreeStatus()
 }
 
 func StageFile(path string) error {
-	return runCommand(exec.Command("git", "add", path))
+	cmd := newGitCommand("add", path)
+	return cmd.run()
 }
 
 func UnstageFile(path string) error {
-	return runCommand(exec.Command("git", "restore", "--staged", path))
+	return newGitCommand("restore", "--staged", path).run()
 }
 
-func Diff(opt DiffOption) (string, error) {
-	cmd := newDiffCmd(opt)
-	out, err := cmd.Output()
-	if err != nil && !isExitError(err) {
-		return "", err
-	}
-	return string(out), nil
+func Diff(opt DiffOptions) (string, error) {
+	return newDiffCmd(opt).output()
 }
 
 func Commit(msg string) error {
-	return runCommand(exec.Command("git", "commit", "-m", msg))
-}
-
-func runCommand(cmd *exec.Cmd) error {
-	if err := cmd.Run(); err != nil && !isExitError(err) {
-		return err
-	}
-	return nil
-}
-
-func isExitError(err error) bool {
-	var ee *exec.ExitError
-	return errors.As(err, &ee)
+	return newGitCommand("commit", "-m", msg).run()
 }

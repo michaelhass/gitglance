@@ -36,7 +36,7 @@ func initializeStatus() tea.Cmd {
 
 		isUntracked = unstagedFiles[0].IsUntracked()
 		diffMsg, ok := diffFile(
-			git.DiffOption{
+			git.DiffOptions{
 				FilePath:    unstagedFiles[0].Path,
 				IsUntracked: isUntracked,
 			},
@@ -123,7 +123,7 @@ type loadedDiffMsg struct {
 	Diff string
 }
 
-func diffFile(opt git.DiffOption) func() tea.Msg {
+func diffFile(opt git.DiffOptions) func() tea.Msg {
 	return func() tea.Msg {
 		var (
 			msg  loadedDiffMsg

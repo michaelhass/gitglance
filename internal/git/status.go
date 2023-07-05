@@ -2,46 +2,34 @@ package git
 
 import (
 	"fmt"
-	"os/exec"
 	"strings"
 )
-
-type statusOption struct {
-	isPorcelain     bool
-	isNULTerminated bool
-	hasBranch       bool
-}
-
-func newStatusCmd(opt statusOption) *exec.Cmd {
-	args := []string{"status"}
-
-	if opt.isPorcelain {
-		args = append(args, "--porcelain")
-	}
-
-	if opt.isNULTerminated {
-		args = append(args, "-z")
-	}
-
-	if opt.hasBranch {
-		args = append(args, "-b")
-	}
-
-	return exec.Command("git", args...)
-}
 
 type WorkTreeStatus struct {
 	Branch string
 	FileStatusList
 }
 
-func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
+func loadWorkTreeStatus() (WorkTreeStatus, error) {
+	out, err := newStatusCmd(statusOptions{
+		isPorcelain:     true,
+		isNULTerminated: true,
+		hasBranch:       true,
+	}).output()
+
+	if err != nil {
+		return WorkTreeStatus{}, err
+	}
+
+	return readWorkTreeStatusFromOutput(out)
+}
+
+func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 	var (
-		statusString = string(out)
-		components   = strings.Split(statusString, nulSeparator)
-		branch       string
-		files        FileStatusList
-		startIdx     = 0
+		components = strings.Split(statusString, nulSeparator)
+		branch     string
+		files      FileStatusList
+		startIdx   = 0
 	)
 
 	if firstComponent := components[0]; strings.HasPrefix(firstComponent, branchComponentPrefix) {
@@ -70,20 +58,6 @@ func readWorkTreeStatusFromOutput(out []byte) (WorkTreeStatus, error) {
 	}
 
 	return WorkTreeStatus{Branch: branch, FileStatusList: files}, nil
-}
-
-func loadWorkTreeStatus() (WorkTreeStatus, error) {
-	out, err := newStatusCmd(statusOption{
-		isPorcelain:     true,
-		isNULTerminated: true,
-		hasBranch:       true,
-	}).Output()
-
-	if err != nil {
-		return WorkTreeStatus{}, err
-	}
-
-	return readWorkTreeStatusFromOutput(out)
 }
 
 type FileStatus struct {

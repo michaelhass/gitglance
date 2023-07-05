@@ -204,7 +204,6 @@ func TestUntrackedFileStatus(t *testing.T) {
 	}
 }
 
-func statusOutputFromComponents(components []string) []byte {
-	statusString := strings.Join(components, "\000")
-	return []byte(statusString)
+func statusOutputFromComponents(components []string) string {
+	return strings.Join(components, "\000")
 }
