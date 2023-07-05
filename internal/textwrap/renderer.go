@@ -1,4 +1,4 @@
-package text
+package textwrap
 
 type Renderer interface {
 	Render(s string) string

@@ -1,4 +1,4 @@
-package text
+package textwrap
 
 type Wrapper interface {
 	SetLineLength(lineLength int)

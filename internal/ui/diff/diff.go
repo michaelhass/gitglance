@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/text"
+	"github.com/michaelhass/gitglance/internal/textwrap"
 	"github.com/michaelhass/gitglance/internal/ui/styles"
 )
 
@@ -19,7 +19,7 @@ var (
 
 type Model struct {
 	viewport    viewport.Model
-	textBuilder *text.Builder
+	textBuilder *textwrap.Builder
 	keys        KeyMap
 	err         error
 	width       int
@@ -28,7 +28,7 @@ type Model struct {
 }
 
 func New() Model {
-	lineRenderer := func(line string) text.Renderer {
+	lineRenderer := func(line string) textwrap.Renderer {
 		if strings.HasPrefix(line, "+") {
 			return addedTextStyle
 		} else if strings.HasPrefix(line, "-") {
@@ -38,7 +38,7 @@ func New() Model {
 		}
 	}
 
-	textBuilder := text.NewBuilder()
+	textBuilder := textwrap.NewBuilder()
 	textBuilder.SetLineRenderer(lineRenderer)
 
 	return Model{textBuilder: textBuilder, keys: newDiffKeyMap()}
