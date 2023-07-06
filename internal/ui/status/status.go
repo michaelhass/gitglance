@@ -148,7 +148,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.focusStaged):
 			m = m.focusSection(stagedSection)
 		case key.Matches(msg, m.keys.commit):
-			content := dialog.NewCommitContent(commit.New(m.workTreeStatus.StagedFiles()))
+			content := commit.NewContent(commit.New(m.workTreeStatus.StagedFiles()))
 			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
 		}
 	}
