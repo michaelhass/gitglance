@@ -1,4 +1,4 @@
-package commit
+package textinput
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ var (
 	countStyle = style.SublteText.Copy().Height(1)
 )
 
-type messageContent struct {
+type Content struct {
 	textarea textarea.Model
 
 	width  int
@@ -24,14 +24,14 @@ type messageContent struct {
 	isFocused bool
 }
 
-func newMessageContent() messageContent {
+func NewContent(placeholder string) Content {
 	var (
 		textarea     = textarea.New()
 		blurredStyle = textarea.BlurredStyle
 		focusedStyle = textarea.FocusedStyle
 	)
 
-	textarea.Placeholder = "Commit message"
+	textarea.Placeholder = placeholder
 	textarea.Prompt = ""
 	textarea.ShowLineNumbers = false
 
@@ -45,66 +45,66 @@ func newMessageContent() messageContent {
 	focusedStyle.CursorLine = lipgloss.NewStyle()
 	textarea.FocusedStyle = focusedStyle
 
-	return messageContent{
+	return Content{
 		textarea: textarea,
 	}
 }
 
-func (mc messageContent) Init() tea.Cmd {
+func (c Content) Init() tea.Cmd {
 	return nil
 }
 
-func (mc messageContent) Update(msg tea.Msg) (container.Content, tea.Cmd) {
-	textarea, cmd := mc.textarea.Update(msg)
-	mc.textarea = textarea
-	return mc, cmd
+func (c Content) Update(msg tea.Msg) (container.Content, tea.Cmd) {
+	textarea, cmd := c.textarea.Update(msg)
+	c.textarea = textarea
+	return c, cmd
 }
 
-func (mc messageContent) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
-	mc.isFocused = isFocused
+func (c Content) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
+	c.isFocused = isFocused
 	if isFocused {
-		mc.textarea.Focus()
+		c.textarea.Focus()
 	} else {
-		mc.textarea.Blur()
+		c.textarea.Blur()
 	}
-	return mc, nil
+	return c, nil
 }
 
-func (mc messageContent) View() string {
-	inputLength := len([]rune(mc.textarea.Value()))
+func (c Content) View() string {
+	inputLength := len([]rune(c.textarea.Value()))
 
 	count := countStyle.
-		MaxWidth(mc.width - 2).
+		MaxWidth(c.width - 2).
 		Render(fmt.Sprint("Chararcters ", inputLength))
 
 	countLine := lipgloss.PlaceHorizontal(
-		mc.width-2,
+		c.width-2,
 		lipgloss.Right,
 		count,
 	)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
-		mc.textarea.View(),
+		c.textarea.View(),
 		countLine,
 	)
 }
 
-func (mc messageContent) Title() string {
+func (c Content) Title() string {
 	return "Commmit"
 }
 
-func (mc messageContent) SetSize(width, height int) container.Content {
-	mc.width, mc.height = width, height
-	mc.textarea.SetWidth(width - 2)
-	mc.textarea.SetHeight(height - 1)
-	return mc
+func (c Content) SetSize(width, height int) container.Content {
+	c.width, c.height = width, height
+	c.textarea.SetWidth(width - 2)
+	c.textarea.SetHeight(height - 1)
+	return c
 }
 
-func (mc messageContent) KeyMap() help.KeyMap {
+func (c Content) KeyMap() help.KeyMap {
 	return nil
 }
 
-func (mc messageContent) message() string {
-	return mc.textarea.Value()
+func (c Content) Text() string {
+	return c.textarea.Value()
 }

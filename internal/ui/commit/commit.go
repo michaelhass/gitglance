@@ -7,6 +7,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/textinput"
 )
 
 type Model struct {
@@ -34,7 +35,7 @@ func New(stagedFileList git.FileStatusList) Model {
 
 	fileListContent.Model, _ = fileListContent.SetItems(createListItems(stagedFileList))
 
-	messageContainer := container.New(newMessageContent())
+	messageContainer := container.New(textinput.NewContent("Enter commit message"))
 	messageContainer, _ = messageContainer.UpdateFocus(true)
 
 	return Model{
@@ -61,8 +62,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m, cmd = m.toggleFocus()
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.commit):
-			if mc, ok := m.message.Content().(messageContent); ok {
-				return m, Execute(mc.message())
+			if mc, ok := m.message.Content().(textinput.Content); ok {
+				return m, Execute(mc.Text())
 			}
 		}
 	}
