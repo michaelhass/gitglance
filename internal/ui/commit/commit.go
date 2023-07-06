@@ -16,7 +16,7 @@ type Model struct {
 }
 
 func New(stagedFileList git.FileStatusList) Model {
-	fileListContent := container.NewFileListContent(
+	fileListContent := filelist.NewContent(
 		filelist.New(
 			"Staged",
 			func(msg tea.Msg) tea.Cmd { return nil },

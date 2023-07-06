@@ -87,13 +87,13 @@ func New() Model {
 	help := help.New()
 	help.ShowAll = false
 
-	unstagedFileList := container.NewFileListContent(
+	unstagedFileList := filelist.NewContent(
 		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap("stage file")),
 	)
-	stagedFileList := container.NewFileListContent(
+	stagedFileList := filelist.NewContent(
 		filelist.New("Staged", stagedFilesItemHandler, filelist.NewKeyMap("unstage file")),
 	)
-	diffContent := container.NewDiffContent(diff.New())
+	diffContent := diff.NewContent(diff.New())
 
 	return Model{
 		sections: [3]container.Model{
@@ -219,11 +219,11 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
 
-	if section, ok := m.sections[unstagedSection].Content().(container.FileListContent); ok {
+	if section, ok := m.sections[unstagedSection].Content().(filelist.Content); ok {
 		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
-	if section, ok := m.sections[stagedSection].Content().(container.FileListContent); ok {
+	if section, ok := m.sections[stagedSection].Content().(filelist.Content); ok {
 		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
@@ -231,7 +231,7 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
-	section, ok := m.sections[diffSection].Content().(container.DiffContent)
+	section, ok := m.sections[diffSection].Content().(diff.Content)
 	if !ok {
 		return m, nil
 	}
