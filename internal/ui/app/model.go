@@ -7,10 +7,10 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
-// Model is the main bubbletea model of the application.
+// model is the main bubbletea model of the application.
 // It displays multiple sub models and is responsible for
 // displaying dialogs.
-type Model struct {
+type model struct {
 	status status.Model // Model to display the git status
 
 	dialog          dialog.Model // A dialog that is shown.
@@ -21,17 +21,17 @@ type Model struct {
 	width, height int
 }
 
-func New() Model {
-	return Model{
+func newModel() model {
+	return model{
 		status: status.New(),
 	}
 }
 
-func (m Model) Init() tea.Cmd {
+func (m model) Init() tea.Cmd {
 	return m.status.Init()
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -70,7 +70,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m model) View() string {
 	if !m.isReady {
 		return "loading"
 	}
