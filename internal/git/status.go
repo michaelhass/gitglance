@@ -5,8 +5,12 @@ import (
 	"strings"
 )
 
+// WorkTreeStatus represents the current status of the git work tree.
 type WorkTreeStatus struct {
+	// The branch at the time of creation.
+	// Can be empty if not requested.
 	Branch string
+	// List of staged and unstaged files
 	FileStatusList
 }
 
@@ -60,11 +64,13 @@ func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 	return WorkTreeStatus{Branch: branch, FileStatusList: files}, nil
 }
 
+// FileStatus represents the git status of a file.
+// It shows the status in the working tree and in the index.
 type FileStatus struct {
-	Path               string
-	Extra              string // Contains extra information, e.g. old name
-	UnstagedStatusCode StatusCode
-	StagedStatusCode   StatusCode
+	Path               string     // The Path of the file
+	Extra              string     // Contains extra information, e.g. old name
+	UnstagedStatusCode StatusCode // Working tree status
+	StagedStatusCode   StatusCode // Index status
 }
 
 func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
@@ -108,18 +114,22 @@ func (fs FileStatus) IsRenamed() bool {
 
 type FileStatusList []FileStatus
 
+// UnstagedFiles returns all files that have unstaged changes.
 func (fl FileStatusList) UnstagedFiles() FileStatusList {
 	return fl.Filter(func(fs FileStatus) bool {
 		return fs.HasUnstagedChanges()
 	})
 }
 
+// StagedFiles returns all files that have staged changes.
 func (fl FileStatusList) StagedFiles() FileStatusList {
 	return fl.Filter(func(fs FileStatus) bool {
 		return fs.HasStagedChanges() && !fs.IsUntracked()
 	})
 }
 
+// Filter returns a new FileStatusList that only includes elements accepted by
+// the passed filter.
 func (fl FileStatusList) Filter(isIncluded func(FileStatus) bool) FileStatusList {
 	var result FileStatusList
 	for _, fs := range fl {
@@ -130,6 +140,7 @@ func (fl FileStatusList) Filter(isIncluded func(FileStatus) bool) FileStatusList
 	return result
 }
 
+// StatusCode of a file.
 type StatusCode byte
 
 const (

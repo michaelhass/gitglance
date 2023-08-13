@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// Content describes UI elements that can be displayed inside a dialog.
 type Content interface {
 	Init() tea.Cmd
 	Update(msg tea.Msg) (Content, tea.Cmd)

@@ -1,3 +1,4 @@
+// Package app provides the main bubbletea model.
 package app
 
 import (
@@ -6,13 +7,16 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
+// Model is the main bubbletea model of the application.
+// It displays multiple submodules and is responsible for
+// displaying dialogs.
 type Model struct {
-	status status.Model
+	status status.Model // Model to display the git status
 
-	dialog          dialog.Model
-	isDialogShowing bool
+	dialog          dialog.Model // A dialog that is shown.
+	isDialogShowing bool         // Indicated whether a dialog is showing.
 
-	isReady bool
+	isReady bool // Indicates if the application is ready / initialized.
 
 	width, height int
 }
@@ -22,6 +26,7 @@ func New() Model {
 		status: status.New(),
 	}
 }
+
 func (m Model) Init() tea.Cmd {
 	return m.status.Init()
 }

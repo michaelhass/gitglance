@@ -1,3 +1,4 @@
+// Package commit provides ui to perform a git commit.
 package commit
 
 import (
@@ -5,12 +6,14 @@ import (
 	"github.com/michaelhass/gitglance/internal/git"
 )
 
+// Execute creates a tea.Cmd to execute a git commit.
 func Execute(msg string) tea.Cmd {
 	return func() tea.Msg {
 		return ExecutedMsg{Err: git.Commit(msg)}
 	}
 }
 
+// ExecutedMsg is the message to be sent after we performed a git commit.
 type ExecutedMsg struct {
 	Err error
 }

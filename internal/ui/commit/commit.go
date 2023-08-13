@@ -10,6 +10,9 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/textinput"
 )
 
+// Model represents the UI to pefrom a commit.
+// It shows the staged files to  be included in the commit and
+// allows to write a commit message.
 type Model struct {
 	stagedFileList container.Model
 	message        container.Model

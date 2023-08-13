@@ -1,3 +1,6 @@
+// package container provides ui to display any model conforming
+// to container.content inside a container.
+// The container shows the content with a predefined border and a title.
 package container
 
 import (

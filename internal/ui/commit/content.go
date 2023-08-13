@@ -5,6 +5,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 )
 
+// Content is a wrapper to use the commit ui as dialog.Content.
 type Content struct {
 	Model
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/container"
 )
 
+// Content is a wrapper to use the filelist ui as container.Content.
 type Content struct {
 	Model
 }

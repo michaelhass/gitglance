@@ -17,6 +17,7 @@ var (
 	removedTextStyle = style.RemovedText.Copy()
 )
 
+// The Model to display a git diff output.
 type Model struct {
 	viewport    viewport.Model
 	textBuilder *textwrap.Builder

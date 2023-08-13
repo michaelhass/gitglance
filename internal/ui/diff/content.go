@@ -5,6 +5,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/container"
 )
 
+// Content is a wrapper to use the commit ui as container.Content.
 type Content struct {
 	Model
 }
