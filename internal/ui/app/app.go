@@ -8,7 +8,7 @@ import (
 )
 
 // Model is the main bubbletea model of the application.
-// It displays multiple submodules and is responsible for
+// It displays multiple sub models and is responsible for
 // displaying dialogs.
 type Model struct {
 	status status.Model // Model to display the git status
