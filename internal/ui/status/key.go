@@ -39,8 +39,8 @@ func newKeyMap() KeyMap {
 			key.WithHelp("→/l", "right"),
 		),
 		commit: key.NewBinding(
-			key.WithKeys("c"),
-			key.WithHelp("c", "commit"),
+			key.WithKeys("C"),
+			key.WithHelp("⇧+c", "commit"),
 		),
 		focusUnstaged: key.NewBinding(
 			key.WithKeys("u"),

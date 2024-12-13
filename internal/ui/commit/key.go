@@ -21,11 +21,11 @@ func NewKeyMap() KeyMap {
 		),
 		toggleFocus: key.NewBinding(
 			key.WithKeys("tab"),
-			key.WithHelp("⭾", "toggle focus"),
+			key.WithHelp("⇥", "toggle focus"),
 		),
 		commit: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("⏎", "commit"),
+			key.WithKeys("C"),
+			key.WithHelp("⇧+c", "commit"),
 		),
 	}
 }
