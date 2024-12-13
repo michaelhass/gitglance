@@ -74,6 +74,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmd := m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.enter):
+			if len(m.visibleItems) == 0 {
+				break
+			}
 			item := m.visibleItems[m.cursor]
 			cmd := m.itemHandler(SelectItemMsg{Item: item})
 			cmds = append(cmds, cmd)
