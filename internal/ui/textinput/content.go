@@ -16,6 +16,8 @@ var (
 )
 
 type Content struct {
+	title string
+
 	textarea textarea.Model
 
 	width  int
@@ -24,7 +26,7 @@ type Content struct {
 	isFocused bool
 }
 
-func NewContent(placeholder string) Content {
+func NewContent(title string, placeholder string) Content {
 	var (
 		textarea     = textarea.New()
 		blurredStyle = textarea.BlurredStyle
@@ -46,6 +48,7 @@ func NewContent(placeholder string) Content {
 	textarea.FocusedStyle = focusedStyle
 
 	return Content{
+		title:    title,
 		textarea: textarea,
 	}
 }
@@ -91,7 +94,7 @@ func (c Content) View() string {
 }
 
 func (c Content) Title() string {
-	return "Commmit"
+	return c.title
 }
 
 func (c Content) SetSize(width, height int) container.Content {

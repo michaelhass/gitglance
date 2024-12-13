@@ -9,7 +9,8 @@ import (
 type WorkTreeStatus struct {
 	// The branch at the time of creation.
 	// Can be empty if not requested.
-	Branch string
+	Branch            string
+	CleanedBranchName string
 	// List of staged and unstaged files
 	FileStatusList
 }
@@ -30,15 +31,20 @@ func loadWorkTreeStatus() (WorkTreeStatus, error) {
 
 func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 	var (
-		components = strings.Split(statusString, nulSeparator)
-		branch     string
-		files      FileStatusList
-		startIdx   = 0
+		components    = strings.Split(statusString, nulSeparator)
+		branch        string
+		cleanedBranch string
+		files         FileStatusList
+		startIdx      = 0
 	)
 
 	if firstComponent := components[0]; strings.HasPrefix(firstComponent, branchComponentPrefix) {
 		if len(firstComponent) >= 3 {
 			branch = firstComponent[3:]
+			branchComponents := strings.Split(branch, "...")
+			if len(branchComponents) > 0 {
+				cleanedBranch = branchComponents[0]
+			}
 		}
 		startIdx = 1
 	}
@@ -61,7 +67,7 @@ func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 		files = append(files, file)
 	}
 
-	return WorkTreeStatus{Branch: branch, FileStatusList: files}, nil
+	return WorkTreeStatus{Branch: branch, CleanedBranchName: cleanedBranch, FileStatusList: files}, nil
 }
 
 // FileStatus represents the git status of a file.

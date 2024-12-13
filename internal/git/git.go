@@ -27,3 +27,7 @@ func Diff(opt DiffOptions) (string, error) {
 func Commit(msg string) error {
 	return newGitCommand("commit", "-m", msg).run()
 }
+
+func CurrentBranch() (string, error) {
+	return newGitCommand("branch", "--show--current").output()
+}

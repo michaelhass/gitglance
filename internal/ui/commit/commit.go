@@ -1,6 +1,8 @@
 package commit
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,7 +21,7 @@ type Model struct {
 	keys           KeyMap
 }
 
-func New(stagedFileList git.FileStatusList) Model {
+func New(branch string, stagedFileList git.FileStatusList) Model {
 	fileListContent := filelist.NewContent(
 		filelist.New(
 			"Staged",
@@ -38,7 +40,12 @@ func New(stagedFileList git.FileStatusList) Model {
 
 	fileListContent.Model, _ = fileListContent.SetItems(createListItems(stagedFileList))
 
-	messageContainer := container.New(textinput.NewContent("Enter commit message"))
+	messageContainer := container.New(
+		textinput.NewContent(
+			fmt.Sprintf("%s [%s]", "Commit", branch),
+			"Enter commit message",
+		),
+	)
 	messageContainer, _ = messageContainer.UpdateFocus(true)
 
 	return Model{
