@@ -69,31 +69,30 @@ type statusUpdateMsg struct {
 }
 
 func stageFile(path string) func() tea.Msg {
-	return func() tea.Msg {
-		var (
-			workTreeStatus git.WorkTreeStatus
-			msg            statusUpdateMsg
-			err            error
-		)
+	return workTreeUpdateWithCmd(func() error {
+		return git.StageFile(path)
+	})
+}
 
-		err = git.StageFile(path)
-		if err != nil {
-			msg.Err = err
-			return msg
-		}
-
-		workTreeStatus, err = git.Status()
-		if err != nil {
-			msg.Err = err
-			return msg
-		}
-		msg.WorkTreeStatus = workTreeStatus
-
-		return msg
-	}
+func stageAll() func() tea.Msg {
+	return workTreeUpdateWithCmd(func() error {
+		return git.StageAll()
+	})
 }
 
 func unstageFile(path string) func() tea.Msg {
+	return workTreeUpdateWithCmd(func() error {
+		return git.UnstageFile(path)
+	})
+}
+
+func unstageAll() func() tea.Msg {
+	return workTreeUpdateWithCmd(func() error {
+		return git.UnstageAll()
+	})
+}
+
+func workTreeUpdateWithCmd(cmdFunc func() error) func() tea.Msg {
 	return func() tea.Msg {
 		var (
 			workTreeStatus git.WorkTreeStatus
@@ -101,7 +100,7 @@ func unstageFile(path string) func() tea.Msg {
 			err            error
 		)
 
-		err = git.UnstageFile(path)
+		err = cmdFunc()
 		if err != nil {
 			msg.Err = err
 			return msg

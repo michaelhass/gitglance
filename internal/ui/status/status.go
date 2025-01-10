@@ -59,6 +59,8 @@ func New() Model {
 					IsUntracked: msg.Item.IsUntracked(),
 				},
 			)
+		case filelist.SelectAllItemMsg:
+			return stageAll()
 		case filelist.BottomNoMoreFocusableItems:
 			return focusSection(stagedSection)
 		default:
@@ -70,6 +72,8 @@ func New() Model {
 		switch msg := msg.(type) {
 		case filelist.SelectItemMsg:
 			return unstageFile(msg.Item.Path)
+		case filelist.SelectAllItemMsg:
+			return unstageAll()
 		case filelist.FocusItemMsg:
 			return diffFile(
 				git.DiffOptions{
@@ -88,10 +92,10 @@ func New() Model {
 	help.ShowAll = false
 
 	unstagedFileList := filelist.NewContent(
-		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap("stage file")),
+		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap("stage all", "stage file")),
 	)
 	stagedFileList := filelist.NewContent(
-		filelist.New("Staged", stagedFilesItemHandler, filelist.NewKeyMap("unstage file")),
+		filelist.New("Staged", stagedFilesItemHandler, filelist.NewKeyMap("unstage all", "unstage file")),
 	)
 	diffContent := diff.NewContent(diff.New())
 
@@ -251,6 +255,7 @@ func (m Model) focusSection(section section) Model {
 
 func (m Model) updateKeys() KeyMap {
 	keys := m.keys
+	keys.additionalKeyMap = m.sections[m.focusedSection].Content().KeyMap()
 
 	switch m.focusedSection {
 	case unstagedSection:
@@ -259,6 +264,7 @@ func (m Model) updateKeys() KeyMap {
 		keys.focusUnstaged.SetEnabled(false)
 		keys.focusStaged.SetEnabled(true)
 		keys.focusDiff.SetEnabled(true)
+
 	case stagedSection:
 		keys.left.SetEnabled(false)
 		keys.right.SetEnabled(true)

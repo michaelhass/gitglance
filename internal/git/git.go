@@ -13,9 +13,19 @@ func StageFile(path string) error {
 	return cmd.run()
 }
 
+// StageAll stages all files in the work tree
+func StageAll() error {
+	return StageFile(".")
+}
+
 // UnstageFile unstages a file at the given path.
 func UnstageFile(path string) error {
 	return newGitCommand("restore", "--staged", path).run()
+}
+
+// UnstageAll unstages all staged files in the work tree.
+func UnstageAll() error {
+	return UnstageFile(".")
 }
 
 // Diff performs a `git diff“ with the given options.
