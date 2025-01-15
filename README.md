@@ -5,17 +5,9 @@
 
 Git terminal UI written in Go using [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-## 🚧 WIP
-
 ### Features
 
 - Stage files ✔️
 - Unstage files ✔️
 - View diffs ✔️
-- Execute commit ✔️
-
-### TODO
-
-- View branches
-- Stashing
-
+- Commit ✔️
