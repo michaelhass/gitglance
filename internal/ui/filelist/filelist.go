@@ -83,13 +83,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.All):
 			cmd := m.itemHandler(SelectAllItemMsg{Items: m.items})
 			cmds = append(cmds, cmd)
-			// case key.Matches(msg, m.keys.Delete):
-			// 	if len(m.visibleItems) == 0 {
-			// 		break
-			// 	}
-			// 	item := m.visibleItems[m.cursor]
-			// 	cmd := m.itemHandler(DeleteItemMsg{Item: item})
-			// 	cmds = append(cmds, cmd)
+		case key.Matches(msg, m.keys.Delete):
+			if len(m.visibleItems) == 0 {
+				break
+			}
+			item := m.visibleItems[m.cursor]
+			cmd := m.itemHandler(DeleteItemMsg{Item: item})
+			cmds = append(cmds, cmd)
 		}
 	}
 

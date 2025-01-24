@@ -92,6 +92,12 @@ func unstageAll() func() tea.Msg {
 	})
 }
 
+func deleteFile(path string, isUntracked bool) func() tea.Msg {
+	return workTreeUpdateWithCmd(func() error {
+		return git.ResetFile(path, isUntracked)
+	})
+}
+
 func workTreeUpdateWithCmd(cmdFunc func() error) func() tea.Msg {
 	return func() tea.Msg {
 		var (

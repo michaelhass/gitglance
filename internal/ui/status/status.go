@@ -59,6 +59,8 @@ func New() Model {
 					IsUntracked: msg.Item.IsUntracked(),
 				},
 			)
+		case filelist.DeleteItemMsg:
+			return deleteFile(msg.Item.Path, msg.Item.IsUntracked())
 		case filelist.SelectAllItemMsg:
 			return stageAll()
 		case filelist.BottomNoMoreFocusableItems:
