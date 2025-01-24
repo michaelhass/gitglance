@@ -2,12 +2,19 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/ui/logger"
 )
 
-type LaunchOptions struct{}
+type LaunchOptions struct {
+	IsDebug bool
+}
 
 func Launch(opt LaunchOptions) error {
-	if _, err := tea.NewProgram(newModel(), tea.WithAltScreen()).Run(); err != nil {
+	logger, err := logger.NewLogger(opt.IsDebug)
+	if err != nil {
+		return err
+	}
+	if _, err := tea.NewProgram(newModel(logger), tea.WithAltScreen()).Run(); err != nil {
 		return err
 	}
 	return nil

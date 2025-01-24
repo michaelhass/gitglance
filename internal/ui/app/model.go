@@ -2,8 +2,11 @@
 package app
 
 import (
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
+	"github.com/michaelhass/gitglance/internal/ui/logger"
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
 
@@ -19,11 +22,14 @@ type model struct {
 	isReady bool // Indicates if the application is ready / initialized.
 
 	width, height int
+
+	logger logger.Logger
 }
 
-func newModel() model {
+func newModel(logger logger.Logger) model {
 	return model{
 		status: status.New(),
+		logger: logger,
 	}
 }
 
@@ -33,6 +39,8 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
+
+	m.logger.Println(time.Now(), msg)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:

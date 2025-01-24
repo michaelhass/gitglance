@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	opts := app.LaunchOptions{}
+	opts := app.LaunchOptions{IsDebug: false}
 	if err := app.Launch(opts); err != nil {
-		fmt.Println(err)
+		fmt.Println("fatal:", err)
 		os.Exit(0)
 	}
 }
