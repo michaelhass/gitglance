@@ -14,6 +14,7 @@ func Launch(opt LaunchOptions) error {
 	if err != nil {
 		return err
 	}
+	defer logger.Close()
 	if _, err := tea.NewProgram(newModel(logger), tea.WithAltScreen()).Run(); err != nil {
 		return err
 	}

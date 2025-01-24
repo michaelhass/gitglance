@@ -2,7 +2,7 @@
 package app
 
 import (
-	"time"
+	"reflect"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
@@ -40,7 +40,7 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	m.logger.Println(time.Now(), msg)
+	m.logger.Println(reflect.TypeOf(msg))
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
