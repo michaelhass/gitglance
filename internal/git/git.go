@@ -32,7 +32,7 @@ func ResetFile(filePath string, isUntracked bool) error {
 		}
 		return nil
 	}
-	return newGitCommand("checkout", "HEADE", "--", filePath).run()
+	return newGitCommand("restore", filePath).run()
 }
 
 // UnstageAll unstages all staged files in the work tree.
