@@ -19,16 +19,17 @@ var (
 type ItemHandler func(msg tea.Msg) tea.Cmd
 
 type Model struct {
-	items        []Item
-	visibleItems []Item
-	itemHandler  ItemHandler
-	keys         KeyMap
-	title        string
-	width        int
-	height       int
-	cursor       int
-	pageStartIdx int
-	isFocused    bool
+	items         []Item
+	visibleItems  []Item
+	itemHandler   ItemHandler
+	keys          KeyMap
+	title         string
+	width         int
+	height        int
+	cursor        int
+	pageStartIdx  int
+	isFocused     bool
+	lastFocuedIdx int
 }
 
 func New(title string, itemHandler ItemHandler, keys KeyMap) Model {
@@ -100,7 +101,11 @@ func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.isFocused = isFocused
-	if m.isFocused && len(m.items) > 0 {
+	isAlreadyFocused := m.lastFocuedIdx == m.cursor
+	if !isFocused {
+		m.lastFocuedIdx = -1
+	} else if !isAlreadyFocused && isFocused && len(m.items) > 0 {
+		m.lastFocuedIdx = m.cursor
 		cmd = m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 	}
 	return m, cmd
