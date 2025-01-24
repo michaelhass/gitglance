@@ -92,11 +92,20 @@ func New() Model {
 	help.ShowAll = false
 
 	unstagedFileList := filelist.NewContent(
-		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap("stage all", "stage file")),
+		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap(
+			"stage all",
+			"stage file",
+			"reset file",
+		)),
 	)
-	stagedFileList := filelist.NewContent(
-		filelist.New("Staged", stagedFilesItemHandler, filelist.NewKeyMap("unstage all", "unstage file")),
+	var stagedFileListKeyMap = filelist.NewKeyMap(
+		"unstage all",
+		"unstage file",
+		"",
 	)
+	stagedFileListKeyMap.Delete.SetEnabled(false)
+
+	stagedFileList := filelist.NewContent(filelist.New("Staged", stagedFilesItemHandler, stagedFileListKeyMap))
 	diffContent := diff.NewContent(diff.New())
 
 	return Model{

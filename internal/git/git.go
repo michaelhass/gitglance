@@ -23,6 +23,18 @@ func UnstageFile(path string) error {
 	return newGitCommand("restore", "--staged", path).run()
 }
 
+// ResetFile either resets the file to the index or deletes it in case
+// it is untracked.
+func ResetFile(filePath string, isUntracked bool) error {
+	if isUntracked {
+		if err := removeFileCmd(filePath).Run(); err != nil && !isExitError(err) {
+			return err
+		}
+		return nil
+	}
+	return newGitCommand("checkout", "HEADE", "--", filePath).run()
+}
+
 // UnstageAll unstages all staged files in the work tree.
 func UnstageAll() error {
 	return UnstageFile(".")

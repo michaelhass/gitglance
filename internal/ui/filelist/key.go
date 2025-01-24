@@ -3,35 +3,40 @@ package filelist
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
-	up    key.Binding
-	down  key.Binding
-	enter key.Binding
-	all   key.Binding
+	Up     key.Binding
+	Down   key.Binding
+	Enter  key.Binding
+	All    key.Binding
+	Delete key.Binding
 }
 
-func NewKeyMap(allText string, enterHelpText string) KeyMap {
+func NewKeyMap(allText string, enterHelpText string, deleteHelpText string) KeyMap {
 	return KeyMap{
-		up: key.NewBinding(
+		Up: key.NewBinding(
 			key.WithKeys("up", "k"),
 			key.WithHelp("↑/k", "up"),
 		),
-		down: key.NewBinding(
+		Down: key.NewBinding(
 			key.WithKeys("down", "j"),
 			key.WithHelp("↓/j", "down"),
 		),
-		enter: key.NewBinding(
+		Enter: key.NewBinding(
 			key.WithKeys("enter"),
 			key.WithHelp("⏎", enterHelpText),
 		),
-		all: key.NewBinding(
+		All: key.NewBinding(
 			key.WithKeys("a"),
 			key.WithHelp("a", allText),
+		),
+		Delete: key.NewBinding(
+			key.WithKeys("ctrl+d"),
+			key.WithHelp("ctrl+d", deleteHelpText),
 		),
 	}
 }
 
 func (km KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{km.up, km.down, km.all, km.enter}
+	return []key.Binding{km.Up, km.Down, km.All, km.Enter, km.Delete}
 }
 
 func (km KeyMap) FullHelp() [][]key.Binding {

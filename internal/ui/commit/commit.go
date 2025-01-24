@@ -26,7 +26,7 @@ func New(branch string, stagedFileList git.FileStatusList) Model {
 		filelist.New(
 			"Staged",
 			func(msg tea.Msg) tea.Cmd { return nil },
-			filelist.NewKeyMap("Nothing", "Nothing"),
+			filelist.NewKeyMap("Nothing", "Nothing", "Nothing"),
 		),
 	)
 

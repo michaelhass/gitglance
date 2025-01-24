@@ -10,6 +10,10 @@ type SelectItemMsg struct {
 	Item Item
 }
 
+type DeleteItemMsg struct {
+	Item Item
+}
+
 type SelectAllItemMsg struct {
 	Items []Item
 }

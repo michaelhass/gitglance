@@ -47,7 +47,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keys.up):
+		case key.Matches(msg, m.keys.Up):
 			if m.cursor == 0 || len(m.visibleItems) == 0 {
 				if m.IsFirstIndexFocused() {
 					cmds = append(cmds, m.itemHandler(TopNoMoreFocusableItems{}))
@@ -60,7 +60,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.cursor -= 1
 			cmd := m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 			cmds = append(cmds, cmd)
-		case key.Matches(msg, m.keys.down):
+		case key.Matches(msg, m.keys.Down):
 			if m.cursor >= len(m.visibleItems)-1 {
 				if m.IsLastIndexFocused() {
 					cmds = append(cmds, m.itemHandler(BottomNoMoreFocusableItems{}))
@@ -73,17 +73,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.cursor += 1
 			cmd := m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 			cmds = append(cmds, cmd)
-		case key.Matches(msg, m.keys.enter):
+		case key.Matches(msg, m.keys.Enter):
 			if len(m.visibleItems) == 0 {
 				break
 			}
 			item := m.visibleItems[m.cursor]
 			cmd := m.itemHandler(SelectItemMsg{Item: item})
 			cmds = append(cmds, cmd)
-
-		case key.Matches(msg, m.keys.all):
+		case key.Matches(msg, m.keys.All):
 			cmd := m.itemHandler(SelectAllItemMsg{Items: m.items})
 			cmds = append(cmds, cmd)
+			// case key.Matches(msg, m.keys.Delete):
+			// 	if len(m.visibleItems) == 0 {
+			// 		break
+			// 	}
+			// 	item := m.visibleItems[m.cursor]
+			// 	cmd := m.itemHandler(DeleteItemMsg{Item: item})
+			// 	cmds = append(cmds, cmd)
 		}
 	}
 
