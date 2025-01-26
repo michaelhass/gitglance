@@ -1,14 +1,21 @@
 # gitglance
 
+Simple git terminal UI written in Go using [Bubble Tea](https://github.com/charmbracelet/bubbletea).
+![gitglance demo](assets/gitglance_demo.gif)
 
-<img width="50%" heigth="50%" alt="gitglance" src="assets/gitglance_demo.webp">
-
-![gitglance demo](assets/gitglance_demo.webp)
-Git terminal UI written in Go using [Bubble Tea](https://github.com/charmbracelet/bubbletea).
-
-### Features
-
+## Features
 - Stage files ✔️
 - Unstage files ✔️
+- Reset files ✔️
 - View diffs ✔️
 - Commit ✔️
+
+## Installation
+### Go
+```
+go install github.com/michaelhass/gitglance@latest
+```
+
+## Inspiration
+- [lazygit](https://github.com/jesseduffield/lazygit)
+- [GitUI](https://github.com/extrawurst/gitui)
