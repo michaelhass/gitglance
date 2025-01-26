@@ -275,7 +275,6 @@ func (m Model) updateKeys() KeyMap {
 		keys.focusUnstaged.SetEnabled(false)
 		keys.focusStaged.SetEnabled(true)
 		keys.focusDiff.SetEnabled(true)
-
 	case stagedSection:
 		keys.left.SetEnabled(false)
 		keys.right.SetEnabled(true)
@@ -285,8 +284,9 @@ func (m Model) updateKeys() KeyMap {
 	case diffSection:
 		keys.left.SetEnabled(true)
 		keys.right.SetEnabled(false)
-		keys.focusUnstaged.SetEnabled(true)
-		keys.focusStaged.SetEnabled(true)
+		isUnstagedFocusedLast := m.lastFocusedFileSection == unstagedSection
+		keys.focusUnstaged.SetEnabled(isUnstagedFocusedLast)
+		keys.focusStaged.SetEnabled(!isUnstagedFocusedLast)
 		keys.focusDiff.SetEnabled(false)
 	}
 

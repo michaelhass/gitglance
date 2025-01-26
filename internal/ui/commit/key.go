@@ -24,8 +24,8 @@ func NewKeyMap() KeyMap {
 			key.WithHelp("⇥", "toggle focus"),
 		),
 		commit: key.NewBinding(
-			key.WithKeys("ctrl+o"),
-			key.WithHelp("ctrl+o", "confirm"),
+			key.WithKeys("ctrl+y"),
+			key.WithHelp("ctrl+y", "confirm"),
 		),
 	}
 }

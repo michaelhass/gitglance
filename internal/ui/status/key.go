@@ -43,12 +43,12 @@ func newKeyMap() KeyMap {
 			key.WithHelp("c", "commit"),
 		),
 		focusUnstaged: key.NewBinding(
-			key.WithKeys("u"),
-			key.WithHelp("u", "To Unstaged"),
+			key.WithKeys("w"),
+			key.WithHelp("w", "To Unstaged"),
 		),
 		focusStaged: key.NewBinding(
-			key.WithKeys("s"),
-			key.WithHelp("s", "To Staged"),
+			key.WithKeys("w"),
+			key.WithHelp("w", "To Staged"),
 		),
 		focusDiff: key.NewBinding(
 			key.WithKeys("d"),
