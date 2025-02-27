@@ -38,6 +38,7 @@ type statusOptions struct {
 	isPorcelain     bool
 	isNULTerminated bool
 	hasBranch       bool
+	isShort         bool
 }
 
 func newStatusCmd(opts statusOptions) *gitCommand {
@@ -45,6 +46,10 @@ func newStatusCmd(opts statusOptions) *gitCommand {
 
 	if opts.isPorcelain {
 		args = append(args, "--porcelain")
+	}
+
+	if opts.isShort {
+		args = append(args, "--short")
 	}
 
 	if opts.isNULTerminated {

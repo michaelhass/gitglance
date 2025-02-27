@@ -20,6 +20,7 @@ func loadWorkTreeStatus() (WorkTreeStatus, error) {
 		isPorcelain:     true,
 		isNULTerminated: true,
 		hasBranch:       true,
+		isShort:         true,
 	}).output()
 
 	if err != nil {
