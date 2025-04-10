@@ -99,5 +99,5 @@ func newDiffCmd(opts DiffOptions) *gitCommand {
 }
 
 func removeFileCmd(filePath string) *exec.Cmd {
-	return exec.Command("rm", filePath)
+	return exec.Command("rm", "-rf", filePath)
 }
