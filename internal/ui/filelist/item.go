@@ -26,6 +26,7 @@ func (item Item) String() string {
 
 	return fmt.Sprintf("%s %s", item.Accessory, path)
 }
+
 func NewItem(fileStatus git.FileStatus, accessory string) Item {
 	return Item{
 		FileStatus: fileStatus,

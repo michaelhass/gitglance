@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/ui/filelist"
 )
 
 type initializedMsg struct {
@@ -69,33 +70,48 @@ type statusUpdateMsg struct {
 }
 
 func stageFile(path string) func() tea.Msg {
-	return workTreeUpdateWithCmd(func() error {
-		return git.StageFile(path)
-	})
+	return tea.Sequence(
+		workTreeUpdateWithCmd(func() error {
+			return git.StageFile(path)
+		}),
+		filelist.ForceFocusUpdate,
+	)
 }
 
 func stageAll() func() tea.Msg {
-	return workTreeUpdateWithCmd(func() error {
-		return git.StageAll()
-	})
+	return tea.Sequence(
+		workTreeUpdateWithCmd(func() error {
+			return git.StageAll()
+		}),
+		filelist.ForceFocusUpdate,
+	)
 }
 
 func unstageFile(path string) func() tea.Msg {
-	return workTreeUpdateWithCmd(func() error {
-		return git.UnstageFile(path)
-	})
+	return tea.Sequence(
+		workTreeUpdateWithCmd(func() error {
+			return git.UnstageFile(path)
+		}),
+		filelist.ForceFocusUpdate,
+	)
 }
 
 func unstageAll() func() tea.Msg {
-	return workTreeUpdateWithCmd(func() error {
-		return git.UnstageAll()
-	})
+	return tea.Sequence(
+		workTreeUpdateWithCmd(func() error {
+			return git.UnstageAll()
+		}),
+		filelist.ForceFocusUpdate,
+	)
 }
 
 func deleteFile(path string, isUntracked bool) func() tea.Msg {
-	return workTreeUpdateWithCmd(func() error {
-		return git.ResetFile(path, isUntracked)
-	})
+	return tea.Sequence(
+		workTreeUpdateWithCmd(func() error {
+			return git.ResetFile(path, isUntracked)
+		}),
+		filelist.ForceFocusUpdate,
+	)
 }
 
 func workTreeUpdateWithCmd(cmdFunc func() error) func() tea.Msg {
@@ -128,6 +144,10 @@ type loadedDiffMsg struct {
 	Diff string
 }
 
+func showEmptyDiff() tea.Msg {
+	return loadedDiffMsg{}
+}
+
 func diffFile(opt git.DiffOptions) func() tea.Msg {
 	return func() tea.Msg {
 		var (
@@ -136,6 +156,7 @@ func diffFile(opt git.DiffOptions) func() tea.Msg {
 			diff string
 		)
 
+		msg.Diff = opt.FilePath
 		diff, err = git.Diff(opt)
 		if err != nil {
 			msg.Err = err

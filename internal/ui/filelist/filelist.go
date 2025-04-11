@@ -46,6 +46,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case forceFocusUpdateMsg:
+		model, cmd := m.updateFocus(m.isFocused, true)
+		m = model
+		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Up):
@@ -98,15 +102,21 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
+	return m.updateFocus(isFocused, false)
+}
+
+func (m Model) updateFocus(isFocused bool, isForced bool) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.isFocused = isFocused
 	isAlreadyFocused := m.lastFocuedIdx == m.cursor
 	if !isFocused {
 		m.lastFocuedIdx = -1
-	} else if !isAlreadyFocused && isFocused && len(m.items) > 0 {
+	} else if (!isAlreadyFocused || isForced) && isFocused && len(m.items) > 0 {
 		m.lastFocuedIdx = m.cursor
 		cmd = m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
+	} else if isFocused && len(m.items) == 0 {
+		cmd = m.itemHandler(NoItemsMsg{})
 	}
 	return m, cmd
 }

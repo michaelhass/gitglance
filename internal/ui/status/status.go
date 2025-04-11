@@ -65,6 +65,8 @@ func New() Model {
 			return stageAll()
 		case filelist.BottomNoMoreFocusableItems:
 			return focusSection(stagedSection)
+		case filelist.NoItemsMsg:
+			return showEmptyDiff
 		default:
 			return nil
 		}
@@ -85,6 +87,8 @@ func New() Model {
 				})
 		case filelist.TopNoMoreFocusableItems:
 			return focusSection(unstagedSection)
+		case filelist.NoItemsMsg:
+			return showEmptyDiff
 		default:
 			return nil
 		}
