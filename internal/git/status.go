@@ -17,10 +17,11 @@ type WorkTreeStatus struct {
 
 func loadWorkTreeStatus() (WorkTreeStatus, error) {
 	out, err := newStatusCmd(statusOptions{
-		isPorcelain:     true,
-		isNULTerminated: true,
-		hasBranch:       true,
-		isShort:         true,
+		isPorcelain:      true,
+		porcelainVersion: 2,
+		isNULTerminated:  false,
+		hasBranch:        true,
+		isShort:          true,
 	}).output()
 
 	if err != nil {
@@ -32,7 +33,7 @@ func loadWorkTreeStatus() (WorkTreeStatus, error) {
 
 func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 	var (
-		components    = strings.Split(statusString, nulSeparator)
+		components    = strings.Split(statusString, "\n")
 		branch        string
 		cleanedBranch string
 		files         FileStatusList

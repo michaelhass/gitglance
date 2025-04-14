@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 )
 
@@ -35,17 +36,22 @@ func isExitError(err error) bool {
 }
 
 type statusOptions struct {
-	isPorcelain     bool
-	isNULTerminated bool
-	hasBranch       bool
-	isShort         bool
+	isPorcelain      bool
+	porcelainVersion int
+	isNULTerminated  bool
+	hasBranch        bool
+	isShort          bool
 }
 
 func newStatusCmd(opts statusOptions) *gitCommand {
 	args := []string{"status"}
 
 	if opts.isPorcelain {
-		args = append(args, "--porcelain")
+		if opts.porcelainVersion <= 1 {
+			args = append(args, "--porcelain")
+		} else {
+			args = append(args, fmt.Sprintf("--porcelain=%d", opts.porcelainVersion))
+		}
 	}
 
 	if opts.isShort {
