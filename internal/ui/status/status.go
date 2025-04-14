@@ -45,6 +45,8 @@ type Model struct {
 	statusErr              error
 	focusedSection         section
 	lastFocusedFileSection section
+
+	isInitialized bool
 }
 
 func New() Model {
@@ -130,7 +132,7 @@ func (m Model) Init() tea.Cmd {
 	for _, section := range m.sections {
 		cmds = append(cmds, section.Init())
 	}
-	return tea.Batch(cmds...)
+	return tea.Sequence(cmds...)
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -144,6 +146,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		var model = m
 		model, scmd := model.handleStatusUpdateMsg(msg.statusMsg)
 		model, dcmd := model.handleLoadedDiffMsg(msg.diffMsg)
+		model.isInitialized = true
 		m = model
 		cmds = append(cmds, scmd, dcmd)
 	case statusUpdateMsg:
@@ -176,6 +179,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	m.keys = m.updateKeys()
+
+	if !m.isInitialized {
+		return m, tea.Batch(cmds...)
+	}
 
 	for i, section := range m.sections {
 		updatedSection, cmd := section.UpdateFocus(i == int(m.focusedSection))
