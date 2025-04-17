@@ -93,8 +93,14 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 
 	fileStatus.StagedStatusCode = StatusCode(component[0])
 	fileStatus.UnstagedStatusCode = StatusCode(component[1])
-	fileStatus.Path = component[3:]
 
+	path := component[3:]
+	if strings.Contains(path, " ") &&
+		strings.HasPrefix(path, "\"") &&
+		strings.HasSuffix(path, "\"") {
+		path = path[1 : len(path)-1]
+	}
+	fileStatus.Path = path
 	return fileStatus, nil
 }
 
