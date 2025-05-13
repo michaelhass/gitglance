@@ -69,7 +69,14 @@ type statusUpdateMsg struct {
 	WorkTreeStatus git.WorkTreeStatus
 }
 
-func stageFile(path string) func() tea.Msg {
+func refreshStatus() tea.Cmd {
+	return tea.Sequence(
+		updateWorkTreeStatus,
+		filelist.ForceFocusUpdate,
+	)
+}
+
+func stageFile(path string) tea.Cmd {
 	return tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
 			return git.StageFile(path)
@@ -78,7 +85,7 @@ func stageFile(path string) func() tea.Msg {
 	)
 }
 
-func stageAll() func() tea.Msg {
+func stageAll() tea.Cmd {
 	return tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
 			return git.StageAll()
@@ -87,7 +94,7 @@ func stageAll() func() tea.Msg {
 	)
 }
 
-func unstageFile(path string) func() tea.Msg {
+func unstageFile(path string) tea.Cmd {
 	return tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
 			return git.UnstageFile(path)
@@ -96,7 +103,7 @@ func unstageFile(path string) func() tea.Msg {
 	)
 }
 
-func unstageAll() func() tea.Msg {
+func unstageAll() tea.Cmd {
 	return tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
 			return git.UnstageAll()
@@ -105,7 +112,7 @@ func unstageAll() func() tea.Msg {
 	)
 }
 
-func deleteFile(path string, isUntracked bool) func() tea.Msg {
+func deleteFile(path string, isUntracked bool) tea.Cmd {
 	return tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
 			return git.ResetFile(path, isUntracked)
@@ -114,29 +121,29 @@ func deleteFile(path string, isUntracked bool) func() tea.Msg {
 	)
 }
 
-func workTreeUpdateWithCmd(cmdFunc func() error) func() tea.Msg {
+func workTreeUpdateWithCmd(cmdFunc func() error) tea.Cmd {
 	return func() tea.Msg {
-		var (
-			workTreeStatus git.WorkTreeStatus
-			msg            statusUpdateMsg
-			err            error
-		)
-
-		err = cmdFunc()
-		if err != nil {
-			msg.Err = err
-			return msg
+		if err := cmdFunc(); err != nil {
+			return statusUpdateMsg{Err: err}
 		}
 
-		workTreeStatus, err = git.Status()
-		if err != nil {
-			msg.Err = err
-			return msg
-		}
-		msg.WorkTreeStatus = workTreeStatus
+		return updateWorkTreeStatus()
+	}
+}
 
+func updateWorkTreeStatus() tea.Msg {
+	var (
+		workTreeStatus git.WorkTreeStatus
+		msg            statusUpdateMsg
+		err            error
+	)
+	workTreeStatus, err = git.Status()
+	if err != nil {
+		msg.Err = err
 		return msg
 	}
+	msg.WorkTreeStatus = workTreeStatus
+	return msg
 }
 
 type loadedDiffMsg struct {

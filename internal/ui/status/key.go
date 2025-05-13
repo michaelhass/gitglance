@@ -14,6 +14,7 @@ type KeyMap struct {
 	focusUnstaged key.Binding
 	focusStaged   key.Binding
 	focusDiff     key.Binding
+	refresh       key.Binding
 
 	quit key.Binding
 
@@ -54,6 +55,10 @@ func newKeyMap() KeyMap {
 			key.WithKeys("d"),
 			key.WithHelp("d", "To Diff"),
 		),
+		refresh: key.NewBinding(
+			key.WithKeys("r"),
+			key.WithHelp("r", "Refresh"),
+		),
 		quit: key.NewBinding(
 			key.WithKeys("ctrl+c"),
 			key.WithHelp("ctrl+c", "quit"),
@@ -66,6 +71,7 @@ func (k KeyMap) ShortHelp() []key.Binding {
 		k.focusUnstaged, k.focusStaged, k.focusDiff,
 		k.commit,
 		k.up, k.down, k.left, k.right,
+		k.refresh,
 		k.quit,
 	}
 

@@ -4,11 +4,14 @@ BINARY_PATH=bin/${APP_NAME}
 all: build run test
 .PHONY: all
 
-build: 
+build:
 	go build -o ${BINARY_PATH}
 
-run: 
+run:
 	./${BINARY_PATH}
+
+debug:
+	./${BINARY_PATH} debug
 
 test:
 	 go test -v ./...

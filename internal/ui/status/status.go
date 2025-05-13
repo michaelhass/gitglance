@@ -136,7 +136,6 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-
 	var (
 		cmds []tea.Cmd
 	)
@@ -175,6 +174,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.workTreeStatus.StagedFiles()),
 			)
 			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
+		case key.Matches(msg, m.keys.refresh):
+			cmds = append(cmds, refreshStatus())
 		}
 	}
 
