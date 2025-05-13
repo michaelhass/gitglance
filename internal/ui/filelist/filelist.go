@@ -196,6 +196,9 @@ func (m Model) IsLastIndexFocused() bool {
 }
 
 func (m Model) updateVisibleItems() []Item {
+	if len(m.items) == 0 || m.height <= 0 {
+		return []Item{}
+	}
 	start := m.pageStartIdx
 	end := min(start+m.pageSize(), len(m.items))
 	return m.items[start:end]
