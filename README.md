@@ -9,6 +9,7 @@ Simple git terminal UI written in Go using [Bubble Tea](https://github.com/charm
 - Reset files ✔️
 - View diffs ✔️
 - Commit ✔️
+- Refresh Status ✔️ 
 
 ## Installation
 ### Go
