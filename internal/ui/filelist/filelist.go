@@ -112,7 +112,7 @@ func (m Model) updateFocus(isFocused bool, isForced bool) (Model, tea.Cmd) {
 	isAlreadyFocused := m.lastFocuedIdx == m.cursor
 	if !isFocused {
 		m.lastFocuedIdx = -1
-	} else if (!isAlreadyFocused || isForced) && isFocused && len(m.items) > 0 {
+	} else if (!isAlreadyFocused || isForced) && isFocused && len(m.visibleItems) > 0 {
 		m.lastFocuedIdx = m.cursor
 		cmd = m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 	} else if isFocused && len(m.items) == 0 {

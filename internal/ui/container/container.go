@@ -74,12 +74,12 @@ func (m Model) View() string {
 }
 
 func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
-	var (
-		content Content
-		cmd     tea.Cmd
-	)
+	if m.isFocused == isFocused {
+		return m, nil
+	}
+
 	m.isFocused = isFocused
-	content, cmd = m.content.UpdateFocus(isFocused)
+	content, cmd := m.content.UpdateFocus(isFocused)
 	m.content = content
 	return m, cmd
 }
