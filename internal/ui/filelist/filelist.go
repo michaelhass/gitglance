@@ -16,24 +16,28 @@ var (
 	inactiveItemStyle = style.InactiveText.Copy()
 )
 
+const (
+	notAvailableIdx int = -1
+)
+
 type ItemHandler func(msg tea.Msg) tea.Cmd
 
 type Model struct {
-	items         []Item
-	visibleItems  []Item
-	itemHandler   ItemHandler
-	keys          KeyMap
-	title         string
-	width         int
-	height        int
-	cursor        int
-	pageStartIdx  int
-	isFocused     bool
-	lastFocuedIdx int
+	items          []Item
+	visibleItems   []Item
+	itemHandler    ItemHandler
+	keys           KeyMap
+	title          string
+	width          int
+	height         int
+	cursor         int
+	pageStartIdx   int
+	isFocused      bool
+	lastFocusedIdx int
 }
 
 func New(title string, itemHandler ItemHandler, keys KeyMap) Model {
-	return Model{title: title, itemHandler: itemHandler, keys: keys}
+	return Model{title: title, itemHandler: itemHandler, keys: keys, lastFocusedIdx: notAvailableIdx}
 }
 func (m Model) Init() tea.Cmd {
 	return nil
@@ -109,11 +113,11 @@ func (m Model) updateFocus(isFocused bool, isForced bool) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.isFocused = isFocused
-	isAlreadyFocused := m.lastFocuedIdx == m.cursor
+	isAlreadyFocused := m.lastFocusedIdx == m.cursor
 	if !isFocused {
-		m.lastFocuedIdx = -1
-	} else if (!isAlreadyFocused || isForced) && isFocused && len(m.visibleItems) > 0 {
-		m.lastFocuedIdx = m.cursor
+		m.lastFocusedIdx = notAvailableIdx
+	} else if (!isAlreadyFocused || isForced) && isFocused && len(m.visibleItems) > m.cursor {
+		m.lastFocusedIdx = m.cursor
 		cmd = m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 	} else if isFocused && len(m.items) == 0 {
 		cmd = m.itemHandler(NoItemsMsg{})
