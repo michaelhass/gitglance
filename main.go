@@ -8,12 +8,16 @@ import (
 )
 
 func main() {
-	isDebug := false
+	var opts []app.Option
+
 	for _, arg := range os.Args {
-		isDebug = arg == "debug"
+		if arg == "debug" {
+			opts = append(opts, app.WithDebugLogger())
+			break
+		}
 	}
-	opts := app.LaunchOptions{IsDebug: isDebug}
-	if err := app.Launch(opts); err != nil {
+
+	if err := app.Launch(opts...); err != nil {
 		fmt.Println("fatal:", err)
 		os.Exit(0)
 	}

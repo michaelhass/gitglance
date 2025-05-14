@@ -2,7 +2,7 @@
 package app
 
 import (
-	"reflect"
+	"fmt"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -49,10 +49,11 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
-	m.logger.Println(reflect.TypeOf(msg))
+	m.logger.Println(fmt.Sprintf("%+v", msg))
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		m.logger.Println("Key pressed:", msg.String())
 		switch msg.Type {
 		case tea.KeyCtrlC:
 			return m, tea.Quit

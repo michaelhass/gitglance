@@ -7,6 +7,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Options struct {
+	logFile string
+	prefix  string
+}
+
 type Logger interface {
 	Println(v ...any)
 	Close() error
@@ -16,12 +21,20 @@ type fileLogger struct {
 	logFile *os.File
 }
 
-func NewLogger(isDebug bool) (Logger, error) {
-	if isDebug {
-		l, err := tea.LogToFile("debug.log", "DEBUG")
-		return &fileLogger{logFile: l}, err
-	}
-	return &emptyLogger{}, nil
+func NewLogger(opts Options) (Logger, error) {
+	l, err := tea.LogToFile(opts.logFile, opts.prefix)
+	return &fileLogger{logFile: l}, err
+}
+
+func NewDebugLogger() (Logger, error) {
+	return NewLogger(Options{
+		logFile: "debug.log",
+		prefix:  "DEBUG",
+	})
+}
+
+func NewEmptyLogger() Logger {
+	return &emptyLogger{}
 }
 
 func (l *fileLogger) Close() error {

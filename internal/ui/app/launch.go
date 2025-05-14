@@ -5,17 +5,43 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/logger"
 )
 
-type LaunchOptions struct {
-	IsDebug bool
+type Option func(opts *options)
+
+type options struct {
+	logger logger.Logger
 }
 
-func Launch(opt LaunchOptions) error {
-	logger, err := logger.NewLogger(opt.IsDebug)
-	if err != nil {
-		return err
+func newOptions() *options {
+	return &options{
+		logger: logger.NewEmptyLogger(),
 	}
-	defer logger.Close()
-	if _, err := tea.NewProgram(newModel(logger), tea.WithAltScreen()).Run(); err != nil {
+}
+
+func WithLogger(logger logger.Logger) Option {
+	return func(opts *options) {
+		if logger != nil {
+			opts.logger = logger
+		}
+	}
+}
+
+func WithDebugLogger() Option {
+	return func(opts *options) {
+		debugLogger, err := logger.NewDebugLogger()
+		if err == nil {
+			opts.logger = debugLogger
+		}
+	}
+}
+
+func Launch(opts ...Option) error {
+	appOpts := newOptions()
+	for _, opt := range opts {
+		opt(appOpts)
+	}
+
+	defer appOpts.logger.Close()
+	if _, err := tea.NewProgram(newModel(appOpts.logger), tea.WithAltScreen()).Run(); err != nil {
 		return err
 	}
 	return nil
