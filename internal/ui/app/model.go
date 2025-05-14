@@ -3,12 +3,18 @@ package app
 
 import (
 	"reflect"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/logger"
+	"github.com/michaelhass/gitglance/internal/ui/refresh"
 	"github.com/michaelhass/gitglance/internal/ui/status"
 )
+
+// refreshInterval is the duration when a refresh.Msg is send.
+// This message can be used in any view that wants to update its content periodically.
+const refreshInterval time.Duration = time.Second * 15
 
 // model is the main bubbletea model of the application.
 // It displays multiple sub models and is responsible for
@@ -34,7 +40,10 @@ func newModel(logger logger.Logger) model {
 }
 
 func (m model) Init() tea.Cmd {
-	return m.status.Init()
+	return tea.Sequence(
+		m.status.Init(),
+		refresh.Schedule(refreshInterval),
+	)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -63,6 +72,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case dialog.CloseMsg:
 		m.isDialogShowing = false
 		cmds = append(cmds, m.dialog.OnCloseCmd())
+	case refresh.Msg:
+		cmds = append(cmds, refresh.Schedule(refreshInterval))
 	}
 
 	if m.isDialogShowing {

@@ -13,6 +13,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/refresh"
 	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
@@ -158,6 +159,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	case focusSectionMsg:
 		m = m.focusSection(msg.section)
+	case refresh.Msg:
+		cmds = append(cmds, refreshStatus())
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.left):
@@ -173,7 +176,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.workTreeStatus.CleanedBranchName,
 				m.workTreeStatus.StagedFiles()),
 			)
-			cmds = append(cmds, dialog.Show(content, initializeStatus(), dialog.CenterDisplayMode))
+			cmds = append(cmds, dialog.Show(content, refreshStatus(), dialog.CenterDisplayMode))
 		case key.Matches(msg, m.keys.refresh):
 			cmds = append(cmds, refreshStatus())
 		}

@@ -13,6 +13,9 @@ run:
 debug:
 	./${BINARY_PATH} debug
 
+observe_log:
+	tail -f debug.log
+
 test:
 	 go test -v ./...
 
