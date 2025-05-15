@@ -12,7 +12,8 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
-	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/list"
+	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
 	"github.com/michaelhass/gitglance/internal/ui/refresh"
 	"github.com/michaelhass/gitglance/internal/ui/style"
 )
@@ -53,22 +54,31 @@ type Model struct {
 func New() Model {
 	unstagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case filelist.SelectItemMsg:
-			return stageFile(msg.Item.Path)
-		case filelist.FocusItemMsg:
-			return diffFile(
-				git.DiffOptions{
-					FilePath:    msg.Item.Path,
-					IsUntracked: msg.Item.IsUntracked(),
-				},
-			)
-		case filelist.DeleteItemMsg:
-			return deleteFile(msg.Item.Path, msg.Item.IsUntracked())
-		case filelist.SelectAllItemMsg:
+		case list.SelectItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return stageFile(item.Path)
+			}
+			return nil
+		case list.FocusItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return diffFile(
+					git.DiffOptions{
+						FilePath:    item.Path,
+						IsUntracked: item.IsUntracked(),
+					},
+				)
+			}
+			return nil
+		case list.DeleteItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return deleteFile(item.Path, item.IsUntracked())
+			}
+			return nil
+		case list.SelectAllItemMsg:
 			return stageAll()
-		case filelist.BottomNoMoreFocusableItems:
+		case list.BottomNoMoreFocusableItems:
 			return focusSection(stagedSection)
-		case filelist.NoItemsMsg:
+		case list.NoItemsMsg:
 			return showEmptyDiff
 		default:
 			return nil
@@ -77,20 +87,26 @@ func New() Model {
 
 	stagedFilesItemHandler := func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
-		case filelist.SelectItemMsg:
-			return unstageFile(msg.Item.Path)
-		case filelist.SelectAllItemMsg:
+		case list.SelectItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return unstageFile(item.Path)
+			}
+			return nil
+		case list.SelectAllItemMsg:
 			return unstageAll()
-		case filelist.FocusItemMsg:
-			return diffFile(
-				git.DiffOptions{
-					FilePath:    msg.Item.Path,
-					IsStaged:    true,
-					IsUntracked: msg.Item.IsUntracked(),
-				})
-		case filelist.TopNoMoreFocusableItems:
+		case list.FocusItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return diffFile(
+					git.DiffOptions{
+						FilePath:    item.Path,
+						IsStaged:    true,
+						IsUntracked: item.IsUntracked(),
+					})
+			}
+			return nil
+		case list.TopNoMoreFocusableItems:
 			return focusSection(unstagedSection)
-		case filelist.NoItemsMsg:
+		case list.NoItemsMsg:
 			return showEmptyDiff
 		default:
 			return nil
@@ -100,21 +116,21 @@ func New() Model {
 	help := help.New()
 	help.ShowAll = false
 
-	unstagedFileList := filelist.NewContent(
-		filelist.New("Unstaged", unstagedFilesItemHandler, filelist.NewKeyMap(
+	unstagedFileList := list.NewContent(
+		list.New("Unstaged", unstagedFilesItemHandler, list.NewKeyMap(
 			"stage all",
 			"stage file",
 			"reset file",
 		)),
 	)
-	var stagedFileListKeyMap = filelist.NewKeyMap(
+	var stagedFileListKeyMap = list.NewKeyMap(
 		"unstage all",
 		"unstage file",
 		"",
 	)
 	stagedFileListKeyMap.Delete.SetEnabled(false)
 
-	stagedFileList := filelist.NewContent(filelist.New("Staged", stagedFilesItemHandler, stagedFileListKeyMap))
+	stagedFileList := list.NewContent(list.New("Staged", stagedFilesItemHandler, stagedFileListKeyMap))
 	diffContent := diff.NewContent(diff.New())
 
 	return Model{
@@ -252,11 +268,11 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
 
-	if section, ok := m.sections[unstagedSection].Content().(filelist.Content); ok {
+	if section, ok := m.sections[unstagedSection].Content().(list.Content); ok {
 		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
-	if section, ok := m.sections[stagedSection].Content().(filelist.Content); ok {
+	if section, ok := m.sections[stagedSection].Content().(list.Content); ok {
 		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
@@ -308,8 +324,8 @@ func (m Model) updateKeys() KeyMap {
 	return keys
 }
 
-func createListItems(fileStatusList git.FileStatusList, isStaged bool) []filelist.Item {
-	items := make([]filelist.Item, len(fileStatusList))
+func createListItems(fileStatusList git.FileStatusList, isStaged bool) []list.Item {
+	items := make([]list.Item, len(fileStatusList))
 
 	accessory := func(fileStatus git.FileStatus, isStaged bool) string {
 		if isStaged {

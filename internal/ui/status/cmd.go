@@ -5,7 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/list"
 )
 
 type initializedMsg struct {
@@ -72,7 +72,7 @@ type statusUpdateMsg struct {
 func refreshStatus() tea.Cmd {
 	return tea.Sequence(
 		updateWorkTreeStatus,
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 
@@ -81,7 +81,7 @@ func stageFile(path string) tea.Cmd {
 		workTreeUpdateWithCmd(func() error {
 			return git.StageFile(path)
 		}),
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 
@@ -90,7 +90,7 @@ func stageAll() tea.Cmd {
 		workTreeUpdateWithCmd(func() error {
 			return git.StageAll()
 		}),
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 
@@ -99,7 +99,7 @@ func unstageFile(path string) tea.Cmd {
 		workTreeUpdateWithCmd(func() error {
 			return git.UnstageFile(path)
 		}),
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 
@@ -108,7 +108,7 @@ func unstageAll() tea.Cmd {
 		workTreeUpdateWithCmd(func() error {
 			return git.UnstageAll()
 		}),
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 
@@ -117,7 +117,7 @@ func deleteFile(path string, isUntracked bool) tea.Cmd {
 		workTreeUpdateWithCmd(func() error {
 			return git.ResetFile(path, isUntracked)
 		}),
-		filelist.ForceFocusUpdate,
+		list.ForceFocusUpdate,
 	)
 }
 

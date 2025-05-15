@@ -1,4 +1,4 @@
-package filelist
+package list
 
 import (
 	tea "github.com/charmbracelet/bubbletea"

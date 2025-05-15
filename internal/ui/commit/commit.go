@@ -8,7 +8,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/filelist"
+	"github.com/michaelhass/gitglance/internal/ui/list"
+	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
 	"github.com/michaelhass/gitglance/internal/ui/textinput"
 )
 
@@ -22,16 +23,16 @@ type Model struct {
 }
 
 func New(branch string, stagedFileList git.FileStatusList) Model {
-	fileListContent := filelist.NewContent(
-		filelist.New(
+	fileListContent := list.NewContent(
+		list.New(
 			"Staged",
 			func(msg tea.Msg) tea.Cmd { return nil },
-			filelist.NewKeyMap("Nothing", "Nothing", "Nothing"),
+			list.NewKeyMap("Nothing", "Nothing", "Nothing"),
 		),
 	)
 
-	createListItems := func(fileStatusList git.FileStatusList) []filelist.Item {
-		items := make([]filelist.Item, len(fileStatusList))
+	createListItems := func(fileStatusList git.FileStatusList) []list.Item {
+		items := make([]list.Item, len(fileStatusList))
 		for i, fs := range fileStatusList {
 			items[i] = filelist.NewItem(fs, string(fs.StagedStatusCode))
 		}

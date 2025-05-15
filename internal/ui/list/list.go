@@ -1,4 +1,4 @@
-package filelist
+package list
 
 import (
 	"errors"
@@ -135,7 +135,7 @@ func (m Model) View() string {
 		} else if i == m.cursor {
 			style = focusedItemStyle
 		}
-		renderedItems[i] = style.MaxHeight(1).MaxWidth(m.width - 1).Render(item.String())
+		renderedItems[i] = style.MaxHeight(1).MaxWidth(m.width - 1).Render(item.Render())
 	}
 
 	return lipgloss.

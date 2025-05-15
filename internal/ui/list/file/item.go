@@ -1,4 +1,4 @@
-package filelist
+package file
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type Item struct {
 	Accessory string
 }
 
-func (item Item) String() string {
+func (item Item) Render() string {
 	var path string
 
 	if item.IsRenamed() {
