@@ -263,20 +263,24 @@ func (m Model) SetSize(width, height int) Model {
 }
 
 func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var cmds []tea.Cmd
 
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
 
 	if section, ok := m.sections[unstagedSection].Content().(list.Content); ok {
-		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
+		model, cmd := section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
+		section.Model = model
+		cmds = append(cmds, cmd)
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
 	if section, ok := m.sections[stagedSection].Content().(list.Content); ok {
-		section.Model, cmd = section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
+		model, cmd := section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
+		section.Model = model
+		cmds = append(cmds, cmd)
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
