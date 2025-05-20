@@ -9,7 +9,7 @@ import (
 func TestWorkTreeStatusBranch(t *testing.T) {
 	var (
 		branch              = "some_branch"
-		branchComponent     = fmt.Sprintf("## %s", branch)
+		branchComponent     = fmt.Sprintf("## %s.../origin/%s", branch, branch)
 		stagedFileComponent = "A  cmd/playground/main.go"
 		out                 = statusOutputFromComponents([]string{
 			branchComponent,
@@ -22,7 +22,7 @@ func TestWorkTreeStatusBranch(t *testing.T) {
 		t.Error(err)
 	}
 
-	if branch != workTreeStatus.Branch {
+	if branch != workTreeStatus.CleanedBranchName {
 		t.Errorf(
 			"Branch not read. Expected '%s' got '%s'",
 			branch,
@@ -40,14 +40,11 @@ func TestWorkTreeStatusBranch(t *testing.T) {
 
 func TestWorkTreeStatusRenamed(t *testing.T) {
 	var (
-		changes          = "R "
-		path             = "some/path/new_name.txt"
-		oldPathComponent = "some/path/old_bame.txt"
-		renamedComponent = fmt.Sprintf("%s %s", changes, path)
-		out              = statusOutputFromComponents([]string{
-			renamedComponent,
-			oldPathComponent,
-		})
+		changes             = "R "
+		path                = "some/path/new_name.txt"
+		oldPathComponent    = "some/path/old_bame.txt"
+		renamedComponent    = fmt.Sprintf("%s %s -> %s", changes, oldPathComponent, path)
+		out                 = statusOutputFromComponents([]string{renamedComponent})
 		workTreeStatus, err = readWorkTreeStatusFromOutput(out)
 	)
 
@@ -205,5 +202,5 @@ func TestUntrackedFileStatus(t *testing.T) {
 }
 
 func statusOutputFromComponents(components []string) string {
-	return strings.Join(components, "\000")
+	return strings.Join(components, "\n")
 }

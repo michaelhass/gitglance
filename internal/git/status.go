@@ -40,7 +40,11 @@ func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 		startIdx      = 0
 	)
 
-	if firstComponent := components[0]; strings.HasPrefix(firstComponent, branchComponentPrefix) {
+	var firstComponent string
+	if len(components) > 0 {
+		firstComponent = components[0]
+	}
+	if strings.HasPrefix(firstComponent, branchComponentPrefix) {
 		if len(firstComponent) >= 3 {
 			branch = firstComponent[3:]
 			branchComponents := strings.Split(branch, "...")
@@ -58,12 +62,6 @@ func readWorkTreeStatusFromOutput(statusString string) (WorkTreeStatus, error) {
 
 		if err != nil {
 			continue
-		}
-
-		if file.IsRenamed() {
-			// If renamed, next component will be the origianl file name
-			i += 1
-			file.Extra = components[i]
 		}
 
 		files = append(files, file)
@@ -95,13 +93,38 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 	fileStatus.UnstagedStatusCode = StatusCode(component[1])
 
 	path := component[3:]
+	oldPath := ""
+
+	if fileStatus.IsRenamed() {
+		renamedComponents := strings.Split(path, "->")
+		if len(renamedComponents) == 2 {
+			oldPath = renamedComponents[0]
+			path = renamedComponents[1]
+		}
+	}
+
 	if strings.Contains(path, " ") &&
 		strings.HasPrefix(path, "\"") &&
 		strings.HasSuffix(path, "\"") {
 		path = path[1 : len(path)-1]
 	}
-	fileStatus.Path = path
+
+	fileStatus.Path = cleanedPathString(path)
+	fileStatus.Extra = cleanedPathString(oldPath)
 	return fileStatus, nil
+}
+
+func cleanedPathString(path string) string {
+	path = strings.TrimSuffix(path, " ")
+	path = strings.TrimPrefix(path, " ")
+
+	if strings.Contains(path, " ") &&
+		strings.HasPrefix(path, "\"") &&
+		strings.HasSuffix(path, "\"") {
+		path = path[1 : len(path)-1]
+	}
+
+	return path
 }
 
 func (fs FileStatus) IsUnmodified() bool {
