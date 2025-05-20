@@ -98,6 +98,9 @@ func newDiffCmd(opts DiffOptions) *gitCommand {
 	}
 
 	if len(opts.FilePath) > 0 {
+		if !opts.IsUntracked {
+			args = append(args, "--")
+		}
 		args = append(args, opts.FilePath)
 	}
 
