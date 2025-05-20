@@ -96,17 +96,10 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 	oldPath := ""
 
 	if fileStatus.IsRenamed() {
-		renamedComponents := strings.Split(path, "->")
-		if len(renamedComponents) == 2 {
+		if renamedComponents := strings.Split(path, renamePathSeparator); len(renamedComponents) == 2 {
 			oldPath = renamedComponents[0]
 			path = renamedComponents[1]
 		}
-	}
-
-	if strings.Contains(path, " ") &&
-		strings.HasPrefix(path, "\"") &&
-		strings.HasSuffix(path, "\"") {
-		path = path[1 : len(path)-1]
 	}
 
 	fileStatus.Path = cleanedPathString(path)
@@ -204,4 +197,5 @@ func (e statusError) Error() string {
 const (
 	nulSeparator          string = "\000"
 	branchComponentPrefix string = "##"
+	renamePathSeparator   string = "->"
 )

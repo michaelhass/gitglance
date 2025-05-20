@@ -43,7 +43,7 @@ func TestWorkTreeStatusRenamed(t *testing.T) {
 		changes             = "R "
 		path                = "some/path/new_name.txt"
 		oldPathComponent    = "some/path/old_bame.txt"
-		renamedComponent    = fmt.Sprintf("%s %s -> %s", changes, oldPathComponent, path)
+		renamedComponent    = fmt.Sprintf("%s %s %s %s", changes, oldPathComponent, renamePathSeparator, path)
 		out                 = statusOutputFromComponents([]string{renamedComponent})
 		workTreeStatus, err = readWorkTreeStatusFromOutput(out)
 	)
