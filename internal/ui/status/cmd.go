@@ -124,7 +124,7 @@ func deleteFile(path string, isUntracked bool) tea.Cmd {
 }
 
 func openFile(path string) tea.Cmd {
-	return tea.ExecProcess(editor.OpenFileCmd(path), func(err error) tea.Msg {
+	return tea.ExecProcess(editor.OpenFileCmdDefault(path), func(err error) tea.Msg {
 		return refresh.Msg{}
 	})
 }
