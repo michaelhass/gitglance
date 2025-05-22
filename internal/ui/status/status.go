@@ -69,6 +69,11 @@ func New() Model {
 				)
 			}
 			return nil
+		case list.EditItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return openFile(item.Path)
+			}
+			return nil
 		case list.DeleteItemMsg:
 			if item, ok := msg.Item.(filelist.Item); ok {
 				return deleteFile(item.Path, item.IsUntracked())
@@ -102,6 +107,11 @@ func New() Model {
 						IsStaged:    true,
 						IsUntracked: item.IsUntracked(),
 					})
+			}
+			return nil
+		case list.EditItemMsg:
+			if item, ok := msg.Item.(filelist.Item); ok {
+				return openFile(item.Path)
 			}
 			return nil
 		case list.TopNoMoreFocusableItems:

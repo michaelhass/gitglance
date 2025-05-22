@@ -35,6 +35,11 @@ type SelectAllItemMsg struct {
 	Items []Item
 }
 
+// EditItemMsg is an intent to edit an item.
+type EditItemMsg struct {
+	Item Item
+}
+
 type TopNoMoreItems struct{}
 
 type TopNoMoreFocusableItems struct{}
