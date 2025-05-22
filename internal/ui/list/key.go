@@ -7,6 +7,7 @@ type KeyMap struct {
 	Down   key.Binding
 	Enter  key.Binding
 	All    key.Binding
+	Edit   key.Binding
 	Delete key.Binding
 }
 
@@ -28,6 +29,10 @@ func NewKeyMap(allText string, enterHelpText string, deleteHelpText string) KeyM
 			key.WithKeys("a"),
 			key.WithHelp("a", allText),
 		),
+		Edit: key.NewBinding(
+			key.WithKeys("e"),
+			key.WithHelp("e", "edit"),
+		),
 		Delete: key.NewBinding(
 			key.WithKeys("ctrl+d"),
 			key.WithHelp("ctrl+d", deleteHelpText),
@@ -36,7 +41,7 @@ func NewKeyMap(allText string, enterHelpText string, deleteHelpText string) KeyM
 }
 
 func (km KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{km.Up, km.Down, km.All, km.Enter, km.Delete}
+	return []key.Binding{km.Up, km.Down, km.All, km.Enter, km.Edit, km.Delete}
 }
 
 func (km KeyMap) FullHelp() [][]key.Binding {
