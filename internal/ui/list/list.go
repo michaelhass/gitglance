@@ -83,22 +83,23 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmd := m.itemHandler(FocusItemMsg{Item: m.visibleItems[m.cursor]})
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.Enter):
-			if len(m.visibleItems) == 0 {
-				break
+			if item, err := m.FocusedItem(); err == nil {
+				cmd := m.itemHandler(SelectItemMsg{Item: item})
+				cmds = append(cmds, cmd)
 			}
-			item := m.visibleItems[m.cursor]
-			cmd := m.itemHandler(SelectItemMsg{Item: item})
-			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.All):
 			cmd := m.itemHandler(SelectAllItemMsg{Items: m.items})
 			cmds = append(cmds, cmd)
-		case key.Matches(msg, m.keys.Delete):
-			if len(m.visibleItems) == 0 {
-				break
+		case key.Matches(msg, m.keys.Edit):
+			if item, err := m.FocusedItem(); err == nil {
+				cmd := m.itemHandler(EditItemMsg{Item: item})
+				cmds = append(cmds, cmd)
 			}
-			item := m.visibleItems[m.cursor]
-			cmd := m.itemHandler(DeleteItemMsg{Item: item})
-			cmds = append(cmds, cmd)
+		case key.Matches(msg, m.keys.Delete):
+			if item, err := m.FocusedItem(); err == nil {
+				cmd := m.itemHandler(DeleteItemMsg{Item: item})
+				cmds = append(cmds, cmd)
+			}
 		}
 	}
 
@@ -178,9 +179,8 @@ func (m Model) SetItems(items []Item) (Model, tea.Cmd) {
 }
 
 func (m Model) FocusedItem() (Item, error) {
-	var item Item
 	if len(m.visibleItems) == 0 {
-		return item, errors.New("no items")
+		return nil, errors.New("no items")
 	}
 	return m.visibleItems[m.cursor], nil
 }

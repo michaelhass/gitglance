@@ -4,8 +4,10 @@ import (
 	"errors"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/editor"
 	"github.com/michaelhass/gitglance/internal/git"
 	"github.com/michaelhass/gitglance/internal/ui/list"
+	"github.com/michaelhass/gitglance/internal/ui/refresh"
 )
 
 type initializedMsg struct {
@@ -118,6 +120,19 @@ func deleteFile(path string, isUntracked bool) tea.Cmd {
 			return git.ResetFile(path, isUntracked)
 		}),
 		list.ForceFocusUpdate,
+	)
+}
+
+func openFile(path string) tea.Cmd {
+	return tea.ExecProcess(
+		editor.OpenFileCmdDefault(
+			path,
+			editor.WithCmdString(git.CoreEditorValue),
+			editor.WithCmdString(git.CoreGlobalEditorValue),
+		),
+		func(err error) tea.Msg {
+			return refresh.Msg{}
+		},
 	)
 }
 
