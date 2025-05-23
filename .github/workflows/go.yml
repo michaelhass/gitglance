@@ -9,8 +9,9 @@ on:
       - main,
       - "release/*"
   pull_request:
-    types:
-      - opened
+    branches:
+      - main,
+      - "release/*"
 
 jobs:
   build:
