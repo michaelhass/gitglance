@@ -26,6 +26,16 @@ func EnvEditor() (*cmd, error) {
 	return newCmdFromString(os.Getenv("EDITOR"))
 }
 
+func WithCmdString(fn func() (string, error)) CreateEditorCmdOption {
+	return func() (*cmd, error) {
+		value, err := fn()
+		if err != nil {
+			value = " "
+		}
+		return newCmdFromString(value)
+	}
+}
+
 func newCmdFromString(cmdString string) (*cmd, error) {
 	cmdString = strings.TrimSpace(cmdString)
 	components := []string{}
@@ -34,7 +44,6 @@ func newCmdFromString(cmdString string) (*cmd, error) {
 			components = append(components, component)
 		}
 	}
-
 	if len(components) == 0 {
 		return nil, errors.New("Empty")
 	}
@@ -42,12 +51,13 @@ func newCmdFromString(cmdString string) (*cmd, error) {
 	return &cmd{name: components[0], arg: components[1:]}, nil
 }
 
-func OpenFileCmdDefault(path string) *exec.Cmd {
+func OpenFileCmdDefault(path string, prioritize ...CreateEditorCmdOption) *exec.Cmd {
 	defaultCreateEditorOpts := []CreateEditorCmdOption{
 		EnvVisual,
 		EnvEditor,
 	}
-	return OpenFileCmd(path, defaultCreateEditorOpts...)
+	all := append(prioritize, defaultCreateEditorOpts...)
+	return OpenFileCmd(path, all...)
 }
 
 func OpenFileCmd(path string, opts ...CreateEditorCmdOption) *exec.Cmd {
