@@ -50,6 +50,13 @@ func Commit(msg string) error {
 	return newGitCommand("commit", "-m", msg).run()
 }
 
+// CurrentBranch returns the name of the current current branch or an error.
 func CurrentBranch() (string, error) {
 	return newGitCommand("branch", "--show--current").output()
+}
+
+// CoreEditorValue returns the currently set editor for git
+// Can be used to direclty open files.
+func CoreEditorValue() (string, error) {
+	return newGitCommand("config", "core.editor").output()
 }
