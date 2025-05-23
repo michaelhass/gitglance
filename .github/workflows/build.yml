@@ -6,11 +6,11 @@ name: Go
 on:
   push:
     branches:
-      - main,
+      - main
       - "release/*"
   pull_request:
     branches:
-      - main,
+      - main
       - "release/*"
 
 jobs:
