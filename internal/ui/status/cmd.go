@@ -128,6 +128,7 @@ func openFile(path string) tea.Cmd {
 		editor.OpenFileCmdDefault(
 			path,
 			editor.WithCmdString(git.CoreEditorValue),
+			editor.WithCmdString(git.CoreGlobalEditorValue),
 		),
 		func(err error) tea.Msg {
 			return refresh.Msg{}

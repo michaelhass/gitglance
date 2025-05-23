@@ -55,8 +55,14 @@ func CurrentBranch() (string, error) {
 	return newGitCommand("branch", "--show--current").output()
 }
 
-// CoreEditorValue returns the currently set editor for git
+// CoreEditorValue returns the currently set local editor for git
 // Can be used to direclty open files.
 func CoreEditorValue() (string, error) {
 	return newGitCommand("config", "core.editor").output()
+}
+
+// CoreEditorValue returns the currently set global editor for git
+// Can be used to direclty open files.
+func CoreGlobalEditorValue() (string, error) {
+	return newGitCommand("config", "--global", "core.editor").output()
 }
