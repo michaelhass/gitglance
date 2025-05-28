@@ -10,7 +10,7 @@ on:
 permissions: write-all
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
