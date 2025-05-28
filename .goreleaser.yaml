@@ -37,6 +37,7 @@ archives:
         formats: [zip]
 
 changelog:
+  use: github
   sort: asc
   filters:
     exclude:
@@ -49,3 +50,16 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+homebrew_casks:
+  - # name of the cask
+    name: gitglance
+
+    homepage: "https:github.com/michaelhass/gitglance"
+
+    description: "Simple git terminal UI."
+
+    # repo to push to
+    repository:
+      owner: michaelhass
+      name: homebrew-gitglance
