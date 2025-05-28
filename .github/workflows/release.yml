@@ -1,5 +1,5 @@
 # .github/workflows/release.yml
-name: goreleaser
+name: release
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 permissions: write-all
 
 jobs:
-  release:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
