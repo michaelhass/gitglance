@@ -10,6 +10,7 @@ Simple git terminal UI written in Go using [Bubble Tea](https://github.com/charm
 - View diffs ✔️
 - Commit ✔️
 - Refresh Status ✔️
+- Open Editor ✔️
 
 ## Installation
 
@@ -20,15 +21,34 @@ go install github.com/michaelhass/gitglance@latest
 
 ### Homebrew
 Tap:
+
 ```
 brew install michaelhass/gitglance/gitglance
 ```
 
+### Build & run locally
+Build & run:
+```
+make build
+make run
+```
+
+Debugging:
+
+You can run gitglance in debug mode, which will write logs to a **debug.log** file.
+```
+// Run the application in debug mode
+make debug
+// Attach to the debug log in another terminal session
+make observe_log
+```
+
+More details in the [Makefile](Makefile).
 ## Configuration
 
 ### Editor
 Gitglance can try to open an editor for selected files.
-If not configured, vi will be used. The editor is chosen from a list of options with the following priority.
+If not configured, **vi** will be used. The editor is chosen from a list of options with the following priority.
 1. **git config core.editor**
 2. **git config --global core.editor**
 3. env **VISUAl**
