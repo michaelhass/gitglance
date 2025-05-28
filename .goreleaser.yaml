@@ -61,5 +61,5 @@ brews:
       owner: michaelhass
       name: homebrew-gitglance
       branch: main
-      token: "{{ .Env.BREW-GITGLANCE }}"
+      token: "{{ .Env.BREW_GITGLANCE }}"
     directory: Formula
