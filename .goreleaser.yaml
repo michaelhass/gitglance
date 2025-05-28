@@ -53,11 +53,13 @@ release:
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
 brews:
-  - #   # repo to push to
+  - name: gitglance
+    homepage: "https:github.com/michaelhass/gitglance"
+    description: "Simple git terminal UI."
+
     repository:
       owner: michaelhass
       name: homebrew-gitglance
-
-    homepage: "https:github.com/michaelhass/gitglance"
-
-    description: "Simple git terminal UI."
+      branch: main
+      token: "{{ secrets.BREW-GITGLANCE }}"
+    directory: Formula
