@@ -18,6 +18,12 @@ Simple git terminal UI written in Go using [Bubble Tea](https://github.com/charm
 go install github.com/michaelhass/gitglance@latest
 ```
 
+### Homebrew
+Tap:
+```
+brew install michaelhass/gitglance/gitglance
+```
+
 ## Configuration
 
 ### Editor
