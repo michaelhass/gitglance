@@ -52,15 +52,18 @@ release:
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
-homebrew_casks:
-  - # name of the cask
+brews:
+  - # Name of the cask
+    #
+    # Default: the project name.
+    # Templates: allowed.
     name: gitglance
 
     homepage: "https:github.com/michaelhass/gitglance"
 
     description: "Simple git terminal UI."
 
-    # repo to push to
+    #   # repo to push to
     repository:
       owner: michaelhass
       name: homebrew-gitglance
