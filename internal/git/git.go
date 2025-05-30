@@ -96,3 +96,12 @@ func MergeMsg() (string, error) {
 	}
 	return string(mergeFile), nil
 }
+
+func IsInWorkTree() bool {
+	out, err := newGitCommand("rev-parse", "--is-inside-work-tree").output()
+	if err != nil {
+		return false
+	}
+	out = strings.ReplaceAll(out, "\n", "")
+	return out == "true"
+}

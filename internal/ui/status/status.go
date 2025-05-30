@@ -1,8 +1,6 @@
 package status
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,6 +10,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
+	"github.com/michaelhass/gitglance/internal/ui/exit"
 	"github.com/michaelhass/gitglance/internal/ui/list"
 	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
 	"github.com/michaelhass/gitglance/internal/ui/refresh"
@@ -172,7 +171,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		var model = m
 		model, scmd := model.handleStatusUpdateMsg(msg.statusMsg)
 		model, dcmd := model.handleLoadedDiffMsg(msg.diffMsg)
-		model.isInitialized = true
+		model.isInitialized = model.statusErr == nil
 		m = model
 		cmds = append(cmds, scmd, dcmd)
 	case statusUpdateMsg:
@@ -228,8 +227,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if m.statusErr != nil {
-		return fmt.Sprint(m.statusErr)
+	if !m.isInitialized {
+		return "loading..."
 	}
 
 	files := lipgloss.JoinVertical(
@@ -277,6 +276,9 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 
 	m.workTreeStatus = msg.WorkTreeStatus
 	m.statusErr = msg.Err
+	if !m.isInitialized && msg.Err != nil {
+		return m, exit.WithMsg(msg.Err.Error())
+	}
 
 	if section, ok := m.sections[unstagedSection].Content().(list.Content); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
