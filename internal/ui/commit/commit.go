@@ -57,7 +57,7 @@ func New(branch string, stagedFileList git.FileStatusList) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return loadMergeMsg
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -67,6 +67,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
+	case MergeMsgLoaded:
+		m, cmd = m.setMsg(msg.msg)
+		cmds = append(cmds, cmd)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.toggleFocus):
@@ -107,6 +110,15 @@ func (m Model) Help() []key.Binding {
 		m.keys.toggleFocus,
 		m.keys.commit,
 	}
+}
+
+func (m Model) setMsg(msg string) (Model, tea.Cmd) {
+	if input, ok := m.message.Content().(textinput.Content); ok {
+		input = input.SetValue(msg)
+		input = input.SetCursorToStart()
+		m.message = m.message.SetContent(input)
+	}
+	return m, nil
 }
 
 func (m Model) toggleFocus() (Model, tea.Cmd) {

@@ -1,7 +1,6 @@
 package git
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -16,6 +15,9 @@ type WorkTreeStatus struct {
 }
 
 func loadWorkTreeStatus() (WorkTreeStatus, error) {
+	if !IsInWorkTree() {
+		return WorkTreeStatus{}, statusError{msg: "Error: Could not read git status. Please run gitglance inside a git repository."}
+	}
 	out, err := newStatusCmd(statusOptions{
 		isPorcelain:      true,
 		porcelainVersion: 2,
@@ -85,7 +87,7 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 	if len(component) < 3 {
 		return fileStatus,
 			statusError{
-				Reason: "Can't read FileStatus. Component is too short.",
+				msg: "Can't read FileStatus. Component is too short.",
 			}
 	}
 
@@ -187,11 +189,11 @@ const (
 )
 
 type statusError struct {
-	Reason string
+	msg string
 }
 
 func (e statusError) Error() string {
-	return fmt.Sprint("Git status error:", e.Reason)
+	return e.msg
 }
 
 const (

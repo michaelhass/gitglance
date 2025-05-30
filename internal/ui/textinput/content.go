@@ -97,6 +97,23 @@ func (c Content) Title() string {
 	return c.title
 }
 
+func (c Content) SetValue(value string) Content {
+	c.textarea.SetValue(value)
+	return c
+}
+
+func (c Content) SetCursorToStart() Content {
+	// textarea.Line() does not seem to return the correct current
+	// line of the cursor. At least after setting a new value.
+	// Thus, move the cursor up more than potentially needed to ensure
+	// that we are at the very beginning of the text input.
+	for i := 0; i < c.textarea.LineCount(); i++ {
+		c.textarea.CursorUp()
+	}
+	c.textarea.SetCursor(0) // Only moves to the beginning of the row
+	return c
+}
+
 func (c Content) SetSize(width, height int) container.Content {
 	c.width, c.height = width, height
 	c.textarea.SetWidth(width - 2)

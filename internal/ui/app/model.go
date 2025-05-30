@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
+	"github.com/michaelhass/gitglance/internal/ui/exit"
 	"github.com/michaelhass/gitglance/internal/ui/logger"
 	"github.com/michaelhass/gitglance/internal/ui/refresh"
 	"github.com/michaelhass/gitglance/internal/ui/status"
@@ -52,6 +53,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.logger.Println(reflect.TypeOf(msg))
 
 	switch msg := msg.(type) {
+	case exit.Msg:
+		return m, tea.Sequence(tea.ExitAltScreen, tea.Println(msg), tea.Quit)
 	case tea.KeyMsg:
 		m.logger.Println("Key pressed:", msg.String())
 		switch msg.Type {
@@ -70,6 +73,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		dialog = dialog.SetSize(m.width, m.height)
 		m.dialog = dialog
 		m.isDialogShowing = true
+		cmds = append(cmds, dialog.Init())
 	case dialog.CloseMsg:
 		m.isDialogShowing = false
 		cmds = append(cmds, m.dialog.OnCloseCmd())
@@ -80,7 +84,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.isDialogShowing {
 		dialog, cmd := m.dialog.Update(msg)
 		m.dialog = dialog
-		return m, cmd
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
 	}
 
 	status, statusCmd := m.status.Update(msg)
