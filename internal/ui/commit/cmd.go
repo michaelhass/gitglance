@@ -17,3 +17,15 @@ func Execute(msg string) tea.Cmd {
 type ExecutedMsg struct {
 	Err error
 }
+
+func loadMergeMsg() tea.Msg {
+	msg, err := git.MergeMsg()
+	if err != nil {
+		msg = ""
+	}
+	return MergeMsgLoaded{msg: msg}
+}
+
+type MergeMsgLoaded struct {
+	msg string
+}
