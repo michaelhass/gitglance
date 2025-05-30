@@ -1,6 +1,12 @@
 // Package git provides easy execution of git commands.
 package git
 
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
 // Status retrieves the current `git status` represented
 // by WorkTreeStatus object.
 func Status() (WorkTreeStatus, error) {
@@ -65,4 +71,28 @@ func CoreEditorValue() (string, error) {
 // Can be used to direclty open files.
 func CoreGlobalEditorValue() (string, error) {
 	return newGitCommand("config", "--global", "core.editor").output()
+}
+
+// RootFolder returns the git root folder.
+func RootFolder() (string, error) {
+	output, err := newGitCommand("rev-parse", "--git-dir").output()
+	if err != nil {
+		return "", err
+	}
+	output = strings.ReplaceAll(output, "\n", "")
+	return strings.TrimSpace(output), nil
+}
+
+// MergeMsg returns the content of the file .git/MERGE_MSG
+func MergeMsg() (string, error) {
+	folder, err := RootFolder()
+	if err != nil {
+		return "", err
+	}
+	mergeMsgPath := fmt.Sprintf("%s/MERGE_MSG", folder)
+	mergeFile, err := os.ReadFile(mergeMsgPath)
+	if err != nil {
+		return "", err
+	}
+	return string(mergeFile), nil
 }
