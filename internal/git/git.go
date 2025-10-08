@@ -105,3 +105,7 @@ func IsInWorkTree() bool {
 	out = strings.ReplaceAll(out, "\n", "")
 	return out == "true"
 }
+
+func StashAll() error {
+	return newGitCommand("stash", "-u").run()
+}
