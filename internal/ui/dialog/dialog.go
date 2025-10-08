@@ -46,7 +46,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type == tea.KeyEsc {
-		return m, Close()
+		return m, tea.Sequence(m.onCloseCmd, Close())
 	}
 
 	content, cmd := m.content.Update(msg)
