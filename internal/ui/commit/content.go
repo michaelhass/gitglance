@@ -21,10 +21,6 @@ func (c Content) Init() tea.Cmd {
 }
 
 func (c Content) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	if _, ok := msg.(ExecutedMsg); ok {
-		return c, dialog.Close()
-	}
-
 	model, cmd := c.Model.Update(msg)
 	c.Model = model
 
