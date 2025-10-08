@@ -6,9 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/diff"
 	"github.com/michaelhass/gitglance/internal/ui/exit"
 	"github.com/michaelhass/gitglance/internal/ui/list"
@@ -197,15 +195,17 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.focusStaged):
 			m = m.focusSection(stagedSection)
 		case key.Matches(msg, m.keys.commit):
-			content := commit.NewContent(commit.New(
-				m.workTreeStatus.CleanedBranchName,
-				m.workTreeStatus.StagedFiles()),
+			cmds = append(
+				cmds,
+				showCommitDialog(
+					m.workTreeStatus.CleanedBranchName,
+					m.workTreeStatus.StagedFiles(),
+				),
 			)
-			cmds = append(cmds, dialog.Show(content, refreshStatus(), dialog.CenterDisplayMode))
 		case key.Matches(msg, m.keys.refresh):
 			cmds = append(cmds, refreshStatus())
 		case key.Matches(msg, m.keys.stash):
-			cmds = append(cmds, stash())
+			cmds = append(cmds, showStashAllConfirmation())
 		}
 	}
 

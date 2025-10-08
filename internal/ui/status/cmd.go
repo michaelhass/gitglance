@@ -6,6 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/editor"
 	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/ui/commit"
 	"github.com/michaelhass/gitglance/internal/ui/confirm"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/list"
@@ -192,11 +193,23 @@ func diffFile(opt git.DiffOptions) func() tea.Msg {
 	}
 }
 
-func stash() tea.Cmd {
-	confirm := confirm.New("Stash", "Do you want to stash all changes?", nil)
-	return dialog.Show(
-		confirm,
-		nil,
-		dialog.CenterDisplayMode,
-	)
+func showCommitDialog(branchName string, files git.FileStatusList) tea.Cmd {
+	content := commit.NewContent(commit.New(branchName, files))
+	return dialog.Show(content, refreshStatus(), dialog.CenterDisplayMode)
+}
+
+func showStashAllConfirmation() tea.Cmd {
+	confirm := confirm.New("Stash", "Do you want to stash all changes?", stashAll())
+	return dialog.Show(confirm, refreshStatus(), dialog.CenterDisplayMode)
+}
+
+type stashedMsg struct {
+	err error
+}
+
+func stashAll() tea.Cmd {
+	return func() tea.Msg {
+		err := git.StashAll()
+		return stashedMsg{err: err}
+	}
 }
