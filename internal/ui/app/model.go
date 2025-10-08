@@ -76,7 +76,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, dialog.Init())
 	case dialog.CloseMsg:
 		m.isDialogShowing = false
-		cmds = append(cmds, m.dialog.OnCloseCmd())
+		_, cmd := m.dialog.Update(msg)
+		cmds = append(cmds, cmd)
 	case refresh.Msg:
 		cmds = append(cmds, refresh.Schedule(refreshInterval))
 	}
