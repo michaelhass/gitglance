@@ -204,6 +204,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmds = append(cmds, dialog.Show(content, refreshStatus(), dialog.CenterDisplayMode))
 		case key.Matches(msg, m.keys.refresh):
 			cmds = append(cmds, refreshStatus())
+		case key.Matches(msg, m.keys.stash):
+			cmds = append(cmds, stash())
 		}
 	}
 

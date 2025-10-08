@@ -49,6 +49,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, tea.Sequence(m.onCloseCmd, Close())
 	}
 
+	if _, ok := msg.(CloseMsg); ok {
+		return m, m.onCloseCmd
+	}
+
 	content, cmd := m.content.Update(msg)
 	m.content = content
 
