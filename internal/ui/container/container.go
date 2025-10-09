@@ -17,11 +17,11 @@ const (
 )
 
 var (
-	inactiveTitleStyle = styles.InactiveTitle.Copy().Height(titleHeight)
-	focusTitleStyle    = styles.Title.Copy().Height(titleHeight)
+	inactiveTitleStyle = styles.InactiveTitle.Height(titleHeight)
+	focusTitleStyle    = styles.Title.Height(titleHeight)
 
-	inactiveBorderStyle = styles.InactiveBorder.Copy().PaddingLeft(paddingLeft)
-	focusBorderStyle    = styles.FocusBorder.Copy().PaddingLeft(paddingLeft)
+	inactiveBorderStyle = styles.InactiveBorder.PaddingLeft(paddingLeft)
+	focusBorderStyle    = styles.FocusBorder.PaddingLeft(paddingLeft)
 )
 
 type Model struct {

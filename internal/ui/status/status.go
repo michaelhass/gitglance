@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	helpStyle = style.ShortHelp.Copy()
+	helpStyle = style.ShortHelp
 )
 
 type Model struct {
