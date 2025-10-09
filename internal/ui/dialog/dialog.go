@@ -17,7 +17,7 @@ const (
 
 const helpHeight = 1
 
-var helpStyle = style.ShortHelp.Copy()
+var helpStyle = style.ShortHelp
 
 type Model struct {
 	content                         Content

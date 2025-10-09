@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	itemStyle         = style.Text.Copy()
-	focusedItemStyle  = style.FocusText.Copy()
-	inactiveItemStyle = style.InactiveText.Copy()
+	itemStyle         = style.Text
+	focusedItemStyle  = style.FocusText
+	inactiveItemStyle = style.InactiveText
 )
 
 const (
