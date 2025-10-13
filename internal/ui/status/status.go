@@ -1,6 +1,8 @@
 package status
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -290,10 +292,14 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 	}
 	if section, ok := m.sections[stagedSection].Content().(list.Content); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
+		model = model.SetTitle(fmt.Sprintf("Staged [%s]", m.workTreeStatus.CleanedBranchName))
 		section.Model = model
 		cmds = append(cmds, cmd)
 		m.sections[stagedSection] = m.sections[stagedSection].SetContent(section)
 	}
+
+	cmds = append(cmds, tea.SetWindowTitle(m.workTreeStatus.CleanedBranchName))
+
 	return m, tea.Batch(cmds...)
 }
 

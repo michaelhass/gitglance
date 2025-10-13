@@ -149,6 +149,11 @@ func (m Model) Title() string {
 	return m.title
 }
 
+func (m Model) SetTitle(title string) Model {
+	m.title = title
+	return m
+}
+
 func (m Model) SetSize(width, height int) Model {
 	m.width = width
 	m.height = height
