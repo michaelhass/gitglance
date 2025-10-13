@@ -11,7 +11,7 @@ type Item struct {
 	Accessory string
 }
 
-func (item Item) Render() string {
+func (item Item) String() string {
 	var path string
 
 	if item.IsRenamed() {
@@ -25,6 +25,10 @@ func (item Item) Render() string {
 	}
 
 	return fmt.Sprintf("%s %s", item.Accessory, path)
+}
+
+func (item Item) Render() string {
+	return item.String()
 }
 
 func NewItem(fileStatus git.FileStatus, accessory string) Item {
