@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	countStyle = style.SublteText.Copy().Height(1)
+	countStyle = style.SublteText.Height(1)
 )
 
 type Content struct {
@@ -37,13 +37,13 @@ func NewContent(title string, placeholder string) Content {
 	textarea.Prompt = ""
 	textarea.ShowLineNumbers = false
 
-	blurredStyle.Text = style.SublteText.Copy()
-	blurredStyle.Placeholder = style.SublteText.Copy()
+	blurredStyle.Text = style.SublteText
+	blurredStyle.Placeholder = style.SublteText
 	blurredStyle.CursorLine = lipgloss.NewStyle()
 	textarea.BlurredStyle = blurredStyle
 
-	focusedStyle.Placeholder = style.SublteText.Copy()
-	focusedStyle.Text = style.Text.Copy()
+	focusedStyle.Placeholder = style.SublteText
+	focusedStyle.Text = style.Text
 	focusedStyle.CursorLine = lipgloss.NewStyle()
 	textarea.FocusedStyle = focusedStyle
 

@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	itemStyle         = style.Text.Copy()
-	focusedItemStyle  = style.FocusText.Copy()
-	inactiveItemStyle = style.InactiveText.Copy()
+	itemStyle         = style.Text
+	focusedItemStyle  = style.FocusText
+	inactiveItemStyle = style.InactiveText
 )
 
 const (
@@ -147,6 +147,11 @@ func (m Model) View() string {
 
 func (m Model) Title() string {
 	return m.title
+}
+
+func (m Model) SetTitle(title string) Model {
+	m.title = title
+	return m
 }
 
 func (m Model) SetSize(width, height int) Model {

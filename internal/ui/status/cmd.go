@@ -2,6 +2,7 @@ package status
 
 import (
 	"errors"
+	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/editor"
@@ -10,6 +11,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/ui/confirm"
 	"github.com/michaelhass/gitglance/internal/ui/dialog"
 	"github.com/michaelhass/gitglance/internal/ui/list"
+	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
 	"github.com/michaelhass/gitglance/internal/ui/refresh"
 )
 
@@ -117,13 +119,22 @@ func unstageAll() tea.Cmd {
 	)
 }
 
-func deleteFile(path string, isUntracked bool) tea.Cmd {
-	return tea.Sequence(
+func deleteFile(fileItem filelist.Item) tea.Cmd {
+	title := "Reset"
+	msg := fmt.Sprintf("Do you want to reset?\n\n%s", fileItem.String())
+	confirmCmd := tea.Sequence(
 		workTreeUpdateWithCmd(func() error {
-			return git.ResetFile(path, isUntracked)
+			return git.ResetFile(fileItem.Path, fileItem.IsUntracked())
 		}),
 		list.ForceFocusUpdate,
 	)
+	confirmDialog := confirm.New(
+		title,
+		msg,
+		confirmCmd,
+	)
+
+	return dialog.Show(confirmDialog, nil, dialog.CenterDisplayMode)
 }
 
 func openFile(path string) tea.Cmd {

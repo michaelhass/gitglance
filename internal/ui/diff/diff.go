@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	normalTextStyle  = style.Text.Copy()
-	addedTextStyle   = style.AddedText.Copy()
-	removedTextStyle = style.RemovedText.Copy()
+	normalTextStyle  = style.Text
+	addedTextStyle   = style.AddedText
+	removedTextStyle = style.RemovedText
 )
 
 // The Model to display a git diff output.
