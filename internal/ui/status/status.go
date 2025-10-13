@@ -75,7 +75,7 @@ func New() Model {
 			return nil
 		case list.DeleteItemMsg:
 			if item, ok := msg.Item.(filelist.Item); ok {
-				return deleteFile(item.Path, item.IsUntracked())
+				return deleteFile(item)
 			}
 			return nil
 		case list.SelectAllItemMsg:
