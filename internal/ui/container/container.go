@@ -64,7 +64,7 @@ func (m Model) View() string {
 		titleStyle = inactiveTitleStyle
 	}
 
-	title = titleStyle.Render(m.content.Title())
+	title = titleStyle.MaxWidth(m.width - 2).Render(m.content.Title())
 	content = m.content.View()
 
 	return borderStyle.
