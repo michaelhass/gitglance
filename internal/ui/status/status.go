@@ -304,7 +304,7 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
-	section, ok := m.sections[diffSection].Content().(diff.Content)
+	section, ok := m.sections[diffSection].Content().(diff.ContainerContent)
 	if !ok {
 		return m, nil
 	}
