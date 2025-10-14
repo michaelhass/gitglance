@@ -109,3 +109,12 @@ func IsInWorkTree() bool {
 func StashAll() error {
 	return newGitCommand("stash", "-u").run()
 }
+
+func GetStashList() ([]StashEntry, error) {
+	out, err := newGitCommand("stash", "list").output()
+	if err != nil {
+		return []StashEntry{}, err
+	}
+	return newDefaultStashEntryBuilder().
+		makeStashEntryFromMultilineText(out)
+}
