@@ -284,13 +284,13 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 		return m, exit.WithMsg(msg.Err.Error())
 	}
 
-	if section, ok := m.sections[unstagedSection].Content().(list.Content); ok {
+	if section, ok := m.sections[unstagedSection].Content().(list.ContainerContent); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		section.Model = model
 		cmds = append(cmds, cmd)
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
-	if section, ok := m.sections[stagedSection].Content().(list.Content); ok {
+	if section, ok := m.sections[stagedSection].Content().(list.ContainerContent); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		model = model.SetTitle(fmt.Sprintf("Staged [%s]", m.workTreeStatus.CleanedBranchName))
 		section.Model = model
