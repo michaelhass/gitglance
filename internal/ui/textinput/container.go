@@ -1,11 +1,10 @@
-package list
+package textinput
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/ui/container"
 )
 
-// ContainerContent is a wrapper to use the filelist ui as container.ContainerContent.
 type ContainerContent struct {
 	Model
 }
