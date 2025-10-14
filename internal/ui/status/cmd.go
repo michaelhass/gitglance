@@ -128,12 +128,7 @@ func deleteFile(fileItem filelist.Item) tea.Cmd {
 		}),
 		list.ForceFocusUpdate,
 	)
-	confirmDialog := confirm.New(
-		title,
-		msg,
-		confirmCmd,
-	)
-
+	confirmDialog := confirm.NewDialogConent(confirm.New(title, msg, confirmCmd))
 	return dialog.Show(confirmDialog, nil, dialog.CenterDisplayMode)
 }
 
@@ -210,8 +205,13 @@ func showCommitDialog(branchName string, files git.FileStatusList) tea.Cmd {
 }
 
 func showStashAllConfirmation() tea.Cmd {
-	confirm := confirm.New("Stash", "Do you want to stash all changes?", stashAll())
-	return dialog.Show(confirm, refreshStatus(), dialog.CenterDisplayMode)
+	confirmDialog := confirm.NewDialogConent(
+		confirm.New(
+			"Stash", "Do you want to stash all changes?",
+			stashAll(),
+		),
+	)
+	return dialog.Show(confirmDialog, refreshStatus(), dialog.CenterDisplayMode)
 }
 
 type stashedMsg struct {

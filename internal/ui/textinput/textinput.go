@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/ui/container"
 	"github.com/michaelhass/gitglance/internal/ui/style"
 )
 
@@ -15,7 +14,7 @@ var (
 	countStyle = style.SublteText.Height(1)
 )
 
-type Content struct {
+type Model struct {
 	title string
 
 	textarea textarea.Model
@@ -26,7 +25,7 @@ type Content struct {
 	isFocused bool
 }
 
-func NewContent(title string, placeholder string) Content {
+func New(title string, placeholder string) Model {
 	var (
 		textarea     = textarea.New()
 		blurredStyle = textarea.BlurredStyle
@@ -47,84 +46,84 @@ func NewContent(title string, placeholder string) Content {
 	focusedStyle.CursorLine = lipgloss.NewStyle()
 	textarea.FocusedStyle = focusedStyle
 
-	return Content{
+	return Model{
 		title:    title,
 		textarea: textarea,
 	}
 }
 
-func (c Content) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (c Content) Update(msg tea.Msg) (container.Content, tea.Cmd) {
-	textarea, cmd := c.textarea.Update(msg)
-	c.textarea = textarea
-	return c, cmd
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	textarea, cmd := m.textarea.Update(msg)
+	m.textarea = textarea
+	return m, cmd
 }
 
-func (c Content) UpdateFocus(isFocused bool) (container.Content, tea.Cmd) {
-	c.isFocused = isFocused
+func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
+	m.isFocused = isFocused
 	if isFocused {
-		c.textarea.Focus()
+		m.textarea.Focus()
 	} else {
-		c.textarea.Blur()
+		m.textarea.Blur()
 	}
-	return c, nil
+	return m, nil
 }
 
-func (c Content) View() string {
-	inputLength := len([]rune(c.textarea.Value()))
+func (m Model) View() string {
+	inputLength := len([]rune(m.textarea.Value()))
 
 	count := countStyle.
-		MaxWidth(c.width - 2).
+		MaxWidth(m.width - 2).
 		Render(fmt.Sprint("Chararcters ", inputLength))
 
 	countLine := lipgloss.PlaceHorizontal(
-		c.width-2,
+		m.width-2,
 		lipgloss.Right,
 		count,
 	)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
-		c.textarea.View(),
+		m.textarea.View(),
 		countLine,
 	)
 }
 
-func (c Content) Title() string {
-	return c.title
+func (m Model) Title() string {
+	return m.title
 }
 
-func (c Content) SetValue(value string) Content {
-	c.textarea.SetValue(value)
-	return c
+func (m Model) SetValue(value string) Model {
+	m.textarea.SetValue(value)
+	return m
 }
 
-func (c Content) SetCursorToStart() Content {
+func (m Model) SetCursorToStart() Model {
 	// textarea.Line() does not seem to return the correct current
 	// line of the cursor. At least after setting a new value.
 	// Thus, move the cursor up more than potentially needed to ensure
 	// that we are at the very beginning of the text input.
-	for i := 0; i < c.textarea.LineCount(); i++ {
-		c.textarea.CursorUp()
+	for i := 0; i < m.textarea.LineCount(); i++ {
+		m.textarea.CursorUp()
 	}
-	c.textarea.SetCursor(0) // Only moves to the beginning of the row
-	return c
+	m.textarea.SetCursor(0) // Only moves to the beginning of the row
+	return m
 }
 
-func (c Content) SetSize(width, height int) container.Content {
-	c.width, c.height = width, height
-	c.textarea.SetWidth(width - 2)
-	c.textarea.SetHeight(height - 1)
-	return c
+func (m Model) SetSize(width, height int) Model {
+	m.width, m.height = width, height
+	m.textarea.SetWidth(width - 2)
+	m.textarea.SetHeight(height - 1)
+	return m
 }
 
-func (c Content) KeyMap() help.KeyMap {
+func (m Model) KeyMap() help.KeyMap {
 	return nil
 }
 
-func (c Content) Text() string {
-	return c.textarea.Value()
+func (m Model) Text() string {
+	return m.textarea.Value()
 }

@@ -43,7 +43,7 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && key.Matches(keyMsg, m.keys.confirm) {
 		return m, tea.Sequence(m.confirmCmd, dialog.Close())
 	}
@@ -67,7 +67,7 @@ func (m Model) Help() []key.Binding {
 	}
 }
 
-func (m Model) SetSize(width, height int) dialog.Content {
+func (m Model) SetSize(width, height int) Model {
 	m.width = width
 	m.height = height
 	return m
