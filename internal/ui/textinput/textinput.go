@@ -75,15 +75,18 @@ func (m Model) UpdateFocus(isFocused bool) (Model, tea.Cmd) {
 func (m Model) View() string {
 	inputLength := len([]rune(m.textarea.Value()))
 
-	count := countStyle.
-		MaxWidth(m.width - 2).
-		Render(fmt.Sprint("Chararcters ", inputLength))
+	var countLine string
+	if inputLength > 0
+		count := countStyle.
+			MaxWidth(m.width - 2).
+			Render(fmt.Sprintf("[%d chars]", inputLength))
 
-	countLine := lipgloss.PlaceHorizontal(
-		m.width-2,
-		lipgloss.Right,
-		count,
-	)
+		countLine = lipgloss.PlaceHorizontal(
+			m.width-2,
+			lipgloss.Right,
+			count,
+		)
+	}
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
