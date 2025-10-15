@@ -76,7 +76,7 @@ func (m Model) View() string {
 	inputLength := len([]rune(m.textarea.Value()))
 
 	var countLine string
-	if inputLength > 0
+	if inputLength > 0 {
 		count := countStyle.
 			MaxWidth(m.width - 2).
 			Render(fmt.Sprintf("[%d chars]", inputLength))
