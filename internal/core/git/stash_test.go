@@ -18,11 +18,11 @@ func TestGetStashIdx(t *testing.T) {
 		{"25", -1, true},
 	}
 
-	builder := newDefaultStashEntryBuilder()
+	builder := newDefaultStashBuilder()
 	for _, tt := range tests {
 		testName := fmt.Sprintf("Reading idx from: `%s`", tt.input)
 		t.Run(testName, func(t *testing.T) {
-			gotIdx, gotErr := builder.getStashIdxFromLine(tt.input)
+			gotIdx, gotErr := builder.getStashEntryIdxFromLine(tt.input)
 			if (tt.hasError && gotErr == nil) ||
 				(!tt.hasError && gotErr != nil) {
 				t.Error("Unexpected error result:", gotErr)
@@ -46,11 +46,11 @@ func TestGetStashEntryMsg(t *testing.T) {
 		{"stash@{12}: this is the message: more message", "this is the message: more message", false},
 	}
 
-	builder := newDefaultStashEntryBuilder()
+	builder := newDefaultStashBuilder()
 	for _, tt := range tests {
 		testName := fmt.Sprintf("Reading message from: `%s`", tt.input)
 		t.Run(testName, func(t *testing.T) {
-			gotMsg, gotErr := builder.getStashMsgFromLine(tt.input)
+			gotMsg, gotErr := builder.getStashEntryMsgFromLine(tt.input)
 			if (tt.hasError && gotErr == nil) ||
 				(!tt.hasError && gotErr != nil) {
 				t.Error("Unexpected error result:", gotErr)

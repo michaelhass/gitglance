@@ -110,11 +110,11 @@ func StashAll() error {
 	return newGitCommand("stash", "-u").run()
 }
 
-func GetStashList() ([]StashEntry, error) {
+func GetStash() (Stash, error) {
 	out, err := newGitCommand("stash", "list").output()
 	if err != nil {
-		return []StashEntry{}, err
+		return Stash([]StashEntry{}), err
 	}
-	return newDefaultStashEntryBuilder().
-		makeStashEntryFromMultilineText(out)
+	return newDefaultStashBuilder().
+		makeStashFromMultilineText(out)
 }

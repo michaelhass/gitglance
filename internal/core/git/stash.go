@@ -8,44 +8,44 @@ import (
 )
 
 const (
-	stashIdxRegexPattern    = `stash@{([0-9]+)}`
-	stashComponentSeparator = ": "
+	stashEntryIdxRegexPattern    = `stash@{([0-9]+)}`
+	stashEntryComponentSeparator = ": "
 )
 
 var (
 	missingStashIdxErr                  = errors.New("No stash index found")
 	missingStashMsgErr                  = errors.New("No stash message found")
-	defaultStashIdxRegex *regexp.Regexp = regexp.MustCompile(stashIdxRegexPattern)
+	defaultStashIdxRegex *regexp.Regexp = regexp.MustCompile(stashEntryIdxRegexPattern)
 )
 
-type stashEntryBuilder struct {
-	stashIdxRegex *regexp.Regexp
+type stashBuilder struct {
+	stashEntryIdxRegex *regexp.Regexp
 }
 
-func newDefaultStashEntryBuilder() stashEntryBuilder {
-	return stashEntryBuilder{
-		stashIdxRegex: defaultStashIdxRegex,
+func newDefaultStashBuilder() stashBuilder {
+	return stashBuilder{
+		stashEntryIdxRegex: defaultStashIdxRegex,
 	}
 }
 
-func (b stashEntryBuilder) makeStashEntryFromMultilineText(text string) ([]StashEntry, error) {
+func (b stashBuilder) makeStashFromMultilineText(text string) (Stash, error) {
 	lines := strings.Split(text, "\n")
-	return b.makeStashEntryFromLines(lines...)
+	return b.makeStashFromLines(lines...)
 }
 
-func (b stashEntryBuilder) makeStashEntryFromLines(lines ...string) ([]StashEntry, error) {
+func (b stashBuilder) makeStashFromLines(lines ...string) (Stash, error) {
 	var (
 		entries []StashEntry
 		err     error
 	)
 
 	for _, line := range lines {
-		idx, idxErr := b.getStashIdxFromLine(line)
+		idx, idxErr := b.getStashEntryIdxFromLine(line)
 		if idxErr != nil {
 			err = idxErr
 			break
 		}
-		msg, msgErr := b.getStashMsgFromLine(line)
+		msg, msgErr := b.getStashEntryMsgFromLine(line)
 		if msgErr != nil {
 			err = msgErr
 			break
@@ -57,8 +57,8 @@ func (b stashEntryBuilder) makeStashEntryFromLines(lines ...string) ([]StashEntr
 	return entries, err
 }
 
-func (b stashEntryBuilder) getStashIdxFromLine(line string) (int, error) {
-	matches := b.stashIdxRegex.FindStringSubmatch(line)
+func (b stashBuilder) getStashEntryIdxFromLine(line string) (int, error) {
+	matches := b.stashEntryIdxRegex.FindStringSubmatch(line)
 	if len(matches) < 2 {
 		return -1, missingStashIdxErr
 	}
@@ -69,12 +69,12 @@ func (b stashEntryBuilder) getStashIdxFromLine(line string) (int, error) {
 	return idx, nil
 }
 
-func (b stashEntryBuilder) getStashMsgFromLine(line string) (string, error) {
-	idx := strings.Index(line, stashComponentSeparator)
+func (b stashBuilder) getStashEntryMsgFromLine(line string) (string, error) {
+	idx := strings.Index(line, stashEntryComponentSeparator)
 	if idx == -1 {
 		return "", missingStashMsgErr
 	}
-	msgStartIdx := idx + len(stashComponentSeparator)
+	msgStartIdx := idx + len(stashEntryComponentSeparator)
 	return line[msgStartIdx:], nil
 }
 
@@ -90,3 +90,5 @@ func (s StashEntry) Message() string {
 func (s StashEntry) Index() int {
 	return s.idx
 }
+
+type Stash []StashEntry
