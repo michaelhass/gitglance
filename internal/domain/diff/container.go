@@ -1,22 +1,17 @@
-package list
+package diff
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
 )
 
-// ContainerContent is a wrapper to use the filelist ui as container.ContainerContent.
+// ContainerContent is a wrapper to use the commit ui as container.ContainerContent.
 type ContainerContent struct {
 	Model
 }
 
-func NewContainerContent(model Model) ContainerContent {
+func NewContent(model Model) ContainerContent {
 	return ContainerContent{Model: model}
-}
-
-func NewContainer(model Model) container.Model {
-	containerContent := NewContainerContent(model)
-	return container.New(containerContent)
 }
 
 func (c ContainerContent) Update(msg tea.Msg) (container.Content, tea.Cmd) {

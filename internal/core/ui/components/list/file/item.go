@@ -3,7 +3,7 @@ package file
 import (
 	"fmt"
 
-	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/core/git"
 )
 
 type Item struct {

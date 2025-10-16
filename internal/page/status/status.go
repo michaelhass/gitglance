@@ -7,14 +7,14 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/diff"
-	"github.com/michaelhass/gitglance/internal/ui/exit"
-	"github.com/michaelhass/gitglance/internal/ui/list"
-	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
-	"github.com/michaelhass/gitglance/internal/ui/refresh"
-	"github.com/michaelhass/gitglance/internal/ui/style"
+	"github.com/michaelhass/gitglance/internal/core/exit"
+	"github.com/michaelhass/gitglance/internal/core/git"
+	"github.com/michaelhass/gitglance/internal/core/refresh"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
+	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
+	"github.com/michaelhass/gitglance/internal/core/ui/style"
+	"github.com/michaelhass/gitglance/internal/domain/diff"
 )
 
 type section byte

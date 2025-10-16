@@ -6,12 +6,12 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/container"
-	"github.com/michaelhass/gitglance/internal/ui/dialog"
-	"github.com/michaelhass/gitglance/internal/ui/list"
-	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
-	"github.com/michaelhass/gitglance/internal/ui/textinput"
+	"github.com/michaelhass/gitglance/internal/core/git"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
+	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/textinput"
 )
 
 // Model represents the UI to pefrom a commit.

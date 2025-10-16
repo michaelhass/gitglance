@@ -6,7 +6,7 @@ package container
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	styles "github.com/michaelhass/gitglance/internal/ui/style"
+	"github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
 const (
@@ -17,11 +17,11 @@ const (
 )
 
 var (
-	inactiveTitleStyle = styles.InactiveTitle.Height(titleHeight)
-	focusTitleStyle    = styles.Title.Height(titleHeight)
+	inactiveTitleStyle = style.InactiveTitle.Height(titleHeight)
+	focusTitleStyle    = style.Title.Height(titleHeight)
 
-	inactiveBorderStyle = styles.InactiveBorder.PaddingLeft(paddingLeft)
-	focusBorderStyle    = styles.FocusBorder.PaddingLeft(paddingLeft)
+	inactiveBorderStyle = style.InactiveBorder.PaddingLeft(paddingLeft)
+	focusBorderStyle    = style.FocusBorder.PaddingLeft(paddingLeft)
 )
 
 type Model struct {

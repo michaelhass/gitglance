@@ -7,8 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/textwrap"
-	"github.com/michaelhass/gitglance/internal/ui/style"
+	"github.com/michaelhass/gitglance/internal/core/textwrap"
+	"github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
 var (

@@ -2,7 +2,7 @@ package app
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/logger"
+	"github.com/michaelhass/gitglance/internal/core/logger"
 )
 
 type Option func(opts *options)

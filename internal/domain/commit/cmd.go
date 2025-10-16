@@ -3,7 +3,7 @@ package commit
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/git"
+	"github.com/michaelhass/gitglance/internal/core/git"
 )
 
 // Execute creates a tea.Cmd to execute a git commit.

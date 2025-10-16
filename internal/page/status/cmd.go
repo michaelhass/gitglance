@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/editor"
-	"github.com/michaelhass/gitglance/internal/git"
-	"github.com/michaelhass/gitglance/internal/ui/commit"
-	"github.com/michaelhass/gitglance/internal/ui/confirm"
-	"github.com/michaelhass/gitglance/internal/ui/dialog"
-	"github.com/michaelhass/gitglance/internal/ui/list"
-	filelist "github.com/michaelhass/gitglance/internal/ui/list/file"
-	"github.com/michaelhass/gitglance/internal/ui/refresh"
+	"github.com/michaelhass/gitglance/internal/core/editor"
+	"github.com/michaelhass/gitglance/internal/core/git"
+	"github.com/michaelhass/gitglance/internal/core/refresh"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog/confirm"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
+	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
+	"github.com/michaelhass/gitglance/internal/domain/commit"
 )
 
 type initializedMsg struct {

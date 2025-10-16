@@ -2,7 +2,7 @@ package textinput
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/container"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
 )
 
 type ContainerContent struct {

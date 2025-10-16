@@ -6,11 +6,11 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/dialog"
-	"github.com/michaelhass/gitglance/internal/ui/exit"
-	"github.com/michaelhass/gitglance/internal/ui/logger"
-	"github.com/michaelhass/gitglance/internal/ui/refresh"
-	"github.com/michaelhass/gitglance/internal/ui/status"
+	"github.com/michaelhass/gitglance/internal/core/exit"
+	"github.com/michaelhass/gitglance/internal/core/logger"
+	"github.com/michaelhass/gitglance/internal/core/refresh"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
+	"github.com/michaelhass/gitglance/internal/page/status"
 )
 
 // refreshInterval is the duration when a refresh.Msg is send.

@@ -1,19 +1,16 @@
-package commit
+package confirm
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/michaelhass/gitglance/internal/ui/dialog"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 )
 
-// DialogContent is a wrapper to use the commit ui as dialog.DialogContent.
 type DialogContent struct {
 	Model
 }
 
-func NewContent(commit Model) DialogContent {
-	return DialogContent{
-		Model: commit,
-	}
+func NewDialogConent(confirm Model) DialogContent {
+	return DialogContent{Model: confirm}
 }
 
 func (dc DialogContent) Init() tea.Cmd {
@@ -23,7 +20,6 @@ func (dc DialogContent) Init() tea.Cmd {
 func (dc DialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
 	model, cmd := dc.Model.Update(msg)
 	dc.Model = model
-
 	return dc, cmd
 }
 
