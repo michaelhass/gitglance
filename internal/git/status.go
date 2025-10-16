@@ -110,15 +110,8 @@ func readFileStatusFromOutputComponent(component string) (FileStatus, error) {
 }
 
 func cleanedPathString(path string) string {
-	path = strings.TrimSuffix(path, " ")
-	path = strings.TrimPrefix(path, " ")
-
-	if strings.Contains(path, " ") &&
-		strings.HasPrefix(path, "\"") &&
-		strings.HasSuffix(path, "\"") {
-		path = path[1 : len(path)-1]
-	}
-
+	path = strings.Trim(path, " ")
+	path = strings.Trim(path, "\"")
 	return path
 }
 

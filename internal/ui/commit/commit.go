@@ -24,7 +24,7 @@ type Model struct {
 }
 
 func New(branch string, stagedFileList git.FileStatusList) Model {
-	fileListContent := list.NewContent(
+	fileListContent := list.NewContainerContent(
 		list.New(
 			"Staged",
 			func(msg tea.Msg) tea.Cmd { return nil },
@@ -42,8 +42,8 @@ func New(branch string, stagedFileList git.FileStatusList) Model {
 
 	fileListContent.Model, _ = fileListContent.SetItems(createListItems(stagedFileList))
 
-	messageContainer := container.New(
-		textinput.NewContent(
+	messageContainer := textinput.NewContainer(
+		textinput.New(
 			fmt.Sprintf("%s [%s]", "Commit", branch),
 			"Enter commit message",
 		),
@@ -77,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m, cmd = m.toggleFocus()
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.commit):
-			if mc, ok := m.message.Content().(textinput.Content); ok {
+			if mc, ok := m.message.Content().(textinput.ContainerContent); ok {
 				return m, tea.Sequence(Execute(mc.Text()), dialog.Close())
 			}
 		}
@@ -114,9 +114,10 @@ func (m Model) Help() []key.Binding {
 }
 
 func (m Model) setMsg(msg string) (Model, tea.Cmd) {
-	if input, ok := m.message.Content().(textinput.Content); ok {
-		input = input.SetValue(msg)
-		input = input.SetCursorToStart()
+	if input, ok := m.message.Content().(textinput.ContainerContent); ok {
+		input.Model = input.Model.
+			SetValue(msg).
+			SetCursorToStart()
 		m.message = m.message.SetContent(input)
 	}
 	return m, nil

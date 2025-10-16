@@ -125,7 +125,7 @@ func New() Model {
 	help := help.New()
 	help.ShowAll = false
 
-	unstagedFileList := list.NewContent(
+	unstagedFileList := list.NewContainerContent(
 		list.New("Unstaged", unstagedFilesItemHandler, list.NewKeyMap(
 			"stage all",
 			"stage file",
@@ -139,7 +139,7 @@ func New() Model {
 	)
 	stagedFileListKeyMap.Delete.SetEnabled(false)
 
-	stagedFileList := list.NewContent(list.New("Staged", stagedFilesItemHandler, stagedFileListKeyMap))
+	stagedFileList := list.NewContainerContent(list.New("Staged", stagedFilesItemHandler, stagedFileListKeyMap))
 	diffContent := diff.NewContent(diff.New())
 
 	return Model{
@@ -284,13 +284,13 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 		return m, exit.WithMsg(msg.Err.Error())
 	}
 
-	if section, ok := m.sections[unstagedSection].Content().(list.Content); ok {
+	if section, ok := m.sections[unstagedSection].Content().(list.ContainerContent); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.UnstagedFiles(), false))
 		section.Model = model
 		cmds = append(cmds, cmd)
 		m.sections[unstagedSection] = m.sections[unstagedSection].SetContent(section)
 	}
-	if section, ok := m.sections[stagedSection].Content().(list.Content); ok {
+	if section, ok := m.sections[stagedSection].Content().(list.ContainerContent); ok {
 		model, cmd := section.SetItems(createListItems(m.workTreeStatus.StagedFiles(), true))
 		model = model.SetTitle(fmt.Sprintf("Staged [%s]", m.workTreeStatus.CleanedBranchName))
 		section.Model = model
@@ -304,7 +304,7 @@ func (m Model) handleStatusUpdateMsg(msg statusUpdateMsg) (Model, tea.Cmd) {
 }
 
 func (m Model) handleLoadedDiffMsg(msg loadedDiffMsg) (Model, tea.Cmd) {
-	section, ok := m.sections[diffSection].Content().(diff.Content)
+	section, ok := m.sections[diffSection].Content().(diff.ContainerContent)
 	if !ok {
 		return m, nil
 	}
