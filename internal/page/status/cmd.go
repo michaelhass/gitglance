@@ -13,6 +13,7 @@ import (
 	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
 	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
 	"github.com/michaelhass/gitglance/internal/domain/commit"
+	"github.com/michaelhass/gitglance/internal/domain/stash"
 )
 
 type initializedMsg struct {
@@ -205,22 +206,5 @@ func showCommitDialog(branchName string, files git.FileStatusList) tea.Cmd {
 }
 
 func showStashAllConfirmation() tea.Cmd {
-	confirmDialog := confirm.NewDialogConent(
-		confirm.New(
-			"Stash", "Do you want to stash all changes?",
-			stashAll(),
-		),
-	)
-	return dialog.Show(confirmDialog, refreshStatus(), dialog.CenterDisplayMode)
-}
-
-type stashedMsg struct {
-	err error
-}
-
-func stashAll() tea.Cmd {
-	return func() tea.Msg {
-		err := git.StashAll()
-		return stashedMsg{err: err}
-	}
+	return stash.ShowCreateWithUntrackedConfirmation(refreshStatus())
 }
