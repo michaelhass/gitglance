@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/michaelhass/gitglance/internal/ui/app"
+	"github.com/michaelhass/gitglance/internal/app"
 )
 
 func main() {
