@@ -208,3 +208,7 @@ func showCommitDialog(branchName string, files git.FileStatusList) tea.Cmd {
 func showStashAllConfirmation() tea.Cmd {
 	return stash.ShowCreateWithUntrackedConfirmation(refreshStatus())
 }
+
+func showApplyStashDialog() tea.Cmd {
+	return stash.ShowApplyDialog(refreshStatus())
+}

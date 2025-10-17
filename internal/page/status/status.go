@@ -11,12 +11,10 @@ import (
 	"github.com/michaelhass/gitglance/internal/core/git"
 	"github.com/michaelhass/gitglance/internal/core/refresh"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
 	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
 	"github.com/michaelhass/gitglance/internal/core/ui/style"
 	"github.com/michaelhass/gitglance/internal/domain/diff"
-	"github.com/michaelhass/gitglance/internal/domain/stash"
 )
 
 type section byte
@@ -210,16 +208,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmds = append(cmds, refreshStatus())
 		case key.Matches(msg, m.keys.stash):
 			cmds = append(cmds, showStashAllConfirmation())
-		case key.Matches(msg, key.NewBinding(key.WithKeys("q"))):
-			stashList := stash.NewStashList()
-			cmds = append(
-				cmds,
-				dialog.Show(
-					stash.NewDialogConent(stashList),
-					nil,
-					dialog.CenterDisplayMode,
-				))
-
+		case key.Matches(msg, key.NewBinding(key.WithKeys("S"))):
+			cmds = append(cmds, showApplyStashDialog())
 		}
 	}
 

@@ -1,13 +1,9 @@
 package stash
 
 import (
-	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/core/git"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
-	"github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
 type StashListItem struct {
@@ -22,13 +18,8 @@ type StashList struct {
 	listModel list.Model
 }
 
-func NewStashList() StashList {
-	keyMap := list.NewKeyMap("", "Apply stash", "")
-	keyMap.All.SetEnabled(false)
-	keyMap.Edit.SetEnabled(false)
-	keyMap.Delete.SetEnabled(false)
-	listModel := list.New("Stash", func(msg tea.Msg) tea.Cmd { return nil }, keyMap)
-
+func NewStashList(title string, keyMap list.KeyMap) StashList {
+	listModel := list.New(title, func(msg tea.Msg) tea.Cmd { return nil }, keyMap)
 	return StashList{listModel: listModel}
 }
 
@@ -57,12 +48,7 @@ func (sl StashList) Update(msg tea.Msg) (StashList, tea.Cmd) {
 }
 
 func (sl StashList) View() string {
-	return lipgloss.JoinVertical(
-		lipgloss.Left,
-		style.Title.Render(sl.listModel.Title()),
-		"",
-		sl.listModel.View(),
-	)
+	return sl.listModel.View()
 }
 
 func (sl StashList) SetSize(width, height int) StashList {
@@ -70,34 +56,11 @@ func (sl StashList) SetSize(width, height int) StashList {
 	return sl
 }
 
-type DialogContent struct {
+func (sl StashList) Title() string {
+	return sl.listModel.Title()
+}
+
+type ApplyDialogContent struct {
 	StashList
-}
-
-func NewDialogConent(stashList StashList) DialogContent {
-	stashList.listModel, _ = stashList.listModel.UpdateFocus(true)
-	return DialogContent{StashList: stashList}
-}
-
-func (dc DialogContent) Init() tea.Cmd {
-	return dc.StashList.Init()
-}
-
-func (dc DialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	model, cmd := dc.StashList.Update(msg)
-	dc.StashList = model
-	return dc, cmd
-}
-
-func (dc DialogContent) View() string {
-	return dc.StashList.View()
-}
-
-func (dc DialogContent) SetSize(width, height int) dialog.Content {
-	dc.StashList = dc.StashList.SetSize(width, height)
-	return dc
-}
-
-func (dc DialogContent) Help() []key.Binding {
-	return dc.listModel.KeyMap().ShortHelp()
+	width, height int
 }
