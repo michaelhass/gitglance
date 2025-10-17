@@ -25,3 +25,13 @@ func ShowCreateWithUntrackedConfirmation(onClose tea.Cmd) tea.Cmd {
 	)
 	return dialog.Show(confirmDialog, onClose, dialog.CenterDisplayMode)
 }
+
+type LoadedMsg struct {
+	Stash git.Stash
+	Err   error
+}
+
+func Load() tea.Msg {
+	stash, err := git.GetStash()
+	return LoadedMsg{Stash: stash, Err: err}
+}
