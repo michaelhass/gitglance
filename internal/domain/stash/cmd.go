@@ -45,3 +45,8 @@ func ShowApplyDialog(onClose tea.Cmd) tea.Cmd {
 	stashList := NewStashList("Apply stash", keyMap)
 	return dialog.Show(NewApplyDialogConent(stashList), onClose, dialog.CenterDisplayMode)
 }
+
+func applyStashEntry(entry git.StashEntry) tea.Cmd {
+	_ = git.ApplyStashEntry(entry)
+	return dialog.Close()
+}

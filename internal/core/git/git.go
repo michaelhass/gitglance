@@ -118,3 +118,11 @@ func GetStash() (Stash, error) {
 	return newDefaultStashBuilder().
 		makeStashFromMultilineText(out)
 }
+
+func ApplyStashEntry(entry StashEntry) error {
+	return ApplyStashIndex(entry.idx)
+}
+
+func ApplyStashIndex(index int) error {
+	return newGitCommand("stash", "apply", fmt.Sprintf("%d", index)).run()
+}
