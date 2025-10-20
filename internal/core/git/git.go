@@ -120,9 +120,25 @@ func GetStash() (Stash, error) {
 }
 
 func ApplyStashEntry(entry StashEntry) error {
-	return ApplyStashIndex(entry.idx)
+	return ApplyStashIndex(entry.Index())
 }
 
 func ApplyStashIndex(index int) error {
 	return newGitCommand("stash", "apply", fmt.Sprintf("%d", index)).run()
+}
+
+func PopStashEntry(entry StashEntry) error {
+	return PopStashIndex(entry.Index())
+}
+
+func PopStashIndex(index int) error {
+	return newGitCommand("stash", "pop", fmt.Sprintf("%d", index)).run()
+}
+
+func DropStashEntry(entry StashEntry) error {
+	return DropStashIndex(entry.Index())
+}
+
+func DropStashIndex(index int) error {
+	return newGitCommand("stash", "drop", fmt.Sprintf("%d", index)).run()
 }
