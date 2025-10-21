@@ -38,15 +38,57 @@ func Load() tea.Msg {
 }
 
 func ShowApplyDialog(onClose tea.Cmd) tea.Cmd {
-	keyMap := list.NewKeyMap("", "apply stash", "")
+	keyMap := list.NewKeyMap("", "pop", "drop")
 	keyMap.All.SetEnabled(false)
 	keyMap.Edit.SetEnabled(false)
-	keyMap.Delete.SetEnabled(false)
-	stashList := NewStashList("Apply stash", keyMap)
+	keyMap.Delete.SetEnabled(true)
+	stashList := NewStashList("Apply stash", keyMap, DefaultListItemHandler())
 	return dialog.Show(NewApplyDialogConent(stashList), onClose, dialog.CenterDisplayMode)
 }
 
-func applyStashEntry(entry git.StashEntry) tea.Cmd {
-	_ = git.ApplyStashEntry(entry)
-	return dialog.Close()
+type EntryCmdType byte
+
+const (
+	AppliedEntryCmdType EntryCmdType = iota
+	PoppedEntryCmdType  EntryCmdType = iota
+	DroppedEntryCmdType EntryCmdType = iota
+)
+
+type EntryCmdExecuted struct {
+	CmdType EntryCmdType
+	Entry   git.StashEntry
+	Err     error
+}
+
+func applyEntry(entry git.StashEntry) tea.Cmd {
+	return func() tea.Msg {
+		err := git.ApplyStashEntry(entry)
+		return EntryCmdExecuted{
+			CmdType: AppliedEntryCmdType,
+			Entry:   entry,
+			Err:     err,
+		}
+	}
+}
+
+func popEntry(entry git.StashEntry) tea.Cmd {
+	return func() tea.Msg {
+		err := git.ApplyStashEntry(entry)
+		return EntryCmdExecuted{
+			CmdType: PoppedEntryCmdType,
+			Entry:   entry,
+			Err:     err,
+		}
+	}
+}
+
+func dropEntry(entry git.StashEntry) tea.Cmd {
+	return func() tea.Msg {
+		err := git.ApplyStashEntry(entry)
+		return EntryCmdExecuted{
+			CmdType: DroppedEntryCmdType,
+			Entry:   entry,
+			Err:     err,
+		}
+	}
 }

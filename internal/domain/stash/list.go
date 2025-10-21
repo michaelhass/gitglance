@@ -18,19 +18,28 @@ type StashList struct {
 	listModel list.Model
 }
 
-func NewStashList(title string, keyMap list.KeyMap) StashList {
-	listModel := list.New(
-		title,
-		func(msg tea.Msg) tea.Cmd {
-			switch msg := msg.(type) {
-			case list.SelectItemMsg:
-				if item, ok := msg.Item.(StashListItem); ok {
-					return applyStashEntry(item.entry)
-				}
-				return nil
+func DefaultListItemHandler() list.ItemHandler {
+	return func(msg tea.Msg) tea.Cmd {
+		switch msg := msg.(type) {
+		case list.SelectItemMsg:
+			if item, ok := msg.Item.(StashListItem); ok {
+				return popEntry(item.entry)
 			}
 			return nil
-		},
+		case list.DeleteItemMsg:
+			if item, ok := msg.Item.(StashListItem); ok {
+				return dropEntry(item.entry)
+			}
+			return nil
+		}
+		return nil
+	}
+}
+
+func NewStashList(title string, keyMap list.KeyMap, itemHandler list.ItemHandler) StashList {
+	listModel := list.New(
+		title,
+		itemHandler,
 		keyMap,
 	)
 	return StashList{listModel: listModel}

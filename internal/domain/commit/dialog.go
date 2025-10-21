@@ -21,10 +21,16 @@ func (dc DialogContent) Init() tea.Cmd {
 }
 
 func (dc DialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	model, cmd := dc.Model.Update(msg)
-	dc.Model = model
-
-	return dc, cmd
+	var cmds []tea.Cmd
+	switch msg := msg.(type) {
+	case ExecutedMsg:
+		cmds = append(cmds, dialog.Close)
+	default:
+		model, cmd := dc.Model.Update(msg)
+		dc.Model = model
+		cmds = append(cmds, cmd)
+	}
+	return dc, tea.Batch(cmds...)
 }
 
 func (dc DialogContent) View() string {

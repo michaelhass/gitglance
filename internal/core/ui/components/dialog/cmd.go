@@ -15,10 +15,8 @@ type ShowMsg struct {
 	Dialog Model
 }
 
-func Close() tea.Cmd {
-	return func() tea.Msg {
-		return CloseMsg{}
-	}
+func Close() tea.Msg {
+	return CloseMsg{}
 }
 
 type CloseMsg struct{}

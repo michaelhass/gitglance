@@ -18,9 +18,14 @@ func (dc DialogContent) Init() tea.Cmd {
 }
 
 func (dc DialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	model, cmd := dc.Model.Update(msg)
-	dc.Model = model
-	return dc, cmd
+	switch msg.(type) {
+	case confirmExecutedMsg:
+		return dc, dialog.Close
+	default:
+		model, cmd := dc.Model.Update(msg)
+		dc.Model = model
+		return dc, cmd
+	}
 }
 
 func (dc DialogContent) View() string {

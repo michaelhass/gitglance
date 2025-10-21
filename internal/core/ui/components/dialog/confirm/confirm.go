@@ -4,7 +4,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 	styles "github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
@@ -30,6 +29,8 @@ type Model struct {
 	height int
 }
 
+type confirmExecutedMsg struct{}
+
 func New(title string, message string, confirmCmd tea.Cmd) Model {
 	return Model{
 		title:      title,
@@ -45,7 +46,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && key.Matches(keyMsg, m.keys.confirm) {
-		return m, tea.Sequence(m.confirmCmd, dialog.Close())
+		return m, tea.Sequence(m.confirmCmd, func() tea.Msg { return confirmExecutedMsg{} })
 	}
 	return m, nil
 }

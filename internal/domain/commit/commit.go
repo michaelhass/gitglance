@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/core/git"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/container"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
 	filelist "github.com/michaelhass/gitglance/internal/core/ui/components/list/file"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/textinput"
@@ -78,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		case key.Matches(msg, m.keys.commit):
 			if mc, ok := m.message.Content().(textinput.ContainerContent); ok {
-				return m, tea.Sequence(Execute(mc.Text()), dialog.Close())
+				cmds = append(cmds, Execute(mc.Text()))
 			}
 		}
 	}

@@ -28,9 +28,16 @@ func (dc ApplyDialogContent) Init() tea.Cmd {
 }
 
 func (dc ApplyDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	model, cmd := dc.StashList.Update(msg)
-	dc.StashList = model
-	return dc, cmd
+	var cmds []tea.Cmd
+	switch msg := msg.(type) {
+	case EntryCmdExecuted:
+		cmds = append(cmds, dialog.Close)
+	default:
+		model, cmd := dc.StashList.Update(msg)
+		dc.StashList = model
+		cmds = append(cmds, cmd)
+	}
+	return dc, tea.Batch(cmds...)
 }
 
 func (dc ApplyDialogContent) View() string {
