@@ -5,7 +5,6 @@ import (
 	"github.com/michaelhass/gitglance/internal/core/git"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog/confirm"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
 )
 
 type CreatedMsg struct {
@@ -37,12 +36,8 @@ func Load() tea.Msg {
 	return LoadedMsg{Stash: stash, Err: err}
 }
 
-func ShowApplyDialog(onClose tea.Cmd) tea.Cmd {
-	keyMap := list.NewKeyMap("", "pop", "drop")
-	keyMap.All.SetEnabled(false)
-	keyMap.Edit.SetEnabled(false)
-	keyMap.Delete.SetEnabled(true)
-	stashList := NewStashList("Apply stash", keyMap, DefaultListItemHandler())
+func ShowListDialog(onClose tea.Cmd) tea.Cmd {
+	stashList := NewListModel("Stash", DefaultKeyMap(), DefaultListItemHandler())
 	return dialog.Show(NewApplyDialogConent(stashList), onClose, dialog.CenterDisplayMode)
 }
 

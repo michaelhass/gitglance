@@ -1,20 +1,21 @@
 package stash
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/core/git"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/list"
 )
 
-type StashListItem struct {
+type ListItem struct {
 	entry git.StashEntry
 }
 
-func (item StashListItem) Render() string {
+func (item ListItem) Render() string {
 	return item.entry.Message()
 }
 
-type StashList struct {
+type ListModel struct {
 	listModel list.Model
 }
 
@@ -22,40 +23,54 @@ func DefaultListItemHandler() list.ItemHandler {
 	return func(msg tea.Msg) tea.Cmd {
 		switch msg := msg.(type) {
 		case list.SelectItemMsg:
-			if item, ok := msg.Item.(StashListItem); ok {
+			if item, ok := msg.Item.(ListItem); ok {
 				return popEntry(item.entry)
 			}
 			return nil
 		case list.DeleteItemMsg:
-			if item, ok := msg.Item.(StashListItem); ok {
+			if item, ok := msg.Item.(ListItem); ok {
 				return dropEntry(item.entry)
 			}
 			return nil
+		case list.CustomItemMsg:
+			if item, ok := msg.Item.(ListItem); ok {
+				return dropEntry(item.entry)
+			}
 		}
 		return nil
 	}
 }
 
-func NewStashList(title string, keyMap list.KeyMap, itemHandler list.ItemHandler) StashList {
+func DefaultKeyMap() list.KeyMap {
+	keyMap := list.NewKeyMap("", "pop", "drop")
+	keyMap.All.SetEnabled(false)
+	keyMap.Edit.SetEnabled(false)
+	keyMap.CustomKeys = []key.Binding{
+		key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "apply")),
+	}
+	return keyMap
+}
+
+func NewListModel(title string, keyMap list.KeyMap, itemHandler list.ItemHandler) ListModel {
 	listModel := list.New(
 		title,
 		itemHandler,
 		keyMap,
 	)
-	return StashList{listModel: listModel}
+	return ListModel{listModel: listModel}
 }
 
-func (sl StashList) Init() tea.Cmd {
+func (sl ListModel) Init() tea.Cmd {
 	return Load
 }
 
-func (sl StashList) Update(msg tea.Msg) (StashList, tea.Cmd) {
+func (sl ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	if msg, ok := msg.(LoadedMsg); ok {
 		var items []list.Item
 		for _, entry := range msg.Stash {
-			items = append(items, StashListItem{entry: entry})
+			items = append(items, ListItem{entry: entry})
 		}
 		listModel, cmd := sl.listModel.SetItems(items)
 		sl.listModel = listModel
@@ -69,20 +84,20 @@ func (sl StashList) Update(msg tea.Msg) (StashList, tea.Cmd) {
 	return sl, tea.Batch(cmds...)
 }
 
-func (sl StashList) View() string {
+func (sl ListModel) View() string {
 	return sl.listModel.View()
 }
 
-func (sl StashList) SetSize(width, height int) StashList {
+func (sl ListModel) SetSize(width, height int) ListModel {
 	sl.listModel = sl.listModel.SetSize(width, height)
 	return sl
 }
 
-func (sl StashList) Title() string {
+func (sl ListModel) Title() string {
 	return sl.listModel.Title()
 }
 
-type ApplyDialogContent struct {
-	StashList
+type ListDialogContent struct {
+	ListModel
 	width, height int
 }

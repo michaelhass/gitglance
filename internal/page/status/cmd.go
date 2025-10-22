@@ -209,6 +209,6 @@ func showStashAllConfirmation() tea.Cmd {
 	return stash.ShowCreateWithUntrackedConfirmation(refreshStatus())
 }
 
-func showApplyStashDialog() tea.Cmd {
-	return stash.ShowApplyDialog(refreshStatus())
+func showStashListDialog() tea.Cmd {
+	return stash.ShowListDialog(refreshStatus())
 }

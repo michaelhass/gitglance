@@ -18,30 +18,30 @@ var (
 	borderStyle = style.FocusBorder.PaddingLeft(borderPadding).PaddingRight(borderPadding)
 )
 
-func NewApplyDialogConent(stashList StashList) ApplyDialogContent {
+func NewApplyDialogConent(stashList ListModel) ListDialogContent {
 	stashList.listModel, _ = stashList.listModel.UpdateFocus(true)
-	return ApplyDialogContent{StashList: stashList}
+	return ListDialogContent{ListModel: stashList}
 }
 
-func (dc ApplyDialogContent) Init() tea.Cmd {
-	return dc.StashList.Init()
+func (dc ListDialogContent) Init() tea.Cmd {
+	return dc.ListModel.Init()
 }
 
-func (dc ApplyDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
+func (dc ListDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 	case EntryCmdExecuted:
 		cmds = append(cmds, dialog.Close)
 	default:
-		model, cmd := dc.StashList.Update(msg)
-		dc.StashList = model
+		model, cmd := dc.ListModel.Update(msg)
+		dc.ListModel = model
 		cmds = append(cmds, cmd)
 	}
 	return dc, tea.Batch(cmds...)
 }
 
-func (dc ApplyDialogContent) View() string {
-	title := titleStyle.Render(dc.StashList.Title())
+func (dc ListDialogContent) View() string {
+	title := titleStyle.Render(dc.ListModel.Title())
 	return borderStyle.
 		MaxHeight(dc.height).
 		MaxWidth(dc.width).
@@ -50,19 +50,19 @@ func (dc ApplyDialogContent) View() string {
 				lipgloss.Left,
 				title,
 				"",
-				dc.StashList.View(),
+				dc.ListModel.View(),
 			),
 		)
 }
 
-func (dc ApplyDialogContent) SetSize(width, height int) dialog.Content {
+func (dc ListDialogContent) SetSize(width, height int) dialog.Content {
 	dc.width, dc.height = width, height
 	maxContentHeight := height - titleHeight - 1 - borderPadding*2
 	maxContentWidth := width - borderPadding*2
-	dc.StashList = dc.StashList.SetSize(maxContentWidth, maxContentHeight)
+	dc.ListModel = dc.ListModel.SetSize(maxContentWidth, maxContentHeight)
 	return dc
 }
 
-func (dc ApplyDialogContent) Help() []key.Binding {
+func (dc ListDialogContent) Help() []key.Binding {
 	return dc.listModel.KeyMap().ShortHelp()
 }

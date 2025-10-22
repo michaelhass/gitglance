@@ -40,6 +40,11 @@ type EditItemMsg struct {
 	Item Item
 }
 
+type CustomItemMsg struct {
+	Item   Item
+	KeyMsg tea.KeyMsg
+}
+
 type TopNoMoreItems struct{}
 
 type TopNoMoreFocusableItems struct{}

@@ -209,7 +209,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.stash):
 			cmds = append(cmds, showStashAllConfirmation())
 		case key.Matches(msg, key.NewBinding(key.WithKeys("S"))):
-			cmds = append(cmds, showApplyStashDialog())
+			cmds = append(cmds, showStashListDialog())
 		}
 	}
 

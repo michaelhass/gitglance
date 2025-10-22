@@ -100,6 +100,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				cmd := m.itemHandler(DeleteItemMsg{Item: item})
 				cmds = append(cmds, cmd)
 			}
+		case key.Matches(msg, m.keys.CustomKeys...):
+			if item, err := m.FocusedItem(); err == nil {
+				cmd := m.itemHandler(CustomItemMsg{Item: item, KeyMsg: msg})
+				cmds = append(cmds, cmd)
+			}
 		}
 	}
 
