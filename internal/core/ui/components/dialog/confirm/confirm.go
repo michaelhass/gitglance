@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog/label"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/label"
 	styles "github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
