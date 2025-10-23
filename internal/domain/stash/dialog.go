@@ -42,6 +42,10 @@ func (dc ListDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
 }
 
 func (dc ListDialogContent) View() string {
+	if !dc.IsReady() {
+		return ""
+	}
+
 	title := titleStyle.Render(dc.ListModel.Title())
 
 	return borderStyle.

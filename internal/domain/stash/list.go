@@ -17,6 +17,7 @@ func (item ListItem) Render() string {
 
 type ListModel struct {
 	listModel list.Model
+	isReady   bool
 }
 
 func DefaultListItemHandler() list.ItemHandler {
@@ -74,6 +75,7 @@ func (sl ListModel) Update(msg tea.Msg) (ListModel, tea.Cmd) {
 		}
 		listModel, cmd := sl.listModel.SetItems(items)
 		sl.listModel = listModel
+		sl.isReady = true
 		cmds = append(cmds, cmd)
 	}
 
@@ -95,6 +97,10 @@ func (sl ListModel) SetSize(width, height int) ListModel {
 
 func (sl ListModel) Title() string {
 	return sl.listModel.Title()
+}
+
+func (sl ListModel) IsReady() bool {
+	return sl.isReady
 }
 
 type ListDialogContent struct {

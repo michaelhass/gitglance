@@ -170,6 +170,14 @@ func (m Model) KeyMap() help.KeyMap {
 	return m.keys
 }
 
+func (m Model) ItemsCount() int {
+	return len(m.items)
+}
+
+func (m Model) IsEmpty() bool {
+	return m.ItemsCount() == 0
+}
+
 func (m Model) SetItems(items []Item) (Model, tea.Cmd) {
 	m.items = items
 	m.visibleItems = m.updateVisibleItems()
