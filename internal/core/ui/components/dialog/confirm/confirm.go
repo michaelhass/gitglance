@@ -60,11 +60,17 @@ func (m Model) WithTextInput(placeholder string, onConfirm func(string) tea.Cmd)
 	input := textinput.New()
 	input.Placeholder = placeholder
 	input.Focus()
+	m.textInput = input
 	m.onTextInputConfirm = onConfirm
+	// reset normal cmd
+	m.onConfirmCmd = nil
 	return m
 }
 
 func (m Model) Init() tea.Cmd {
+	if m.HasTextInput() {
+		return textinput.Blink
+	}
 	return nil
 }
 
@@ -72,7 +78,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && key.Matches(keyMsg, m.keys.confirm) {
 		var confirmCmd tea.Cmd
 		if m.HasTextInput() {
-			m.onTextInputConfirm(m.textInput.Value())
+			confirmCmd = m.onTextInputConfirm(m.textInput.Value())
 		} else {
 			confirmCmd = m.onConfirmCmd
 		}
