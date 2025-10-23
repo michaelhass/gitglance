@@ -129,7 +129,7 @@ func deleteFile(fileItem filelist.Item) tea.Cmd {
 		}),
 		list.ForceFocusUpdate,
 	)
-	confirmDialog := confirm.NewDialogConent(confirm.New(title, msg, confirmCmd))
+	confirmDialog := confirm.NewDialogConent(confirm.New(title, msg).WithOnConfirmCmd(confirmCmd))
 	return dialog.Show(confirmDialog, nil, dialog.CenterDisplayMode)
 }
 

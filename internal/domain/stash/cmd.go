@@ -11,18 +11,27 @@ type CreatedMsg struct {
 	err error
 }
 
-func CreateWithUntracked() tea.Msg {
-	err := git.StashAll()
-	return CreatedMsg{err: err}
+func CreateWithUntracked(msg string) tea.Cmd {
+	return func() tea.Msg {
+		opts := git.CreateStashOpts{}
+		opts.WithUntracked = true
+		opts.Message = msg
+		err := git.CreateStash(opts)
+		return CreatedMsg{err: err}
+	}
 }
 
 func ShowCreateWithUntrackedConfirmation(onClose tea.Cmd) tea.Cmd {
-	confirmDialog := confirm.NewDialogConent(
-		confirm.New(
-			"Stash", "Do you want to stash all changes?",
-			CreateWithUntracked,
-		),
-	)
+	confirmModel := confirm.
+		New("Stash", "Do you want to stash all changes?").
+		WithTextInput(
+			"Message...",
+			func(message string) tea.Cmd {
+				return CreateWithUntracked(message)
+			},
+		)
+
+	confirmDialog := confirm.NewDialogConent(confirmModel)
 	return dialog.Show(confirmDialog, onClose, dialog.CenterDisplayMode)
 }
 
