@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	titleHeight       = 1
-	borderPadding int = 1
+	titleHeight   = 1
+	borderPadding = 1
+	borderWidth   = 1
 )
 
 var (
@@ -42,6 +43,7 @@ func (dc ListDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
 
 func (dc ListDialogContent) View() string {
 	title := titleStyle.Render(dc.ListModel.Title())
+
 	return borderStyle.
 		MaxHeight(dc.height).
 		MaxWidth(dc.width).
@@ -57,8 +59,9 @@ func (dc ListDialogContent) View() string {
 
 func (dc ListDialogContent) SetSize(width, height int) dialog.Content {
 	dc.width, dc.height = width, height
-	maxContentHeight := height - titleHeight - 1 - borderPadding*2
-	maxContentWidth := width - borderPadding*2
+
+	maxContentHeight := height - titleHeight - 1 - borderPadding*2 - borderWidth*2
+	maxContentWidth := width - borderPadding*2 - borderWidth*2
 	dc.ListModel = dc.ListModel.SetSize(maxContentWidth, maxContentHeight)
 	return dc
 }

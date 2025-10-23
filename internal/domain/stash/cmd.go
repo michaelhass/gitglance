@@ -68,7 +68,7 @@ func applyEntry(entry git.StashEntry) tea.Cmd {
 
 func popEntry(entry git.StashEntry) tea.Cmd {
 	return func() tea.Msg {
-		err := git.ApplyStashEntry(entry)
+		err := git.PopStashEntry(entry)
 		return EntryCmdExecuted{
 			CmdType: PoppedEntryCmdType,
 			Entry:   entry,
@@ -79,7 +79,7 @@ func popEntry(entry git.StashEntry) tea.Cmd {
 
 func dropEntry(entry git.StashEntry) tea.Cmd {
 	return func() tea.Msg {
-		err := git.ApplyStashEntry(entry)
+		err := git.DropStashEntry(entry)
 		return EntryCmdExecuted{
 			CmdType: DroppedEntryCmdType,
 			Entry:   entry,
