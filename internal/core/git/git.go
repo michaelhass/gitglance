@@ -106,8 +106,23 @@ func IsInWorkTree() bool {
 	return out == "true"
 }
 
-func StashAll() error {
-	return newGitCommand("stash", "-u").run()
+type CreateStashOpts struct {
+	WithUntracked bool
+	Message       string
+}
+
+func CreateStash(opts CreateStashOpts) error {
+	args := []string{"stash"}
+
+	if opts.WithUntracked {
+		args = append(args, "-u")
+	}
+
+	if len(opts.Message) > 0 {
+		args = append(args, "-m", fmt.Sprintf("\"%s\"", opts.Message))
+	}
+
+	return newGitCommand(args...).run()
 }
 
 func GetStash() (Stash, error) {
