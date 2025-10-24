@@ -9,7 +9,7 @@ type DialogContent struct {
 	Model
 }
 
-func NewDialogConent(confirm Model) DialogContent {
+func NewDialogContent(confirm Model) DialogContent {
 	return DialogContent{Model: confirm}
 }
 

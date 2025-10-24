@@ -8,7 +8,7 @@ import (
 )
 
 type CreatedMsg struct {
-	err error
+	Err error
 }
 
 func CreateWithUntracked(msg string) tea.Cmd {
@@ -17,7 +17,7 @@ func CreateWithUntracked(msg string) tea.Cmd {
 		opts.WithUntracked = true
 		opts.Message = msg
 		err := git.CreateStash(opts)
-		return CreatedMsg{err: err}
+		return CreatedMsg{Err: err}
 	}
 }
 
@@ -31,7 +31,7 @@ func ShowCreateWithUntrackedConfirmation(onClose tea.Cmd) tea.Cmd {
 			},
 		)
 
-	confirmDialog := confirm.NewDialogConent(confirmModel)
+	confirmDialog := confirm.NewDialogContent(confirmModel)
 	return dialog.Show(confirmDialog, onClose, dialog.CenterDisplayMode)
 }
 
