@@ -21,12 +21,13 @@ const refreshInterval time.Duration = time.Second * 15
 // It displays multiple sub models and is responsible for
 // displaying dialogs.
 type model struct {
-	status status.Model // Model to display the git status
+	// Model to display the git status
+	status status.Model
+	// dialgs currently on the presentation stack.
+	// Only the last dialog will receive messages and will be rendered
+	dialogs []dialog.Model
 
-	dialogs []dialog.Model // A dialog that is shown.
-
-	isReady bool // Indicates if the application is ready / initialized.
-
+	isReady       bool
 	width, height int
 
 	logger logger.Logger
@@ -98,6 +99,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+func (m model) View() string {
+	if !m.isReady {
+		return "loading"
+	}
+	if d, ok := m.topDialog(); ok {
+		return d.View()
+	}
+	return m.status.View()
+}
+
 func (m model) isDialogShowing() bool {
 	return len(m.dialogs) > 0
 }
@@ -125,14 +136,4 @@ func (m model) updatedTopDialog(msg tea.Msg) (model, tea.Cmd) {
 	d, cmd := d.Update(msg)
 	m.dialogs[len(m.dialogs)-1] = d
 	return m, cmd
-}
-
-func (m model) View() string {
-	if !m.isReady {
-		return "loading"
-	}
-	if d, ok := m.topDialog(); ok {
-		return d.View()
-	}
-	return m.status.View()
 }
