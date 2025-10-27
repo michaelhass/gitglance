@@ -23,8 +23,7 @@ const refreshInterval time.Duration = time.Second * 15
 type model struct {
 	status status.Model // Model to display the git status
 
-	dialog          dialog.Model // A dialog that is shown.
-	isDialogShowing bool         // Indicated whether a dialog is showing.
+	dialogs []dialog.Model // A dialog that is shown.
 
 	isReady bool // Indicates if the application is ready / initialized.
 
@@ -64,27 +63,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.status = m.status.SetSize(msg.Width, msg.Height)
-		if m.isDialogShowing {
-			m.dialog = m.dialog.SetSize(msg.Width, msg.Height)
+		if m.isDialogShowing() {
+			for i, dialog := range m.dialogs {
+				m.dialogs[i] = dialog.SetSize(msg.Width, msg.Height)
+			}
 		}
 		m.isReady = true
 	case dialog.ShowMsg:
 		dialog := msg.Dialog
 		dialog = dialog.SetSize(m.width, m.height)
-		m.dialog = dialog
-		m.isDialogShowing = true
+		m.dialogs = append(m.dialogs, dialog)
 		cmds = append(cmds, dialog.Init())
 	case dialog.CloseMsg:
-		m.isDialogShowing = false
-		_, cmd := m.dialog.Update(msg)
-		cmds = append(cmds, cmd)
+		if d, ok := m.topDialog(); ok {
+			_, cmd := d.Update(msg)
+			m = m.removedTopDialog()
+			cmds = append(cmds, cmd)
+		}
 	case refresh.Msg:
 		cmds = append(cmds, refresh.Schedule(refreshInterval))
 	}
 
-	if m.isDialogShowing {
-		dialog, cmd := m.dialog.Update(msg)
-		m.dialog = dialog
+	if m.isDialogShowing() {
+		updatedModel, cmd := m.updatedTopDialog(msg)
+		m = updatedModel
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
@@ -96,13 +98,41 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+func (m model) isDialogShowing() bool {
+	return len(m.dialogs) > 0
+}
+
+func (m model) topDialog() (dialog.Model, bool) {
+	if !m.isDialogShowing() {
+		return dialog.Model{}, false
+	}
+	return m.dialogs[len(m.dialogs)-1], true
+}
+
+func (m model) removedTopDialog() model {
+	if !m.isDialogShowing() {
+		return m
+	}
+	m.dialogs = m.dialogs[:len(m.dialogs)-1]
+	return m
+}
+
+func (m model) updatedTopDialog(msg tea.Msg) (model, tea.Cmd) {
+	d, ok := m.topDialog()
+	if !ok {
+		return m, nil
+	}
+	d, cmd := d.Update(msg)
+	m.dialogs[len(m.dialogs)-1] = d
+	return m, cmd
+}
+
 func (m model) View() string {
 	if !m.isReady {
 		return "loading"
 	}
-
-	if m.isDialogShowing {
-		return m.dialog.View()
+	if d, ok := m.topDialog(); ok {
+		return d.View()
 	}
 	return m.status.View()
 }
