@@ -48,15 +48,22 @@ func (dc ListDialogContent) View() string {
 
 	title := titleStyle.Render(dc.ListModel.Title())
 
+	var listView string
+	if dc.listModel.ItemsCount() == 0 {
+		listView = "No stash entries"
+	} else {
+		listView = dc.ListModel.View()
+	}
+
 	return borderStyle.
 		MaxHeight(dc.height).
-		MaxWidth(dc.width).
+		Width(dc.width).
 		Render(
 			lipgloss.JoinVertical(
 				lipgloss.Left,
 				title,
 				"",
-				dc.ListModel.View(),
+				listView,
 			),
 		)
 }
