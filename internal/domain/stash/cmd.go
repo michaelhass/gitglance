@@ -64,6 +64,11 @@ type EntryCmdExecuted struct {
 	Err     error
 }
 
+func showActionConfirmation(confirmCmd tea.Cmd, msg string) tea.Cmd {
+	dc := confirm.NewDialogContent(confirm.New("Stash", msg).WithOnConfirmCmd(confirmCmd))
+	return dialog.Show(dc, Load, dialog.CenterDisplayMode)
+}
+
 func applyEntry(entry git.StashEntry) tea.Cmd {
 	return func() tea.Msg {
 		err := git.ApplyStashEntry(entry)

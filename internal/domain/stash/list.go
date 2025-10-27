@@ -1,6 +1,8 @@
 package stash
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/michaelhass/gitglance/internal/core/git"
@@ -25,17 +27,26 @@ func DefaultListItemHandler() list.ItemHandler {
 		switch msg := msg.(type) {
 		case list.SelectItemMsg:
 			if item, ok := msg.Item.(ListItem); ok {
-				return popEntry(item.entry)
+				return showActionConfirmation(
+					popEntry(item.entry),
+					fmt.Sprintf("Pop entry?\n%s", item.entry.Message()),
+				)
 			}
 			return nil
 		case list.DeleteItemMsg:
 			if item, ok := msg.Item.(ListItem); ok {
-				return dropEntry(item.entry)
+				return showActionConfirmation(
+					dropEntry(item.entry),
+					fmt.Sprintf("Drop entry?\n%s", item.entry.Message()),
+				)
 			}
 			return nil
 		case list.CustomItemMsg:
 			if item, ok := msg.Item.(ListItem); ok {
-				return dropEntry(item.entry)
+				return showActionConfirmation(
+					applyEntry(item.entry),
+					fmt.Sprintf("Apply entry?\n%s", item.entry.Message()),
+				)
 			}
 		}
 		return nil
