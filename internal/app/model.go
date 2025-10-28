@@ -6,10 +6,12 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/core/err"
 	"github.com/michaelhass/gitglance/internal/core/exit"
 	"github.com/michaelhass/gitglance/internal/core/logger"
 	"github.com/michaelhass/gitglance/internal/core/refresh"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
+	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog/info"
 	"github.com/michaelhass/gitglance/internal/page/status"
 )
 
@@ -53,6 +55,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.logger.Println(reflect.TypeOf(msg))
 
 	switch msg := msg.(type) {
+	case err.Msg:
+		return m, dialog.Show(
+			info.NewDialogContent(
+				info.New(msg.ErrorTitle(), msg.ErrorDescription()),
+			),
+			nil,
+			dialog.CenterDisplayMode,
+		)
 	case exit.Msg:
 		return m, tea.Sequence(tea.ExitAltScreen, tea.Println(msg), tea.Quit)
 	case tea.KeyMsg:
