@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/label"
-	styles "github.com/michaelhass/gitglance/internal/core/ui/style"
+	"github.com/michaelhass/gitglance/internal/core/ui/style"
 )
 
 const (
@@ -17,9 +17,9 @@ const (
 )
 
 var (
-	titleStyle   = styles.Title.Height(titleHeight)
-	borderStyle  = styles.FocusBorder.PaddingLeft(borderPadding).PaddingRight(borderPadding)
-	messageStyle = styles.Text.PaddingTop(messagePadding).PaddingBottom(messagePadding)
+	titleStyle   = style.Title.Height(titleHeight)
+	borderStyle  = style.FocusBorder.PaddingLeft(borderPadding).PaddingRight(borderPadding)
+	messageStyle = style.Text.PaddingTop(messagePadding).PaddingBottom(messagePadding)
 )
 
 type Model struct {
@@ -39,7 +39,6 @@ type Model struct {
 type confirmExecutedMsg struct{}
 
 func New(title string, message string) Model {
-
 	return Model{
 		title:        title,
 		messageLabel: label.NewDefaultMultiLine().SetText(message),
