@@ -11,6 +11,9 @@ Simple git terminal UI written in Go using [Bubble Tea](https://github.com/charm
 - Commit ✔️
 - Refresh Status ✔️
 - Open Editor ✔️
+- Stashing ✔️
+  - Create stash entry with message ✔️
+  - pop, apply, drop stash entries ✔️
 
 ## Installation
 
