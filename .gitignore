@@ -19,3 +19,6 @@ bin/
 # vendor/
 # Added by goreleaser init:
 dist/
+
+# mac os
+.DS_Store

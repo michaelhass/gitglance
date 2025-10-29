@@ -51,7 +51,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	m.logger.Println(reflect.TypeOf(msg))
-
 	switch msg := msg.(type) {
 	case exit.Msg:
 		return m, tea.Sequence(tea.ExitAltScreen, tea.Println(msg), tea.Quit)

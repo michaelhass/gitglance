@@ -2,6 +2,7 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -108,14 +109,30 @@ func IsInWorkTree() bool {
 
 type CreateStashOpts struct {
 	WithUntracked bool
+	WithAll       bool
 	Message       string
 }
 
 func CreateStash(opts CreateStashOpts) error {
+	// Since there is no way to filter the git stash output for errors only,
+	// we try to determine it manually based on the current work tree.
+	status, err := loadWorkTreeStatus()
+	if err != nil {
+		return err
+	}
+
+	if status.FileStatusList.IsEmpty() {
+		return errors.New("No local changes to save")
+	}
+
 	args := []string{"stash"}
 
 	if opts.WithUntracked {
 		args = append(args, "-u")
+	}
+
+	if opts.WithAll {
+		args = append(args, "-a")
 	}
 
 	if len(opts.Message) > 0 {
