@@ -2,7 +2,6 @@
 package git
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -109,6 +108,7 @@ func IsInWorkTree() bool {
 
 type CreateStashOpts struct {
 	WithUntracked bool
+	WithAll       bool
 	Message       string
 }
 
@@ -119,16 +119,15 @@ func CreateStash(opts CreateStashOpts) error {
 		args = append(args, "-u")
 	}
 
+	if opts.WithAll {
+		args = append(args, "-a")
+	}
+
 	if len(opts.Message) > 0 {
 		args = append(args, "-m", fmt.Sprintf("\"%s\"", opts.Message))
 	}
 
-	out, err := newGitCommand(args...).output()
-	if len(out) > 0 && err != nil {
-		return errors.New(out)
-	} else {
-		return err
-	}
+	return newGitCommand(args...).run()
 }
 
 func GetStash() (Stash, error) {
