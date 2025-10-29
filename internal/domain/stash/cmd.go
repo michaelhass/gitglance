@@ -57,7 +57,7 @@ func executionErrHandler(msg tea.Msg) tea.Cmd {
 func CreateWithUntracked(msg string) tea.Cmd {
 	return func() tea.Msg {
 		opts := git.CreateStashOpts{}
-		opts.WithAll = true
+		opts.WithUntracked = true
 		opts.Message = msg
 		err := git.CreateStash(opts)
 		return EntryCmdExecuted{CmdType: CreatedEntryCmdType, err: err}
