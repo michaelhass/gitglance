@@ -165,6 +165,10 @@ func (fl FileStatusList) Filter(isIncluded func(FileStatus) bool) FileStatusList
 	return result
 }
 
+func (fl FileStatusList) IsEmpty() bool {
+	return len(fl) == 0
+}
+
 // StatusCode of a file.
 type StatusCode byte
 
