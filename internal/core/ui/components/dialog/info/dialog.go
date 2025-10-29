@@ -3,6 +3,7 @@ package info
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/michaelhass/gitglance/internal/core/err"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/dialog"
 )
 
@@ -20,6 +21,10 @@ func NewDialogContent(confirm Model) DialogContent {
 			key.WithHelp("ESC", "close"),
 		),
 	}
+}
+
+func NewDialogContentWithErrMsg(errMsg err.Msg) DialogContent {
+	return NewDialogContent(NewWithErrMsg(errMsg))
 }
 
 func (dc DialogContent) Init() tea.Cmd {

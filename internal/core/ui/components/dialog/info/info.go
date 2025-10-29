@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/michaelhass/gitglance/internal/core/err"
 	"github.com/michaelhass/gitglance/internal/core/ui/components/label"
 	"github.com/michaelhass/gitglance/internal/core/ui/style"
 )
@@ -34,6 +35,10 @@ func New(title, message string) Model {
 		title:        title,
 		messageLabel: label.NewDefaultMultiLine().SetText(message),
 	}
+}
+
+func NewWithErrMsg(msg err.Msg) Model {
+	return New(msg.ErrorTitle(), msg.ErrorDescription())
 }
 
 func (m Model) Init() tea.Cmd {

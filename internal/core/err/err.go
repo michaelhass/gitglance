@@ -1,7 +1,7 @@
 package err
 
 type Msg interface {
-	Error() error
+	Err() error
 	ErrorTitle() string
 	ErrorDescription() string
 }

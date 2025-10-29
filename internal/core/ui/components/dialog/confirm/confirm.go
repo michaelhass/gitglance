@@ -36,8 +36,6 @@ type Model struct {
 	height, maxContentHeight int
 }
 
-type confirmExecutedMsg struct{}
-
 func New(title string, message string) Model {
 	return Model{
 		title:        title,
@@ -81,7 +79,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		} else {
 			confirmCmd = m.onConfirmCmd
 		}
-		return m, tea.Sequence(confirmCmd, func() tea.Msg { return confirmExecutedMsg{} })
+		return m, executeConfirmCmd(confirmCmd) //tea.Sequence(confirmCmd, func() tea.Msg { return confirmExecutedMsg{} })
 	}
 	input, cmd := m.textInput.Update(msg)
 	m.textInput = input

@@ -30,14 +30,9 @@ func (dc ListDialogContent) Init() tea.Cmd {
 
 func (dc ListDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
 	var cmds []tea.Cmd
-	switch msg := msg.(type) {
-	case EntryCmdExecuted:
-		cmds = append(cmds, dialog.Close)
-	default:
-		model, cmd := dc.ListModel.Update(msg)
-		dc.ListModel = model
-		cmds = append(cmds, cmd)
-	}
+	model, cmd := dc.ListModel.Update(msg)
+	dc.ListModel = model
+	cmds = append(cmds, cmd)
 	return dc, tea.Batch(cmds...)
 }
 

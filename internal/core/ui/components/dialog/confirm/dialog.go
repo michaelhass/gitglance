@@ -7,10 +7,16 @@ import (
 
 type DialogContent struct {
 	Model
+	errHandler func(tea.Msg) tea.Cmd
 }
 
 func NewDialogContent(confirm Model) DialogContent {
 	return DialogContent{Model: confirm}
+}
+
+func (dc DialogContent) WithErrHandler(errHandler func(tea.Msg) tea.Cmd) DialogContent {
+	dc.errHandler = errHandler
+	return dc
 }
 
 func (dc DialogContent) Init() tea.Cmd {
@@ -18,8 +24,11 @@ func (dc DialogContent) Init() tea.Cmd {
 }
 
 func (dc DialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	switch msg.(type) {
+	switch msg := msg.(type) {
 	case confirmExecutedMsg:
+		if !msg.isSuccess() && dc.errHandler != nil {
+			return dc, dc.errHandler(msg.errMsg)
+		}
 		return dc, dialog.Close
 	default:
 		model, cmd := dc.Model.Update(msg)

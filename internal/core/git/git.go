@@ -2,6 +2,7 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -122,7 +123,12 @@ func CreateStash(opts CreateStashOpts) error {
 		args = append(args, "-m", fmt.Sprintf("\"%s\"", opts.Message))
 	}
 
-	return newGitCommand(args...).run()
+	out, err := newGitCommand(args...).output()
+	if len(out) > 0 && err != nil {
+		return errors.New(out)
+	} else {
+		return err
+	}
 }
 
 func GetStash() (Stash, error) {
