@@ -79,7 +79,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		} else {
 			confirmCmd = m.onConfirmCmd
 		}
-		return m, executeConfirmCmd(confirmCmd) //tea.Sequence(confirmCmd, func() tea.Msg { return confirmExecutedMsg{} })
+		return m, executeConfirmCmd(confirmCmd)
 	}
 	input, cmd := m.textInput.Update(msg)
 	m.textInput = input

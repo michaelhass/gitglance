@@ -29,11 +29,9 @@ func (dc ListDialogContent) Init() tea.Cmd {
 }
 
 func (dc ListDialogContent) Update(msg tea.Msg) (dialog.Content, tea.Cmd) {
-	var cmds []tea.Cmd
 	model, cmd := dc.ListModel.Update(msg)
 	dc.ListModel = model
-	cmds = append(cmds, cmd)
-	return dc, tea.Batch(cmds...)
+	return dc, cmd
 }
 
 func (dc ListDialogContent) View() string {
