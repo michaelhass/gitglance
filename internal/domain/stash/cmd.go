@@ -46,25 +46,23 @@ func (ece EntryCmdExecuted) ErrorDescription() string {
 	return ece.err.Error()
 }
 
+func executionErrHandler(msg tea.Msg) tea.Cmd {
+	if errMsg, ok := msg.(err.Msg); ok && errMsg.Err() != nil {
+		errDialogContent := info.NewDialogContentWithErrMsg(errMsg)
+		return dialog.Show(errDialogContent, nil, dialog.CenterDisplayMode)
+	}
+	return nil
+}
+
 func CreateWithUntracked(msg string) tea.Cmd {
 	return func() tea.Msg {
 		opts := git.CreateStashOpts{}
-		opts.WithUntracked = true
+		opts.WithAll = true
 		opts.Message = msg
 		err := git.CreateStash(opts)
 		return EntryCmdExecuted{CmdType: CreatedEntryCmdType, err: err}
 	}
 }
-
-func executionErrHandler(msg tea.Msg) tea.Cmd {
-	errMsg, ok := msg.(err.Msg)
-	if !ok || errMsg.Err() == nil {
-		return nil
-	}
-	errDialogContent := info.NewDialogContentWithErrMsg(errMsg)
-	return dialog.Show(errDialogContent, nil, dialog.CenterDisplayMode)
-}
-
 func ShowCreateWithUntrackedConfirmation(onClose tea.Cmd) tea.Cmd {
 	confirmModel := confirm.
 		New("Stash", "Do you want to stash all changes?").

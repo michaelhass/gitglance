@@ -10,7 +10,7 @@ type confirmExecutedMsg struct {
 }
 
 func (c confirmExecutedMsg) isSuccess() bool {
-	return c.errMsg.Err() == nil
+	return c.errMsg == nil || (c.errMsg != nil && c.errMsg.Err() == nil)
 }
 
 func executeConfirmCmd(confirmCmd tea.Cmd) tea.Cmd {
